@@ -1,6 +1,6 @@
 // src/types/index.ts
 
-export type Role = "ADMIN" | "MANAGER" | "CLIENT";
+export type Role = "ADMIN" | "MANAGER" | "CLIENT" | "LESSOR";
 
 export interface User {
   id: string | number;
@@ -24,7 +24,6 @@ export interface Car {
   current_mileage: number;
   status: "AVAILABLE" | "RENTED" | "MAINTENANCE";
   images: { id: number; url: string; is_main: boolean }[];
-  // Остальные поля можно добавлять по мере необходимости
 }
 
 export interface AuthResponse {

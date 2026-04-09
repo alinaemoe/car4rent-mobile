@@ -1,10 +1,10 @@
-import { useEffect } from "react";
-import { Stack } from "expo-router";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import React, { useEffect } from "react";
+import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { Provider } from "react-redux";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-// Импорты из нашей новой папки src/
 import { store, useAppDispatch, useAppSelector } from "../src/store";
 import {
   setCredentials,
@@ -12,85 +12,109 @@ import {
   setAppReady,
 } from "../src/store/slices/authSlice";
 import { storage } from "../src/utils/storage";
+import { initI18n } from "@/src/utils/i18n";
+import { fetchAndCacheTranslations } from "@/src/api/translations";
 import { axiosInstance } from "../src/api/axios-instance";
+import { useAppColors } from "@/src/hooks/use-color-scheme.web";
+import { User } from "../src/types"; // 👈 Импортируем наш тип User
 
-// 1. Удерживаем Splash Screen (заставку), пока мы проверяем токен
+//  if (storedToken) {
+//           const mockUser: User = {
+//             id: "uuid-1234-5678",
+//             email: "test@client.com",
+//             first_name: "Иван",
+//             last_name: "Иванов",
+//             roles: ["CLIENT"],
+//             status: "ACTIVE",
+//             is_verified: true,
+//           };
+//           dispatch(setCredentials({ user: mockUser, token: storedToken }));
+
 SplashScreen.preventAutoHideAsync();
 
-// 2. Настраиваем React Query (кэширование запросов)
 const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1, // Если запрос упал, попробуем еще 1 раз
-      refetchOnWindowFocus: false,
-    },
-  },
+  defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } },
 });
 
-// --- ВНУТРЕННИЙ КОМПОНЕНТ (Здесь работает Redux) ---
 function AppContent() {
   const dispatch = useAppDispatch();
-  const { isAppReady } = useAppSelector((state) => state.auth);
+  const { isAppReady, token } = useAppSelector((state) => state.auth);
+  const colors = useAppColors();
+  const segments = useSegments();
+  const router = useRouter();
 
   useEffect(() => {
-    const initAuth = async () => {
+    const initApp = async () => {
       try {
-        // Шаг 1: Ищем токен в сейфе телефона
-        const token = await storage.getToken();
+        await initI18n();
+        fetchAndCacheTranslations(); // Фоновя загрузка
 
-        if (token) {
-          // Шаг 2: Если токен есть, стучимся на бэк за актуальными данными юзера.
-          // ⚠️ ЗАМЕНИ '/auth/profile' на тот эндпоинт, который у тебя в NestJS возвращает профиль!
-          // Например: '/users/me' или '/auth/me'
-          const { data } = await axiosInstance.get("/users/profile");
+        // ПРОБУЕМ ДОСТАТЬ ТОКЕН
+        const accessToken = await storage.getAccessToken();
 
-          // Шаг 3: Сохраняем свежие данные в Redux
-          dispatch(setCredentials({ user: data, token }));
+        if (accessToken) {
+          // ДЕЛАЕМ РЕАЛЬНЫЙ ЗАПРОС (если токен протух, axiosInstance сам сделает рефреш!)
+          const { data: user } = await axiosInstance.get("/users/profile");
+          dispatch(setCredentials({ user, token: accessToken }));
         } else {
-          // Токена нет — сбрасываем стейт (Гость)
           dispatch(logout());
         }
       } catch (error) {
-        console.error("Initial auth check failed:", error);
-        // Если бэк ответил ошибкой (например, токен протух), выкидываем юзера
+        // Если что-то пошло не так (например, сервер лежит или оба токена умерли)
+        console.error("Ошибка инициализации профиля:", error);
         dispatch(logout());
-        await storage.removeToken();
+        await storage.removeTokens();
       } finally {
-        // Шаг 4: Говорим приложению "Я всё загрузил!"
         dispatch(setAppReady());
-        // Убираем заставку
         SplashScreen.hideAsync();
       }
     };
-
-    initAuth();
+    initApp();
   }, [dispatch]);
 
-  // Пока приложение не готово (идет запрос), ничего не рендерим.
-  // Юзер в это время всё еще видит Splash Screen (заставку).
-  if (!isAppReady) {
-    return null;
-  }
+  useEffect(() => {
+    if (!isAppReady) return;
 
-  // Приложение готово! Показываем навигацию.
+    // TypeScript больше не будет ругаться, если типы сгенерировались верно
+    const inAuthGroup = segments[0] === "(auth)";
+
+    console.log(
+      `🔀 [ROUTER] App is ready. Token: ${!!token}, inAuthGroup: ${inAuthGroup}`,
+    );
+
+    if (!token && !inAuthGroup) {
+      console.log("➡️ [ROUTER] Кидаем на логин");
+      // Передаем как объект (TS это любит) или просто строку, убрав as any
+      router.replace("/login");
+    } else if (token && inAuthGroup) {
+      console.log("➡️ [ROUTER] Кидаем в приложение (drawer)");
+      router.replace("/(drawer)/(tabs)");
+    }
+  }, [token, isAppReady, segments]);
+
+  if (!isAppReady) return null;
+
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      {/* Главный роутер укажет на табы */}
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      {/* Сюда потом добавим экраны логина, машины и т.д. */}
-      {/* <Stack.Screen name="login" options={{ presentation: 'modal' }} /> */}
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: colors.background },
+      }}
+    >
+      <Stack.Screen name="(drawer)" />
+      <Stack.Screen name="(auth)" />
     </Stack>
   );
 }
 
-// --- ВНЕШНИЙ КОМПОНЕНТ (Точка входа) ---
 export default function RootLayout() {
   return (
-    // Оборачиваем всё в Redux и React Query
-    <Provider store={store}>
-      <QueryClientProvider client={queryClient}>
-        <AppContent />
-      </QueryClientProvider>
-    </Provider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <Provider store={store}>
+        <QueryClientProvider client={queryClient}>
+          <AppContent />
+        </QueryClientProvider>
+      </Provider>
+    </GestureHandlerRootView>
   );
 }

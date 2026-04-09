@@ -1,21 +1,23 @@
-import { useEffect, useState } from 'react';
-import { useColorScheme as useRNColorScheme } from 'react-native';
+import { Colors } from "../constants/theme";
+import { useColorScheme } from "./use-color-scheme";
 
-/**
- * To support static rendering, this value needs to be re-calculated on the client side for web
- */
-export function useColorScheme() {
-  const [hasHydrated, setHasHydrated] = useState(false);
+// 1. Дефолтный хук Expo (отдает один конкретный цвет)
+export function useThemeColor(
+  props: { light?: string; dark?: string },
+  colorName: keyof typeof Colors.light & keyof typeof Colors.dark,
+) {
+  const theme = useColorScheme() ?? "light";
+  const colorFromProps = props[theme];
 
-  useEffect(() => {
-    setHasHydrated(true);
-  }, []);
-
-  const colorScheme = useRNColorScheme();
-
-  if (hasHydrated) {
-    return colorScheme;
+  if (colorFromProps) {
+    return colorFromProps;
+  } else {
+    return Colors[theme][colorName];
   }
+}
 
-  return 'light';
+// 👇 2. НАШ НОВЫЙ СУПЕР-ХУК (отдает сразу всю палитру)
+export function useAppColors() {
+  const theme = useColorScheme() ?? "light";
+  return Colors[theme];
 }

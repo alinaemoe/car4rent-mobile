@@ -1,20 +1,23 @@
-// src/api/axios-instance.ts
 import axios from "axios";
 import { storage } from "../utils/storage";
-import { Platform } from "react-native";
+import { store } from "../store"; // 👈 Импортируем store для логаута
+import { logout } from "../store/slices/authSlice";
 
-// ⚠️ ВАЖНО: Для эмулятора Android используй 10.0.2.2 вместо localhost.
-// Для iOS симулятора можно использовать http://localhost:3000
-// Если тестируешь на реальном устройстве, пиши IP своего компьютера в локальной сети (например, 192.168.1.15)
-let BACKEND_URL = "http://localhost:3000"; // По умолчанию для Web и iOS
+// =========================================================================
+// 🌐 НАСТРОЙКА ПОДКЛЮЧЕНИЯ К БЭКЕНДУ
+// Раскомментируй ТОЛЬКО ОДИН вариант, который тебе сейчас нужен
+// =========================================================================
 
-if (Platform.OS === "android") {
-  BACKEND_URL = "http://10.0.2.2:3000"; // Магический мост для Android-эмулятора
-}
+// ВАРИАНТ 1: Для браузера (Web) и iOS Симулятора
+// const BACKEND_URL = "http://localhost:3000";
 
-// ⚠️ ЕСЛИ ТЕСТИРУЕШЬ НА РЕАЛЬНОМ ТЕЛЕФОНЕ ПО WI-FI,
-// раскомментируй строку ниже и впиши IP своего компьютера:
-// BACKEND_URL = 'http://192.168.1.x:3000';
+// ВАРИАНТ 2: Для эмулятора Android (Android Studio)
+// const BACKEND_URL = "http://10.0.2.2:3000";
+
+// ВАРИАНТ 3: Для РЕАЛЬНОГО телефона по Wi-Fi (Expo Go)
+const BACKEND_URL = "http://192.168.1.80:3000";
+
+// =========================================================================
 
 export const API_URL = BACKEND_URL;
 
@@ -26,10 +29,10 @@ export const axiosInstance = axios.create({
   },
 });
 
-// Интерцептор ЗАПРОСА: перед отправкой приклеиваем токен
+// 👇 Интерцептор ЗАПРОСА: перед отправкой приклеиваем токен
 axiosInstance.interceptors.request.use(
   async (config) => {
-    const token = await storage.getToken();
+    const token = await storage.getAccessToken();
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -38,18 +41,39 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
-// Интерцептор ОТВЕТА: ловим глобальные ошибки (например, протухший токен)
+// 👇 Интерцептор ОТВЕТА: ловим глобальные ошибки (например, протухший токен)
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
-    // Если бэкенд сказал "Доступ запрещен" или "Токен недействителен"
-    if (error.response && error.response.status === 401) {
-      // Удаляем токен из хранилища
-      await storage.removeToken();
+    const originalRequest = error.config;
 
-      // В идеале тут мы еще должны сбросить стейт Redux,
-      // но чтобы не было циклической зависимости, мы сделаем это на уровне UI или хуков.
+    // Если ошибка 401 и мы еще не пробовали делать рефреш для ЭТОГО запроса
+    if (error.response?.status === 401 && !originalRequest._isRetry) {
+      originalRequest._isRetry = true; // Ставим флаг, чтобы не уйти в бесконечный цикл
+
+      try {
+        const refreshToken = await storage.getRefreshToken();
+        if (!refreshToken) throw new Error("Нет refresh-токена");
+
+        // ВАЖНО: Делаем запрос через чистый axios, чтобы не зациклить интерцепторы!
+        const { data } = await axios.post(`${API_URL}/auth/refresh`, {
+          refresh_token: refreshToken,
+        });
+
+        // Сохраняем новые токены
+        await storage.setTokens(data.access_token, data.refresh_token);
+
+        // Повторяем оригинальный запрос с новым токеном
+        originalRequest.headers.Authorization = `Bearer ${data.access_token}`;
+        return axiosInstance(originalRequest);
+      } catch (refreshError) {
+        // Если рефреш тоже протух — убиваем сессию и выкидываем на логин
+        await storage.removeTokens();
+        store.dispatch(logout());
+        return Promise.reject(refreshError);
+      }
     }
+
     return Promise.reject(error);
   },
 );

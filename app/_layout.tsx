@@ -10,6 +10,7 @@ import {
   setCredentials,
   logout,
   setAppReady,
+  setGuestMode,
 } from "../src/store/slices/authSlice";
 import { storage } from "../src/utils/storage";
 import { initI18n } from "@/src/utils/i18n";
@@ -38,7 +39,7 @@ const queryClient = new QueryClient({
 
 function AppContent() {
   const dispatch = useAppDispatch();
-  const { isAppReady, token } = useAppSelector((state) => state.auth);
+  const { isAppReady, token, isGuest } = useAppSelector((state) => state.auth);
   const colors = useAppColors();
   const segments = useSegments();
   const router = useRouter();
@@ -51,11 +52,14 @@ function AppContent() {
 
         // ПРОБУЕМ ДОСТАТЬ ТОКЕН
         const accessToken = await storage.getAccessToken();
+        const isGuestSaved = await storage.getGuestMode();
 
         if (accessToken) {
-          // ДЕЛАЕМ РЕАЛЬНЫЙ ЗАПРОС (если токен протух, axiosInstance сам сделает рефреш!)
           const { data: user } = await axiosInstance.get("/users/profile");
           dispatch(setCredentials({ user, token: accessToken }));
+        } else if (isGuestSaved) {
+          // Если токена нет, но он нажимал "войти как гость" в прошлый раз:
+          dispatch(setGuestMode());
         } else {
           dispatch(logout());
         }
@@ -75,22 +79,23 @@ function AppContent() {
   useEffect(() => {
     if (!isAppReady) return;
 
-    // TypeScript больше не будет ругаться, если типы сгенерировались верно
-    const inAuthGroup = segments[0] === "(auth)";
+    const inAuthGroup = (segments[0] as string) === "(auth)";
 
     console.log(
-      `🔀 [ROUTER] App is ready. Token: ${!!token}, inAuthGroup: ${inAuthGroup}`,
+      `🔀 [ROUTER] App is ready. Token: ${!!token}, isGuest: ${isGuest}, inAuthGroup: ${inAuthGroup}`,
     );
 
-    if (!token && !inAuthGroup) {
+    // 1. ЗАЩИТА: Нет токена И не гость И пытается зайти в каталог -> На логин
+    if (!token && !isGuest && !inAuthGroup) {
       console.log("➡️ [ROUTER] Кидаем на логин");
-      // Передаем как объект (TS это любит) или просто строку, убрав as any
       router.replace("/login");
-    } else if (token && inAuthGroup) {
+    }
+    // 2. ПРОПУСК: Есть токен ИЛИ он гость, И при этом он сидит на экране логина/регистрации -> В каталог
+    else if ((token || isGuest) && inAuthGroup) {
       console.log("➡️ [ROUTER] Кидаем в приложение (drawer)");
       router.replace("/(drawer)/(tabs)");
     }
-  }, [token, isAppReady, segments]);
+  }, [token, isGuest, isAppReady, segments]); // 👈 Обязательно добавь isGuest в массив зависимостей!
 
   if (!isAppReady) return null;
 

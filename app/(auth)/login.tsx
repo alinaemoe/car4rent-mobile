@@ -7,7 +7,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useAppDispatch } from "../../src/store";
-import { setCredentials } from "../../src/store/slices/authSlice";
+import { setCredentials, setGuestMode } from "../../src/store/slices/authSlice";
 import { storage } from "../../src/utils/storage";
 import { axiosInstance } from "../../src/api/axios-instance";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
@@ -49,6 +49,11 @@ export default function LoginScreen() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleGuestLogin = async () => {
+    await storage.setGuestMode(true);
+    dispatch(setGuestMode());
   };
 
   return (
@@ -136,7 +141,7 @@ export default function LoginScreen() {
 
       {/* Кнопка Skip (Гость) */}
       <TouchableOpacity
-        onPress={() => router.replace("/(drawer)/(tabs)")}
+        onPress={handleGuestLogin} // 👈 Используем новую функцию
         style={{ marginTop: 30, alignItems: "center" }}
       >
         <Text style={{ color: colors.textSecondary }}>

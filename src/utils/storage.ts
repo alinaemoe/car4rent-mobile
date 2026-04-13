@@ -4,6 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage"; // 👈 Д
 
 const ACCESS_TOKEN_KEY = "car4rent_access_token";
 const REFRESH_TOKEN_KEY = "car4rent_refresh_token";
+const GUEST_MODE_KEY = "car4rent_guest_mode";
 const LANGUAGE_KEY = "car4rent_language";
 const TRANSLATIONS_CACHE_KEY = "car4rent_translations_cache";
 
@@ -53,6 +54,29 @@ export const storage = {
         await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
       }
     } catch (error) {}
+  },
+
+  setGuestMode: async (isGuest: boolean) => {
+    try {
+      const value = isGuest ? "true" : "false";
+      if (Platform.OS === "web") {
+        localStorage.setItem(GUEST_MODE_KEY, value);
+      } else {
+        await AsyncStorage.setItem(GUEST_MODE_KEY, value);
+      }
+    } catch (error) {}
+  },
+
+  getGuestMode: async () => {
+    try {
+      const value =
+        Platform.OS === "web"
+          ? localStorage.getItem(GUEST_MODE_KEY)
+          : await AsyncStorage.getItem(GUEST_MODE_KEY);
+      return value === "true";
+    } catch (error) {
+      return false;
+    }
   },
 
   // --- Язык (AsyncStorage / localStorage) ---

@@ -7,6 +7,7 @@ const REFRESH_TOKEN_KEY = "car4rent_refresh_token";
 const GUEST_MODE_KEY = "car4rent_guest_mode";
 const LANGUAGE_KEY = "car4rent_language";
 const TRANSLATIONS_CACHE_KEY = "car4rent_translations_cache";
+const FAVORITES_KEY = "car4rent_favorites";
 
 export const storage = {
   // === ТОКЕНЫ (Access + Refresh) ===
@@ -117,6 +118,27 @@ export const storage = {
       return json ? JSON.parse(json) : null;
     } catch (error) {
       return null;
+    }
+  },
+
+  setFavorites: async (carIds: number[]) => {
+    try {
+      const json = JSON.stringify(carIds);
+      if (Platform.OS === "web") localStorage.setItem(FAVORITES_KEY, json);
+      else await AsyncStorage.setItem(FAVORITES_KEY, json);
+    } catch (error) {
+      console.error("Error saving favorites", error);
+    }
+  },
+  getFavorites: async (): Promise<number[]> => {
+    try {
+      const json =
+        Platform.OS === "web"
+          ? localStorage.getItem(FAVORITES_KEY)
+          : await AsyncStorage.getItem(FAVORITES_KEY);
+      return json ? JSON.parse(json) : [];
+    } catch (error) {
+      return [];
     }
   },
 };

@@ -12,6 +12,7 @@ import {
   setAppReady,
   setGuestMode,
 } from "../src/store/slices/authSlice";
+import { loadFavorites } from "@/src/store/slices/favoritesSlice";
 import { storage } from "../src/utils/storage";
 import { initI18n } from "@/src/utils/i18n";
 import { fetchAndCacheTranslations } from "@/src/api/translations";
@@ -50,6 +51,8 @@ function AppContent() {
       try {
         await initI18n();
         fetchAndCacheTranslations(); // Фоновя загрузка
+
+        await dispatch(loadFavorites());
 
         // ПРОБУЕМ ДОСТАТЬ ТОКЕН
         const accessToken = await storage.getAccessToken();

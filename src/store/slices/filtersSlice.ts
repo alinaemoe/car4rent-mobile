@@ -16,6 +16,7 @@ export interface FiltersState {
   startDate: string | null;
   endDate: string | null;
   carClass: "ECONOMY" | "COMFORT" | "BUSINESS" | null;
+  onlyFavorites: boolean; // 👈 ДОБАВЛЕНО
 }
 
 const initialState: FiltersState = {
@@ -29,6 +30,7 @@ const initialState: FiltersState = {
   startDate: null,
   endDate: null,
   carClass: null,
+  onlyFavorites: false,
 };
 
 const filtersSlice = createSlice({

@@ -2,12 +2,12 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { useDispatch, useSelector, TypedUseSelectorHook } from "react-redux";
 import authReducer from "./slices/authSlice";
+import filtersReducer from "./slices/filtersSlice";
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
-    // В будущем тут появятся:
-    // booking: bookingReducer (информация о текущем процессе аренды)
+    filters: filtersReducer,
   },
   // Отключаем проверку на несериализуемые данные, если они вдруг проскочат (стандартный фикс для RTK)
   middleware: (getDefaultMiddleware) =>

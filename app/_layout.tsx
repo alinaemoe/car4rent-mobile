@@ -18,6 +18,7 @@ import { fetchAndCacheTranslations } from "@/src/api/translations";
 import { axiosInstance } from "../src/api/axios-instance";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { User } from "../src/types"; // 👈 Импортируем наш тип User
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 
 //  if (storedToken) {
 //           const mockUser: User = {
@@ -115,11 +116,13 @@ function AppContent() {
 export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <Provider store={store}>
-        <QueryClientProvider client={queryClient}>
-          <AppContent />
-        </QueryClientProvider>
-      </Provider>
+      <BottomSheetModalProvider>
+        <Provider store={store}>
+          <QueryClientProvider client={queryClient}>
+            <AppContent />
+          </QueryClientProvider>
+        </Provider>
+      </BottomSheetModalProvider>
     </GestureHandlerRootView>
   );
 }

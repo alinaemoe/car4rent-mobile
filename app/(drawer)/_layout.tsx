@@ -15,7 +15,6 @@ import { logout, selectIsLessor } from "@/src/store/slices/authSlice";
 import { storage } from "@/src/utils/storage";
 import { axiosInstance } from "@/src/api/axios-instance";
 
-// 1. СОЗДАЕМ КАСТОМНОЕ СОДЕРЖИМОЕ БОКОВОГО МЕНЮ
 function CustomDrawerContent(props: any) {
   const colors = useAppColors();
   const { t } = useTranslation();
@@ -25,22 +24,17 @@ function CustomDrawerContent(props: any) {
   const handleLogout = async () => {
     setIsLoggingOut(true);
     try {
-      // 1. Говорим бэкенду "забудь мой refresh токен"
       await axiosInstance.post("/auth/logout");
     } catch (error) {
       console.error("Ошибка при логауте на бэке:", error);
-      // Даже если бэк недоступен (нет интернета), мы всё равно продолжаем логаут локально!
     } finally {
-      // 2. Сносим оба токена из хранилища телефона
       await storage.removeTokens();
-      // 3. Выкидываем юзера из Redux (роутер сразу поймает это и кинет на экран логина)
       dispatch(logout());
     }
   };
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.surface }}>
-      {/* Верхняя часть меню: стандартный список экранов (Новости, FAQ и тд) */}
       <DrawerContentScrollView
         {...props}
         contentContainerStyle={{ flexGrow: 1 }}
@@ -48,7 +42,6 @@ function CustomDrawerContent(props: any) {
         <DrawerItemList {...props} />
       </DrawerContentScrollView>
 
-      {/* Нижняя часть меню: Кнопка "Выйти", прижатая к низу */}
       <View
         style={{
           padding: 20,
@@ -90,7 +83,6 @@ function CustomDrawerContent(props: any) {
   );
 }
 
-// 2. ГЛАВНЫЙ КОМПОНЕНТ РАЗМЕТКИ
 export default function DrawerLayout() {
   const colors = useAppColors();
   const { t } = useTranslation();
@@ -98,7 +90,6 @@ export default function DrawerLayout() {
 
   return (
     <Drawer
-      // 👇 Подключаем наш кастомный компонент
       drawerContent={(props) => <CustomDrawerContent {...props} />}
       screenOptions={{
         headerShown: false,
@@ -116,7 +107,7 @@ export default function DrawerLayout() {
         name="(tabs)"
         options={{
           title: t("drawer_home", "Главная"),
-          drawerItemStyle: { display: "none" }, // Прячем табы из самого бокового меню
+          drawerItemStyle: { display: "none" },
         }}
       />
       <Drawer.Screen
@@ -131,9 +122,14 @@ export default function DrawerLayout() {
         name="partner"
         options={{ title: t("drawer_partner", "Стать партнером") }}
       />
-      {isLessor && (
-        <Drawer.Screen name="my-fleet" options={{ title: "Мой автопарк" }} />
-      )}
+      {/* 👇 ПРАВИЛЬНОЕ СКРЫТИЕ ЭКРАНА */}
+      <Drawer.Screen
+        name="my-fleet"
+        options={{
+          title: "Мой автопарк",
+          drawerItemStyle: { display: isLessor ? "flex" : "none" },
+        }}
+      />
     </Drawer>
   );
 }

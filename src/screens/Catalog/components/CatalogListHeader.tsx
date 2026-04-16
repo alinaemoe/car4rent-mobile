@@ -11,30 +11,41 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { QUICK_FILTERS, CAR_CLASSES } from "../constants";
+import { useAppSelector, useAppDispatch } from "@/src/store";
+import { applyFilters } from "@/src/store/slices/filtersSlice";
 
 interface Props {
   carsCount: number;
-  activeCarClass?: string | null;
-  // 👇 Новые пропы для избранного
   isFavoritesOnly: boolean;
   onToggleFavorites: () => void;
-  // Остальные
-  onSelectCarClass: (id: string) => void;
   onOpenQuickFilter: (id: string) => void;
   onOpenSort: () => void;
 }
 
 export const CatalogListHeader = ({
   carsCount,
-  activeCarClass,
   isFavoritesOnly,
   onToggleFavorites,
-  onSelectCarClass,
   onOpenQuickFilter,
   onOpenSort,
 }: Props) => {
   const colors = useAppColors();
   const { t } = useTranslation();
+  const dispatch = useAppDispatch();
+
+  // Достаем цены напрямую из стора для синхронизации с классами
+  const { min_price, max_price } = useAppSelector((state) => state.filters);
+
+  // Логика нажатия на класс авто
+  const handleClassSelect = (min: number, max?: number) => {
+    // Если юзер кликает на УЖЕ активный класс — сбрасываем фильтр цены
+    if (min_price === min && max_price === max) {
+      dispatch(applyFilters({ min_price: undefined, max_price: undefined }));
+    } else {
+      // Иначе применяем диапазон
+      dispatch(applyFilters({ min_price: min, max_price: max }));
+    }
+  };
 
   return (
     <View style={{ backgroundColor: colors.background, paddingBottom: 10 }}>
@@ -51,7 +62,7 @@ export const CatalogListHeader = ({
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: 16, gap: 8 }}
         >
-          {/* 👇 КНОПКА ИЗБРАННОГО (ВСЕГДА ПЕРВАЯ) */}
+          {/* Кнопка Избранное */}
           <TouchableOpacity
             style={[
               styles.quickPill,
@@ -83,7 +94,7 @@ export const CatalogListHeader = ({
             </Text>
           </TouchableOpacity>
 
-          {/* ОСТАЛЬНЫЕ ФИЛЬТРЫ ИЗ КОНСТАНТ */}
+          {/* Остальные пилюли */}
           {QUICK_FILTERS.map((pill) => (
             <TouchableOpacity
               key={pill.id}
@@ -112,44 +123,56 @@ export const CatalogListHeader = ({
         </ScrollView>
       </View>
 
-      {/* TABS КЛАССОВ */}
+      {/* TABS КЛАССОВ (СИНХРОНИЗИРОВАНЫ С ЦЕНОЙ) */}
       <View style={{ height: 130, marginTop: 16 }}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}
         >
-          {CAR_CLASSES.map((item) => (
-            <TouchableOpacity
-              key={item.id}
-              activeOpacity={0.8}
-              onPress={() => onSelectCarClass(item.id)}
-              style={[
-                styles.classCard,
-                {
-                  backgroundColor: colors.surface,
-                  borderColor:
-                    activeCarClass === item.id ? colors.accent : "transparent",
-                },
-              ]}
-            >
-              <Image
-                source={item.img}
-                style={styles.classImg}
-                resizeMode="contain"
-              />
-              <Text style={{ color: colors.textPrimary, fontWeight: "bold" }}>
-                {item.label}
-              </Text>
-              <Text style={{ color: colors.textSecondary, fontSize: 11 }}>
-                {item.price}
-              </Text>
-            </TouchableOpacity>
-          ))}
+          {CAR_CLASSES.map((item) => {
+            // Карточка активна, если стейт ЦЕНЫ совпадает с её пресетом
+            const isActive =
+              min_price === item.minPrice && max_price === item.maxPrice;
+
+            return (
+              <TouchableOpacity
+                key={item.id}
+                activeOpacity={0.8}
+                onPress={() => handleClassSelect(item.minPrice, item.maxPrice)}
+                style={[
+                  styles.classCard,
+                  {
+                    backgroundColor: isActive
+                      ? colors.accentBg
+                      : colors.surface,
+                    borderColor: isActive ? colors.accent : "transparent",
+                  },
+                ]}
+              >
+                <Image
+                  source={item.img}
+                  style={styles.classImg}
+                  resizeMode="contain"
+                />
+                <Text
+                  style={{
+                    color: isActive ? colors.accent : colors.textPrimary,
+                    fontWeight: "bold",
+                  }}
+                >
+                  {item.label}
+                </Text>
+                <Text style={{ color: colors.textSecondary, fontSize: 11 }}>
+                  {item.priceText}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </ScrollView>
       </View>
 
-      {/* СОРТИРОВКА И РЕЗУЛЬТАТЫ */}
+      {/* РЕЗУЛЬТАТЫ */}
       <View style={styles.resultsRow}>
         <Text style={[styles.resultsTitle, { color: colors.textPrimary }]}>
           {t("found_cars", "Найдено")} {carsCount}

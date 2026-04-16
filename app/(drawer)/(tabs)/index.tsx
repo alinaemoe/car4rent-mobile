@@ -8,13 +8,13 @@ import {
 } from "react-native";
 import { useTranslation } from "react-i18next";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
-import { Ionicons } from "@expo/vector-icons"; // 👈 Добавили для иконки в пустом стейте
+import { Ionicons } from "@expo/vector-icons";
 
 // Хуки и Стор
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { useAppSelector, useAppDispatch } from "@/src/store";
 import { applyFilters } from "@/src/store/slices/filtersSlice";
-import { selectFavoriteCarIds } from "@/src/store/slices/favoritesSlice"; // 👈 Достаем ID лайков
+import { selectFavoriteCarIds } from "@/src/store/slices/favoritesSlice";
 import { useCarsCatalog } from "@/src/api/queries/useCars";
 
 // Компоненты UI (глобальные и локальные)
@@ -34,7 +34,7 @@ export default function CatalogScreen() {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const filters = useAppSelector((state) => state.filters);
-  const favoriteIds = useAppSelector(selectFavoriteCarIds); // 👈 Массив [1, 2, 5...]
+  const favoriteIds = useAppSelector(selectFavoriteCarIds);
 
   // Рефы для шторок
   const sortSheetRef = useRef<BottomSheetModal>(null);
@@ -61,6 +61,7 @@ export default function CatalogScreen() {
     refetch,
     isRefetching,
   } = useCarsCatalog();
+
   const cars = data?.pages.flatMap((page) => page.data) || [];
 
   // Хэндлеры открытия/действий
@@ -75,14 +76,12 @@ export default function CatalogScreen() {
     dispatch(applyFilters({ sort_by: sortBy }));
   };
 
-  // 👇 Хэндлер переключения избранного
   const handleToggleFavorites = () => {
     dispatch(applyFilters({ onlyFavorites: !filters.onlyFavorites }));
   };
 
   // Логика календаря
   const handleDayPress = (day: any) => {
-    // ... (твой код календаря без изменений)
     const dateString = day.dateString;
 
     if (!tempStart || (filters.startDate && filters.endDate)) {
@@ -141,7 +140,7 @@ export default function CatalogScreen() {
     }
   };
 
-  // 👇 КРАСИВАЯ ЗАГЛУШКА ДЛЯ ПУСТОГО СПИСКА
+  // ЗАГЛУШКА ДЛЯ ПУСТОГО СПИСКА
   const renderEmptyComponent = () => {
     if (filters.onlyFavorites) {
       return (
@@ -228,14 +227,11 @@ export default function CatalogScreen() {
           ListHeaderComponent={
             <CatalogListHeader
               carsCount={cars.length}
-              activeCarClass={filters.carClass}
-              isFavoritesOnly={!!filters.onlyFavorites} // 👈 Передаем стейт в шапку
-              onToggleFavorites={handleToggleFavorites} // 👈 Передаем хэндлер
-              onSelectCarClass={(id) =>
-                dispatch(applyFilters({ carClass: id as any }))
-              }
+              isFavoritesOnly={!!filters.onlyFavorites}
+              onToggleFavorites={handleToggleFavorites}
               onOpenQuickFilter={handleOpenQuickFilter}
               onOpenSort={handleOpenSort}
+              // ❌ Удалили activeCarClass и onSelectCarClass, так как CatalogListHeader теперь умный
             />
           }
           renderItem={({ item }) => (
@@ -260,7 +256,7 @@ export default function CatalogScreen() {
               />
             ) : null
           }
-          ListEmptyComponent={renderEmptyComponent} // 👈 Используем наш новый рендер-метод
+          ListEmptyComponent={renderEmptyComponent}
         />
       )}
 

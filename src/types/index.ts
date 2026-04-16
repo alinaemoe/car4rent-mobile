@@ -1,5 +1,3 @@
-// src/types/index.ts
-
 export type Role = "ADMIN" | "MANAGER" | "CLIENT" | "LESSOR";
 
 export interface User {
@@ -37,12 +35,38 @@ export enum Transmission {
   AUTOMATIC = "AUTOMATIC",
   ROBOT = "ROBOT",
 }
-export type DriveType = "FWD" | "RWD" | "AWD";
+
+export enum DriveType {
+  FWD = "FWD",
+  RWD = "RWD",
+  AWD = "AWD",
+}
+
+// 👇 НОВЫЙ ENUM ДЛЯ ЦВЕТА
+export enum CarColor {
+  WHITE = "WHITE",
+  BLACK = "BLACK",
+  GREY = "GREY",
+  RED = "RED",
+  BLUE = "BLUE",
+  GREEN = "GREEN",
+  YELLOW = "YELLOW",
+  BROWN = "BROWN",
+  PINK = "PINK",
+  ORANGE = "ORANGE",
+}
 
 export interface CarImage {
   id: number;
   url: string;
   is_main: boolean;
+}
+
+// 👇 НОВЫЙ ТИП ДЛЯ ФИЧЕЙ
+export interface Feature {
+  id: number;
+  name: string;
+  icon_url?: string;
 }
 
 // === ПОЛНАЯ СУЩНОСТЬ АВТОМОБИЛЯ ===
@@ -53,17 +77,21 @@ export interface Car {
   year: number;
   license_plate: string;
   vin: string;
-
-  // Мультиязычные поля
-  color: Record<string, string>;
   description: Record<string, string> | null;
 
   // Характеристики
   status: CarStatus;
+  color: CarColor; // 👈 Теперь это Enum
   transmission: Transmission;
   fuel_type: FuelType;
   body_type: BodyType;
   drive_type: DriveType;
+
+  // 👇 НОВЫЕ ХАРАКТЕРИСТИКИ С БЭКЕНДА
+  horsepower: number;
+  fuel_consumption: number;
+  reviews_count?: number; // Количество отзывов (считается на лету)
+  avg_rating?: number; // Средний рейтинг (добавим позже)
 
   // Цены и лимиты
   price_per_day: number;
@@ -71,15 +99,10 @@ export interface Car {
   price_per_km_over_limit: number;
   current_mileage: number;
 
-  // Картинки
+  // Картинки и связи
   images: CarImage[];
-
-  // 👇 ОПЦИОНАЛЬНЫЕ СВЯЗИ
-  // Делаем их опциональными (с ?), потому что в "Каталоге" мы их не подтягиваем для скорости,
-  // а на экране "Деталей машины" они уже придут с бэкенда.
   owner?: User;
-  // location?: Location; // раскомментируешь, когда добавишь тип Location
-  // features?: Feature[]; // раскомментируешь, когда добавишь тип Feature
+  features?: Feature[]; // 👈 Добавили фичи
 
   created_at?: string;
   updated_at?: string;

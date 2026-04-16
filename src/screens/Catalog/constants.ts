@@ -1,3 +1,4 @@
+// src/screens/Catalog/constants.ts
 import { LocaleConfig } from "react-native-calendars";
 
 LocaleConfig.locales["ru"] = {
@@ -45,29 +46,37 @@ LocaleConfig.defaultLocale = "ru";
 
 export const QUICK_FILTERS = [
   { id: "brand", label: "Бренд" },
-  { id: "price", label: "Цена" },
-  { id: "discounts", label: "Скидки" },
   { id: "body_type", label: "Тип кузова" },
-  { id: "no_deposit", label: "Без залога" },
+  { id: "transmission", label: "Коробка" },
 ];
 
+// 👇 ТЕПЕРЬ КЛАССЫ - ЭТО ПРОСТО ПРЕСЕТЫ ЦЕН
 export const CAR_CLASSES = [
   {
     id: "ECONOMY",
     label: "Эконом",
-    price: "от 2100 ₽",
-    img: require("@/assets/images/icon.png"),
+    priceText: "до 3000 ₽",
+    minPrice: 0,
+    maxPrice: 3000,
+    img: require("@/assets/images/icon.png"), // Замени на свои
   },
   {
     id: "COMFORT",
     label: "Комфорт",
-    price: "2100-3500 ₽",
+    priceText: "3000 - 6000 ₽",
+    minPrice: 3000,
+    maxPrice: 6000,
     img: require("@/assets/images/icon.png"),
   },
   {
     id: "BUSINESS",
     label: "Бизнес",
-    price: "от 5000 ₽",
+    priceText: "от 6000 ₽",
+    minPrice: 6000,
+    maxPrice: undefined, // Бесконечность
     img: require("@/assets/images/icon.png"),
   },
 ];
+
+// Максимальная цена для слайдера в модалке
+export const MAX_SLIDER_PRICE = 30000;

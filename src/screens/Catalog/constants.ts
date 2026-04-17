@@ -60,7 +60,7 @@ export const CAR_CLASSES = [
   {
     id: "ECONOMY",
     label: "Эконом",
-    priceText: "до 3000 ₽",
+    priceText: "до 3000 Br",
     minPrice: 0,
     maxPrice: 3000,
     img: require("@/assets/images/icon.png"),
@@ -68,7 +68,7 @@ export const CAR_CLASSES = [
   {
     id: "COMFORT",
     label: "Комфорт",
-    priceText: "3000 - 6000 ₽",
+    priceText: "3000 - 6000 Br",
     minPrice: 3000,
     maxPrice: 6000,
     img: require("@/assets/images/icon.png"),
@@ -76,7 +76,7 @@ export const CAR_CLASSES = [
   {
     id: "BUSINESS",
     label: "Бизнес",
-    priceText: "от 6000 ₽",
+    priceText: "от 6000 Br",
     minPrice: 6000,
     maxPrice: undefined, // Бесконечность
     img: require("@/assets/images/icon.png"),

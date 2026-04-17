@@ -24,6 +24,7 @@ export const CarCard = ({ car, onPress }: CarCardProps) => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
 
+  const { startDate, endDate } = useAppSelector((state) => state.filters);
   const isFavorite = useAppSelector((state) =>
     selectIsCarFavorite(state, car.id),
   );
@@ -32,11 +33,9 @@ export const CarCard = ({ car, onPress }: CarCardProps) => {
     car.images?.find((img) => img.is_main)?.url ||
     "https://via.placeholder.com/400x200?text=No+Image";
 
-  const handleLikePress = () => {
-    dispatch(toggleFavoriteThunk(car.id));
-  };
+  const handleLikePress = () => dispatch(toggleFavoriteThunk(car.id));
 
-  // Генератор звездочек (5 штук)
+  // Генератор звездочек
   const renderStars = (rating: number) => {
     const stars = [];
     for (let i = 1; i <= 5; i++) {
@@ -70,6 +69,18 @@ export const CarCard = ({ car, onPress }: CarCardProps) => {
   const avgRating = car.avg_rating ? Number(car.avg_rating) : 0;
   const reviewsCount = car.reviews_count || 0;
 
+  let daysCount = 0;
+  let totalPrice = 0;
+
+  if (startDate && endDate) {
+    const startD = new Date(startDate);
+    const endD = new Date(endDate);
+    const diffTime = Math.abs(endD.getTime() - startD.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    daysCount = diffDays === 0 ? 1 : diffDays;
+    totalPrice = car.price_per_day * daysCount;
+  }
+
   return (
     <TouchableOpacity
       activeOpacity={0.8}
@@ -88,7 +99,7 @@ export const CarCard = ({ car, onPress }: CarCardProps) => {
           transition={300}
         />
 
-        {/* 👈 БЕЙДЖ РЕЙТИНГА (Слева сверху) */}
+        {/* БЕЙДЖ РЕЙТИНГА */}
         {reviewsCount > 0 && (
           <View style={styles.ratingBadge}>
             <View style={styles.starsRow}>{renderStars(avgRating)}</View>
@@ -99,80 +110,49 @@ export const CarCard = ({ car, onPress }: CarCardProps) => {
           </View>
         )}
 
-        {/* НОВЫЙ АВТО (Если нет отзывов) */}
         {reviewsCount === 0 && (
           <View
-            style={[styles.ratingBadge, { backgroundColor: colors.successBg }]}
+            style={[styles.ratingBadge, { backgroundColor: colors.accent }]}
           >
-            <Text
-              style={[
-                styles.ratingText,
-                { color: colors.success, marginLeft: 0 },
-              ]}
-            >
-              NEW
-            </Text>
+            <Text style={[styles.ratingText, { marginLeft: 0 }]}>NEW</Text>
           </View>
         )}
 
-        {/* 👈 КНОПКА ЛАЙКА (Справа сверху) */}
+        {/* КНОПКА ЛАЙКА */}
         <TouchableOpacity
-          style={[
-            styles.likeButton,
-            { backgroundColor: colors.surfaceTransparent },
-          ]}
+          style={[styles.likeButton, { backgroundColor: "rgba(0,0,0,0.4)" }]}
           onPress={handleLikePress}
           activeOpacity={0.7}
         >
           <Ionicons
             name={isFavorite ? "heart" : "heart-outline"}
-            size={22}
-            color={isFavorite ? colors.error : colors.textPrimary}
+            size={20}
+            color={isFavorite ? colors.error : "#fff"}
           />
         </TouchableOpacity>
       </View>
 
       <View style={styles.infoContainer}>
-        {/* ХЕДЕР: Марка, Модель, Год и Цена */}
+        {/* ХЕДЕР: Марка, Модель • Год */}
         <View style={styles.headerRow}>
           <Text
             style={[styles.title, { color: colors.textPrimary }]}
             numberOfLines={1}
           >
-            {car.brand} {car.model}{" "}
-            <Text
-              style={{
-                fontWeight: "400",
-                fontSize: 14,
-                color: colors.textSecondary,
-              }}
-            >
-              {car.year}
+            {car.brand} {car.model}
+            <Text style={{ fontWeight: "400", color: colors.textSecondary }}>
+              {" "}
+              • {car.year}
             </Text>
           </Text>
-          <View style={{ alignItems: "flex-end" }}>
-            <Text style={[styles.price, { color: colors.success }]}>
-              {car.price_per_day} ₽
-            </Text>
-            <Text
-              style={{
-                fontSize: 11,
-                color: colors.textSecondary,
-                marginTop: -2,
-              }}
-            >
-              / {t("day", "сутки")}
-            </Text>
-          </View>
         </View>
 
-        {/* ХАРАКТЕРИСТИКИ (Бейджи с иконками) */}
+        {/* ХАРАКТЕРИСТИКИ (Компактные теги) */}
         <View style={styles.badgesRow}>
-          {/* Коробка */}
           <View style={[styles.badge, { backgroundColor: colors.background }]}>
             <Ionicons
               name="settings-outline"
-              size={14}
+              size={12}
               color={colors.textSecondary}
             />
             <Text style={[styles.badgeText, { color: colors.textSecondary }]}>
@@ -183,11 +163,10 @@ export const CarCard = ({ car, onPress }: CarCardProps) => {
             </Text>
           </View>
 
-          {/* Топливо */}
           <View style={[styles.badge, { backgroundColor: colors.background }]}>
             <Ionicons
               name="water-outline"
-              size={14}
+              size={12}
               color={colors.textSecondary}
             />
             <Text style={[styles.badgeText, { color: colors.textSecondary }]}>
@@ -195,14 +174,13 @@ export const CarCard = ({ car, onPress }: CarCardProps) => {
             </Text>
           </View>
 
-          {/* Привод (если есть) */}
           {car.drive_type && (
             <View
               style={[styles.badge, { backgroundColor: colors.background }]}
             >
               <Ionicons
                 name="car-sport-outline"
-                size={14}
+                size={12}
                 color={colors.textSecondary}
               />
               <Text style={[styles.badgeText, { color: colors.textSecondary }]}>
@@ -211,14 +189,13 @@ export const CarCard = ({ car, onPress }: CarCardProps) => {
             </View>
           )}
 
-          {/* Мощность (если есть) */}
           {car.horsepower && (
             <View
               style={[styles.badge, { backgroundColor: colors.background }]}
             >
               <Ionicons
                 name="speedometer-outline"
-                size={14}
+                size={12}
                 color={colors.textSecondary}
               />
               <Text style={[styles.badgeText, { color: colors.textSecondary }]}>
@@ -226,6 +203,32 @@ export const CarCard = ({ car, onPress }: CarCardProps) => {
               </Text>
             </View>
           )}
+        </View>
+
+        {/* РАЗДЕЛИТЕЛЬ */}
+        <View style={[styles.divider, { backgroundColor: colors.border }]} />
+
+        {/* ПОДВАЛ С ЦЕНОЙ */}
+        <View style={styles.priceFooter}>
+          <View>
+            <Text style={[styles.price, { color: colors.textPrimary }]}>
+              {car.price_per_day} Br
+              <Text style={styles.perDayText}> / {t("day", "сутки")}</Text>
+            </Text>
+
+            {/* Итоговая цена (менее акцентная) */}
+            {daysCount > 0 && (
+              <Text
+                style={[styles.totalPrice, { color: colors.textSecondary }]}
+              >
+                {t("total_for", "Итого за")} {daysCount}{" "}
+                {t("days_short", "сут.")}:{" "}
+                <Text style={{ fontWeight: "500", color: colors.textPrimary }}>
+                  {totalPrice} Br
+                </Text>
+              </Text>
+            )}
+          </View>
         </View>
       </View>
     </TouchableOpacity>
@@ -238,94 +241,103 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginBottom: 16,
     overflow: "hidden",
-    elevation: 3,
+    elevation: 2, // Тень стала мягче
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
   },
   image: {
     width: "100%",
-    height: 190,
+    height: 180, // Чуть убавили высоту фото для баланса
     backgroundColor: "#e1e4e8",
   },
   ratingBadge: {
     position: "absolute",
     top: 12,
     left: 12,
-    backgroundColor: "rgba(0, 0, 0, 0.65)",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 12,
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
     flexDirection: "row",
     alignItems: "center",
-    // Эффект блюра на iOS (опционально, если будешь использовать expo-blur)
   },
   starsRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginRight: 6,
+    marginRight: 4,
     gap: 1,
   },
   ratingText: {
     color: "#fff",
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: "bold",
   },
   reviewsCount: {
-    color: "rgba(255,255,255,0.7)",
-    fontWeight: "normal",
-    fontSize: 12,
+    color: "rgba(255,255,255,0.8)",
+    fontWeight: "400",
   },
   likeButton: {
     position: "absolute",
     top: 12,
     right: 12,
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: 32, // Сделали кнопку лайка аккуратнее
+    height: 32,
+    borderRadius: 16,
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    elevation: 4,
   },
   infoContainer: {
-    padding: 16,
+    padding: 14, // Немного убавили общий паддинг
   },
   headerRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 14,
+    marginBottom: 8,
   },
   title: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: "bold",
-    flex: 1,
-    marginRight: 8,
-  },
-  price: {
-    fontSize: 18,
-    fontWeight: "800",
   },
   badgesRow: {
     flexDirection: "row",
-    flexWrap: "wrap", // Разрешаем перенос на новую строку
-    gap: 8,
+    flexWrap: "wrap",
+    gap: 6, // Уменьшили расстояние между тегами
   },
   badge: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 8,
-    paddingVertical: 5,
-    borderRadius: 8,
-    gap: 4, // Расстояние между иконкой и текстом
+    paddingHorizontal: 6,
+    paddingVertical: 4,
+    borderRadius: 6,
+    gap: 4,
   },
   badgeText: {
-    fontSize: 12,
+    fontSize: 11, // Теги стали меньше и аккуратнее
     fontWeight: "500",
+  },
+  divider: {
+    height: 1,
+    marginTop: 12,
+    marginBottom: 10,
+  },
+  priceFooter: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  price: {
+    fontSize: 17,
+    fontWeight: "bold", // Вернули строгий bold вместо 800
+  },
+  perDayText: {
+    fontSize: 13,
+    color: "#888", // Принудительно серый, чтобы не сливалось с ценой
+    fontWeight: "400",
+  },
+  totalPrice: {
+    fontSize: 12, // Мельче, чем цена за сутки
+    marginTop: 2,
+    fontWeight: "400",
   },
 });

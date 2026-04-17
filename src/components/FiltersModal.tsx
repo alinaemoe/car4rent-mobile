@@ -342,7 +342,7 @@ export const FiltersModal = ({ visible, onClose }: FiltersModalProps) => {
               { color: colors.textPrimary, marginTop: 0 },
             ]}
           >
-            Цена за сутки, ₽
+            Цена за сутки, Br
           </Text>
           <View style={styles.priceInputsRow}>
             <View

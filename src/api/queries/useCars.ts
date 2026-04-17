@@ -1,4 +1,4 @@
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { axiosInstance } from "../axios-instance";
 import { useAppSelector } from "../../store";
 import { selectFavoriteCarIds } from "../../store/slices/favoritesSlice";
@@ -46,5 +46,19 @@ export const useCarsCatalog = () => {
       }
       return undefined;
     },
+  });
+};
+
+export const useCarDetail = (id: number) => {
+  return useQuery({
+    queryKey: ["car", "detail", id],
+    queryFn: async () => {
+      // Дергаем тот самый новый публичный эндпоинт, который мы написали на бэке
+      const { data } = await axiosInstance.get(`/cars/catalog/${id}`);
+      return data;
+    },
+    // Не делаем запрос, если id вдруг NaN (защита от дурака)
+    enabled: !!id && !isNaN(id),
+    staleTime: 1000 * 60 * 5, // Кэшируем на 5 минут, чтобы при возврате назад не было лоадера
   });
 };

@@ -75,6 +75,16 @@ export interface Car {
   price_per_km_over_limit: number;
   current_mileage: number;
 
+  deposit_amount: number; // Залог
+  insurance_type: string; // Тип страховки ('ОСАГО' и т.д.)
+  min_age: number; // Мин. возраст водителя
+  min_experience: number; // Мин. стаж вождения
+
+  /** * Скидки от количества дней.
+   * Формат: { "3": 5, "7": 10 } (от 3х дней - 5%)
+   */
+  discount_tiers: Record<string, number> | null;
+
   // Картинки и связи
   images: CarImage[];
   owner?: User;

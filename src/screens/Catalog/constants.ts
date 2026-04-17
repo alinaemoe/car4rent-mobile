@@ -1,6 +1,7 @@
 // src/screens/Catalog/constants.ts
 import { LocaleConfig } from "react-native-calendars";
 
+// Настройки локализации для календаря
 LocaleConfig.locales["ru"] = {
   monthNames: [
     "Январь",
@@ -44,13 +45,17 @@ LocaleConfig.locales["ru"] = {
 };
 LocaleConfig.defaultLocale = "ru";
 
+// Максимальная цена для слайдера (Оставляем, так как это константа UI)
+export const MAX_SLIDER_PRICE = 30000;
+
+// === ТАБЛЕТКИ БЫСТРЫХ ФИЛЬТРОВ (Шторки) ===
 export const QUICK_FILTERS = [
-  { id: "brand", label: "Бренд" },
+  { id: "brand", label: "Марка" },
   { id: "body_type", label: "Тип кузова" },
   { id: "transmission", label: "Коробка" },
 ];
 
-// 👇 ТЕПЕРЬ КЛАССЫ - ЭТО ПРОСТО ПРЕСЕТЫ ЦЕН
+// === ПРЕСЕТЫ КЛАССОВ (UI карточки) ===
 export const CAR_CLASSES = [
   {
     id: "ECONOMY",
@@ -58,7 +63,7 @@ export const CAR_CLASSES = [
     priceText: "до 3000 ₽",
     minPrice: 0,
     maxPrice: 3000,
-    img: require("@/assets/images/icon.png"), // Замени на свои
+    img: require("@/assets/images/icon.png"),
   },
   {
     id: "COMFORT",
@@ -77,6 +82,3 @@ export const CAR_CLASSES = [
     img: require("@/assets/images/icon.png"),
   },
 ];
-
-// Максимальная цена для слайдера в модалке
-export const MAX_SLIDER_PRICE = 30000;

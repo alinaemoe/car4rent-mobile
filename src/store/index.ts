@@ -4,12 +4,14 @@ import { useDispatch, useSelector, TypedUseSelectorHook } from "react-redux";
 import authReducer from "./slices/authSlice";
 import filtersReducer from "./slices/filtersSlice";
 import favoritesReducer from "./slices/favoritesSlice";
+import dictionariesReducer from "./slices/dictionariesSlice";
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     filters: filtersReducer,
     favorites: favoritesReducer,
+    dictionaries: dictionariesReducer,
   },
   // Отключаем проверку на несериализуемые данные, если они вдруг проскочат (стандартный фикс для RTK)
   middleware: (getDefaultMiddleware) =>

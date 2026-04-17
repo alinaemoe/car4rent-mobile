@@ -14,59 +14,35 @@ export interface User {
 
 export type CarStatus = "AVAILABLE" | "RENTED" | "MAINTENANCE";
 
-export enum BodyType {
-  SEDAN = "SEDAN",
-  SUV = "SUV",
-  HATCHBACK = "HATCHBACK",
-  COUPE = "COUPE",
-  CABRIOLET = "CABRIOLET",
-  MINIVAN = "MINIVAN",
+export type BodyType = string;
+export type FuelType = string;
+export type Transmission = string;
+export type DriveType = string;
+export type CarColor = string;
+
+// Типы для наших новых настроек из словарей
+export interface DictOption {
+  id: string;
+  label: string;
 }
 
-export enum FuelType {
-  PETROL = "PETROL",
-  DIESEL = "DIESEL",
-  ELECTRIC = "ELECTRIC",
-  HYBRID = "HYBRID",
+export interface DictColorOption {
+  id: string;
+  hex: string;
+  label: string;
 }
 
-export enum Transmission {
-  MANUAL = "MANUAL",
-  AUTOMATIC = "AUTOMATIC",
-  ROBOT = "ROBOT",
-}
-
-export enum DriveType {
-  FWD = "FWD",
-  RWD = "RWD",
-  AWD = "AWD",
-}
-
-// 👇 НОВЫЙ ENUM ДЛЯ ЦВЕТА
-export enum CarColor {
-  WHITE = "WHITE",
-  BLACK = "BLACK",
-  GREY = "GREY",
-  RED = "RED",
-  BLUE = "BLUE",
-  GREEN = "GREEN",
-  YELLOW = "YELLOW",
-  BROWN = "BROWN",
-  PINK = "PINK",
-  ORANGE = "ORANGE",
+export interface Feature {
+  id: number;
+  internal_name: string;
+  description: Record<string, string>;
+  icon_url?: string | null;
 }
 
 export interface CarImage {
   id: number;
   url: string;
   is_main: boolean;
-}
-
-// 👇 НОВЫЙ ТИП ДЛЯ ФИЧЕЙ
-export interface Feature {
-  id: number;
-  name: string;
-  icon_url?: string;
 }
 
 // === ПОЛНАЯ СУЩНОСТЬ АВТОМОБИЛЯ ===

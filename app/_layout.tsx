@@ -114,6 +114,9 @@ function AppContent() {
     >
       <Stack.Screen name="(drawer)" />
       <Stack.Screen name="(auth)" />
+      {/* 👇 ДОБАВЛЯЕМ НАШИ НОВЫЕ ЭКРАНЫ */}
+      <Stack.Screen name="car/[id]" />
+      <Stack.Screen name="checkout/[id]" />
     </Stack>
   );
 }

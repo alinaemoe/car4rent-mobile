@@ -1,4 +1,5 @@
 import React, { useRef, useState } from "react";
+import { useRouter } from "expo-router";
 import {
   View,
   FlatList,
@@ -30,6 +31,7 @@ import { SortSheet } from "@/src/screens/Catalog/modals/SortSheet";
 import { QuickFilterSheet } from "@/src/screens/Catalog/modals/QuickFilterSheet";
 
 export default function CatalogScreen() {
+  const router = useRouter();
   const colors = useAppColors();
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
@@ -240,7 +242,17 @@ export default function CatalogScreen() {
             />
           }
           renderItem={({ item }) => (
-            <CarCard car={item} onPress={() => console.log("Car", item.id)} />
+            <CarCard
+              car={item}
+              // 👇 ПУШИМ НА СТРАНИЦУ МАШИНЫ, ПЕРЕДАВАЯ ЕЁ ID В URL
+              onPress={() => {
+                // 👇 Используем объектный синтаксис для Expo Router
+                router.push({
+                  pathname: "/car/[id]",
+                  params: { id: item.id },
+                });
+              }}
+            />
           )}
           onEndReached={() => {
             if (hasNextPage && !isFetchingNextPage) fetchNextPage();

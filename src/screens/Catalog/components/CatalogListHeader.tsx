@@ -12,7 +12,7 @@ import { useTranslation } from "react-i18next";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { QUICK_FILTERS, CAR_CLASSES } from "../constants";
 import { useAppSelector, useAppDispatch } from "@/src/store";
-import { applyFilters } from "@/src/store/slices/filtersSlice";
+import { applyFilters, FiltersState } from "@/src/store/slices/filtersSlice"; // 👈 не забудь импорт FiltersState
 
 interface Props {
   carsCount: number;
@@ -33,23 +33,81 @@ export const CatalogListHeader = ({
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
 
-  // Достаем цены напрямую из стора для синхронизации с классами
-  const { min_price, max_price } = useAppSelector((state) => state.filters);
+  // Достаем весь объект фильтров
+  const filters = useAppSelector((state) => state.filters);
+  const { min_price, max_price } = filters;
+
+  // --- ЛОГИКА АКТИВНЫХ БЕЙДЖЕЙ ---
+
+  // Собираем все выбранные массивы в плоский список
+  const activeTags: { key: keyof FiltersState; val: any; label: string }[] = [
+    ...(filters.brands || []).map((v) => ({
+      key: "brands" as const,
+      val: v,
+      label: v,
+    })),
+    ...(filters.body_types || []).map((v) => ({
+      key: "body_types" as const,
+      val: v,
+      label: `Кузов: ${t(`body_${v.toLowerCase()}`, v)}`,
+    })),
+    ...(filters.transmissions || []).map((v) => ({
+      key: "transmissions" as const,
+      val: v,
+      label: `КПП: ${t(`transmission_${v.toLowerCase()}`, v)}`,
+    })),
+    ...(filters.fuel_types || []).map((v) => ({
+      key: "fuel_types" as const,
+      val: v,
+      label: `Топливо: ${t(`fuel_${v.toLowerCase()}`, v)}`,
+    })),
+    ...(filters.drive_types || []).map((v) => ({
+      key: "drive_types" as const,
+      val: v,
+      label: `Привод: ${v}`,
+    })),
+  ];
+
+  // Удаление конкретного тега
+  // Удаление конкретного тега
+  const handleRemoveTag = (key: keyof FiltersState, val: any) => {
+    const list = (filters[key] as any[]) || [];
+
+    // 🔥 Приводим всё к строке для надежного сравнения (чтобы 1 !== "1" нас не сломало)
+    const updatedList = list.filter((item) => String(item) !== String(val));
+
+    dispatch(applyFilters({ [key]: updatedList }));
+  };
+
+  // Сброс вообще всех фильтров
+  const handleClearAll = () => {
+    dispatch(
+      applyFilters({
+        brands: [],
+        body_types: [],
+        transmissions: [],
+        fuel_types: [],
+        drive_types: [],
+        colors: [],
+        feature_ids: [],
+        min_price: undefined,
+        max_price: undefined,
+      }),
+    );
+  };
 
   // Логика нажатия на класс авто
   const handleClassSelect = (min: number, max?: number) => {
-    // Если юзер кликает на УЖЕ активный класс — сбрасываем фильтр цены
     if (min_price === min && max_price === max) {
       dispatch(applyFilters({ min_price: undefined, max_price: undefined }));
     } else {
-      // Иначе применяем диапазон
       dispatch(applyFilters({ min_price: min, max_price: max }));
     }
   };
 
   return (
     <View style={{ backgroundColor: colors.background, paddingBottom: 10 }}>
-      {/* QUICK FILTERS */}
+      {/* QUICK FILTERS + АКТИВНЫЕ БЕЙДЖИ */}
       <View
         style={{
           borderBottomWidth: 1,
@@ -62,7 +120,56 @@ export const CatalogListHeader = ({
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: 16, gap: 8 }}
         >
-          {/* Кнопка Избранное */}
+          {/* 1. КНОПКА СБРОСА ВСЕХ ФИЛЬТРОВ (показываем, если есть хоть 1 тег) */}
+          {activeTags.length > 0 && (
+            <TouchableOpacity
+              onPress={handleClearAll}
+              style={[
+                styles.quickPill,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  borderWidth: 1,
+                  paddingHorizontal: 10,
+                },
+              ]}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="close" size={20} color={colors.textPrimary} />
+            </TouchableOpacity>
+          )}
+
+          {/* 2. АКТИВНЫЕ ВЫБРАННЫЕ БЕЙДЖИКИ (Transparent Style) */}
+          {activeTags.map((tag, idx) => (
+            <TouchableOpacity
+              key={`active-${tag.key}-${idx}`}
+              style={[
+                styles.quickPill,
+                {
+                  backgroundColor: colors.accentBg, // 👈 Тот самый полупрозрачный фон
+                  borderWidth: 1,
+                  borderColor: colors.accent, // 👈 Тонкая рамка в цвет текста
+                },
+              ]}
+              activeOpacity={0.8}
+              onPress={() => handleRemoveTag(tag.key, tag.val)}
+            >
+              <Text
+                style={{
+                  color: colors.accent, // 👈 Акцентный текст вместо белого
+                  fontSize: 14,
+                  fontWeight: "600",
+                  marginRight: 6,
+                }}
+              >
+                {tag.label}
+              </Text>
+              {/* Крестик тоже красим в акцентный цвет */}
+              <Ionicons name="close-circle" size={18} color={colors.accent} />
+            </TouchableOpacity>
+          ))}
+
+          {/* 3. Кнопка Избранное */}
           <TouchableOpacity
             style={[
               styles.quickPill,
@@ -94,7 +201,7 @@ export const CatalogListHeader = ({
             </Text>
           </TouchableOpacity>
 
-          {/* Остальные пилюли */}
+          {/* 4. Остальные выпадающие пилюли */}
           {QUICK_FILTERS.map((pill) => (
             <TouchableOpacity
               key={pill.id}
@@ -131,7 +238,6 @@ export const CatalogListHeader = ({
           contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}
         >
           {CAR_CLASSES.map((item) => {
-            // Карточка активна, если стейт ЦЕНЫ совпадает с её пресетом
             const isActive =
               min_price === item.minPrice && max_price === item.maxPrice;
 

@@ -1,32 +1,39 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { axiosInstance } from "../axios-instance";
 import { useAppSelector } from "../../store";
-import { selectFavoriteCarIds } from "../../store/slices/favoritesSlice"; // 👈 Импорт
+import { selectFavoriteCarIds } from "../../store/slices/favoritesSlice";
 
 export const useCarsCatalog = () => {
   const filters = useAppSelector((state) => state.filters);
-  const favoriteIds = useAppSelector(selectFavoriteCarIds); // 👈 Достаем ID
+  const favoriteIds = useAppSelector(selectFavoriteCarIds);
 
   return useInfiniteQuery({
-    queryKey: ["cars", "catalog", filters, favoriteIds], // 👈 Добавили favoriteIds в ключ кэша, чтобы при лайке обновлялся список
+    // 🔥 Хак для надежного кэширования сложных объектов
+    queryKey: [
+      "cars",
+      "catalog",
+      JSON.stringify(filters),
+      favoriteIds.join(","),
+    ],
     queryFn: async ({ pageParam = 1 }) => {
-      // Если включен фильтр "Избранное", но массив пустой -> возвращаем пустую страницу,
-      // чтобы не дергать бэкенд зря (ведь если id нет, бэк вернет либо ошибку, либо весь каталог)
       if (filters.onlyFavorites && favoriteIds.length === 0) {
         return { data: [], meta: { page: 1, totalPages: 1 } };
       }
 
-      // Подготавливаем параметры
-      const params: any = {
-        ...filters,
-        page: pageParam,
-        limit: 10,
-      };
+      const params: any = { page: pageParam, limit: 10 };
 
-      // Если нажата кнопка "Избранное", прокидываем массив ID на бэкенд
+      Object.entries(filters).forEach(([key, value]) => {
+        if (key === "onlyFavorites") return;
+
+        if (Array.isArray(value)) {
+          if (value.length > 0) params[key] = value.join(",");
+        } else if (value !== undefined && value !== null && value !== "") {
+          params[key] = value;
+        }
+      });
+
       if (filters.onlyFavorites) {
-        params.ids = favoriteIds.join(","); // Бэкенд ждет "1,2,5"
-        delete params.onlyFavorites; // Убираем флажок, бэкенду он не нужен
+        params.ids = favoriteIds.join(",");
       }
 
       const { data } = await axiosInstance.get("/cars/catalog", { params });

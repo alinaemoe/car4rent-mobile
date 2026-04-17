@@ -38,7 +38,6 @@ export const CarCard = ({ car, onPress }: CarCardProps) => {
 
   // Генератор звездочек (5 штук)
   const renderStars = (rating: number) => {
-    console.log(rating);
     const stars = [];
     for (let i = 1; i <= 5; i++) {
       if (rating >= i) {
@@ -69,7 +68,6 @@ export const CarCard = ({ car, onPress }: CarCardProps) => {
   };
 
   const avgRating = car.avg_rating ? Number(car.avg_rating) : 0;
-  console.log(car);
   const reviewsCount = car.reviews_count || 0;
 
   return (

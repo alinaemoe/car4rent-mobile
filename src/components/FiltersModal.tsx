@@ -13,18 +13,15 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import MultiSlider from "@ptomasroos/react-native-multi-slider";
 import { useTranslation } from "react-i18next";
+import { useQuery } from "@tanstack/react-query";
 
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { useAppDispatch, useAppSelector } from "@/src/store";
 import { applyFilters, FiltersState } from "@/src/store/slices/filtersSlice";
-import {
-  BodyType,
-  FuelType,
-  Transmission,
-  CarColor,
-  DriveType,
-} from "@/src/types";
+import { axiosInstance } from "@/src/api/axios-instance";
 import { MAX_SLIDER_PRICE } from "../screens/Catalog/constants";
+// 👇 ИМПОРТИРУЕМ НОВЫЕ ТИПЫ ДЛЯ СЛОВАРЕЙ
+import { DictOption, DictColorOption } from "@/src/types";
 
 const { width } = Dimensions.get("window");
 
@@ -33,51 +30,25 @@ interface FiltersModalProps {
   onClose: () => void;
 }
 
-const BODY_TYPES = Object.values(BodyType) as BodyType[];
-const FUEL_TYPES = Object.values(FuelType) as FuelType[];
-const TRANSMISSIONS = Object.values(Transmission) as Transmission[];
-const DRIVE_TYPES = Object.values(DriveType) as DriveType[];
-const COLORS = Object.values(CarColor) as CarColor[];
-
-const POPULAR_BRANDS = [
-  "Toyota",
-  "BMW",
-  "Mercedes-Benz",
-  "Kia",
-  "Hyundai",
-  "Audi",
-  "Tesla",
-  "Chery",
-];
-const FEATURES_MOCK = [
-  { id: 1, name: "Кондиционер" },
-  { id: 2, name: "Климат-контроль" },
-  { id: 3, name: "Apple CarPlay" },
-  { id: 4, name: "Детское кресло" },
-  { id: 6, name: "Камера заднего вида" },
-];
-
-const COLOR_MAP: Record<CarColor, string> = {
-  WHITE: "#FFFFFF",
-  BLACK: "#000000",
-  GREY: "#808080",
-  RED: "#FF0000",
-  BLUE: "#0000FF",
-  GREEN: "#008000",
-  YELLOW: "#FFFF00",
-  BROWN: "#8B4513",
-  PINK: "#FFC0CB",
-  ORANGE: "#FFA500",
-};
-
 export const FiltersModal = ({ visible, onClose }: FiltersModalProps) => {
   const colors = useAppColors();
-  const { t } = useTranslation();
+  const { i18n } = useTranslation();
   const dispatch = useAppDispatch();
+  const currentLang = i18n.language || "ru";
+
   const currentFilters = useAppSelector((state) => state.filters);
+  const { features, settings } = useAppSelector((state) => state.dictionaries);
 
   const [draft, setDraft] = useState<FiltersState>(currentFilters);
   const [sliderValues, setSliderValues] = useState([0, MAX_SLIDER_PRICE]);
+
+  // 👇 ЯВНО ТИПИЗИРУЕМ МАССИВЫ ИЗ НАСТРОЕК (чтобы убрать ошибки any)
+  const BRANDS: string[] = settings.POPULAR_BRANDS || [];
+  const BODY_TYPES: DictOption[] = settings.DICT_BODY_TYPES || [];
+  const TRANSMISSIONS: DictOption[] = settings.DICT_TRANSMISSIONS || [];
+  const FUEL_TYPES: DictOption[] = settings.DICT_FUEL_TYPES || [];
+  const DRIVE_TYPES: DictOption[] = settings.DICT_DRIVE_TYPES || [];
+  const COLORS: DictColorOption[] = settings.DICT_COLORS || [];
 
   useEffect(() => {
     if (visible) {
@@ -89,6 +60,27 @@ export const FiltersModal = ({ visible, onClose }: FiltersModalProps) => {
     }
   }, [visible, currentFilters]);
 
+  // ДИНАМИЧЕСКИЙ ПОДСЧЕТ МАШИН
+  const { data: countData } = useQuery({
+    queryKey: ["cars", "count", draft],
+    queryFn: async () => {
+      const params: any = { limit: 1 };
+      Object.entries(draft).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          if (value.length > 0) params[key] = value.join(",");
+        } else if (value !== undefined && value !== null && value !== "") {
+          params[key] = value;
+        }
+      });
+      const { data } = await axiosInstance.get("/cars/catalog", { params });
+      return data;
+    },
+    enabled: visible,
+  });
+
+  const totalCars = countData?.meta?.total || 0;
+
+  // ОБРАБОТЧИКИ
   const handleSliderChange = (values: number[]) => {
     setSliderValues(values);
     setDraft({
@@ -96,6 +88,11 @@ export const FiltersModal = ({ visible, onClose }: FiltersModalProps) => {
       min_price: values[0],
       max_price: values[1] === MAX_SLIDER_PRICE ? undefined : values[1],
     });
+  };
+
+  const handleRangeInput = (key: keyof FiltersState, text: string) => {
+    const val = text ? Number(text.replace(/[^0-9]/g, "")) : undefined;
+    setDraft({ ...draft, [key]: val });
   };
 
   const handlePriceInput = (type: "min" | "max", text: string) => {
@@ -107,11 +104,6 @@ export const FiltersModal = ({ visible, onClose }: FiltersModalProps) => {
       setSliderValues([sliderValues[0], val || MAX_SLIDER_PRICE]);
       setDraft({ ...draft, max_price: val || undefined });
     }
-  };
-
-  const handleRangeInput = (key: keyof FiltersState, text: string) => {
-    const val = text ? Number(text.replace(/[^0-9]/g, "")) : undefined;
-    setDraft({ ...draft, [key]: val });
   };
 
   type ArrayKeys = keyof Pick<
@@ -167,6 +159,7 @@ export const FiltersModal = ({ visible, onClose }: FiltersModalProps) => {
     setSliderValues([0, MAX_SLIDER_PRICE]);
   };
 
+  // --- СБОРКА АКТИВНЫХ ТЕГОВ ---
   const activeTags = [
     ...(draft.brands || []).map((v) => ({
       key: "brands" as ArrayKeys,
@@ -176,28 +169,31 @@ export const FiltersModal = ({ visible, onClose }: FiltersModalProps) => {
     ...(draft.body_types || []).map((v) => ({
       key: "body_types" as ArrayKeys,
       val: v,
-      label: t(`body_${v.toLowerCase()}`, v),
+      label: BODY_TYPES.find((b) => b.id === v)?.label || v,
     })),
     ...(draft.transmissions || []).map((v) => ({
       key: "transmissions" as ArrayKeys,
       val: v,
-      label: t(`transmission_${v.toLowerCase()}`, v),
+      label: TRANSMISSIONS.find((b) => b.id === v)?.label || v,
     })),
     ...(draft.fuel_types || []).map((v) => ({
       key: "fuel_types" as ArrayKeys,
       val: v,
-      label: t(`fuel_${v.toLowerCase()}`, v),
+      label: FUEL_TYPES.find((b) => b.id === v)?.label || v,
     })),
     ...(draft.drive_types || []).map((v) => ({
       key: "drive_types" as ArrayKeys,
       val: v,
-      label: v,
+      label: DRIVE_TYPES.find((b) => b.id === v)?.label || v,
     })),
-    ...(draft.feature_ids || []).map((v) => ({
-      key: "feature_ids" as ArrayKeys,
-      val: v,
-      label: FEATURES_MOCK.find((f) => f.id === v)?.name || `Опция ${v}`,
-    })),
+    ...(draft.feature_ids || []).map((v) => {
+      const feat = features.find((f) => f.id === v);
+      return {
+        key: "feature_ids" as ArrayKeys,
+        val: v,
+        label: feat ? feat.description[currentLang] : `Опция ${v}`,
+      };
+    }),
   ];
 
   const renderRangeInputsRow = (
@@ -287,7 +283,8 @@ export const FiltersModal = ({ visible, onClose }: FiltersModalProps) => {
         </View>
 
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20 }}>
-          {activeTags.length > 0 ? (
+          {/* АКТИВНЫЕ БЕЙДЖИКИ */}
+          {activeTags.length > 0 && (
             <View
               style={{
                 marginBottom: 24,
@@ -336,8 +333,9 @@ export const FiltersModal = ({ visible, onClose }: FiltersModalProps) => {
                 </Text>
               </TouchableOpacity>
             </View>
-          ) : null}
+          )}
 
+          {/* ЦЕНА */}
           <Text
             style={[
               styles.sectionTitle,
@@ -420,87 +418,22 @@ export const FiltersModal = ({ visible, onClose }: FiltersModalProps) => {
             />
           </View>
 
+          {/* МАРКИ */}
           <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
             Марка автомобиля
           </Text>
           <View style={styles.pillsContainer}>
-            {POPULAR_BRANDS.map((brand) => {
-              const isActive = draft.brands.includes(brand);
-              return (
-                <TouchableOpacity
-                  key={brand}
-                  onPress={() => toggleItem("brands", brand)}
-                  style={[
-                    styles.pill,
-                    {
-                      backgroundColor: isActive
-                        ? colors.accentBg
-                        : colors.surface,
-                      borderColor: isActive ? colors.accent : "transparent",
-                    },
-                  ]}
-                >
-                  <Text
-                    style={{
-                      color: isActive ? colors.accent : colors.textPrimary,
-                      fontWeight: isActive ? "600" : "400",
-                    }}
-                  >
-                    {brand}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-
-          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
-            Тип кузова
-          </Text>
-          <View style={styles.pillsContainer}>
-            {BODY_TYPES.map((type) => {
-              const isActive = draft.body_types.includes(type);
-              return (
-                <TouchableOpacity
-                  key={type}
-                  onPress={() => toggleItem("body_types", type)}
-                  style={[
-                    styles.pill,
-                    {
-                      backgroundColor: isActive
-                        ? colors.accentBg
-                        : colors.surface,
-                      borderColor: isActive ? colors.accent : "transparent",
-                    },
-                  ]}
-                >
-                  <Text
-                    style={{
-                      color: isActive ? colors.accent : colors.textPrimary,
-                      fontWeight: isActive ? "600" : "400",
-                    }}
-                  >
-                    {t(`body_${type.toLowerCase()}`, type)}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-
-          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
-            Коробка передач
-          </Text>
-          <View style={styles.pillsContainer}>
-            {TRANSMISSIONS.map((type) => (
+            {BRANDS.map((brand) => (
               <TouchableOpacity
-                key={type}
-                onPress={() => toggleItem("transmissions", type)}
+                key={brand}
+                onPress={() => toggleItem("brands", brand)}
                 style={[
                   styles.pill,
                   {
-                    backgroundColor: draft.transmissions.includes(type)
+                    backgroundColor: draft.brands.includes(brand)
                       ? colors.accentBg
                       : colors.surface,
-                    borderColor: draft.transmissions.includes(type)
+                    borderColor: draft.brands.includes(brand)
                       ? colors.accent
                       : "transparent",
                   },
@@ -508,15 +441,87 @@ export const FiltersModal = ({ visible, onClose }: FiltersModalProps) => {
               >
                 <Text
                   style={{
-                    color: draft.transmissions.includes(type)
+                    color: draft.brands.includes(brand)
                       ? colors.accent
                       : colors.textPrimary,
-                    fontWeight: draft.transmissions.includes(type)
+                    fontWeight: draft.brands.includes(brand) ? "600" : "400",
+                  }}
+                >
+                  {brand}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* КУЗОВ */}
+          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+            Тип кузова
+          </Text>
+          <View style={styles.pillsContainer}>
+            {BODY_TYPES.map((type) => (
+              <TouchableOpacity
+                key={type.id}
+                onPress={() => toggleItem("body_types", type.id)}
+                style={[
+                  styles.pill,
+                  {
+                    backgroundColor: draft.body_types.includes(type.id)
+                      ? colors.accentBg
+                      : colors.surface,
+                    borderColor: draft.body_types.includes(type.id)
+                      ? colors.accent
+                      : "transparent",
+                  },
+                ]}
+              >
+                <Text
+                  style={{
+                    color: draft.body_types.includes(type.id)
+                      ? colors.accent
+                      : colors.textPrimary,
+                    fontWeight: draft.body_types.includes(type.id)
                       ? "600"
                       : "400",
                   }}
                 >
-                  {t(`transmission_${type.toLowerCase()}`, type)}
+                  {type.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* КОРОБКА И ПРИВОД И ТОПЛИВО */}
+          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+            Коробка передач
+          </Text>
+          <View style={styles.pillsContainer}>
+            {TRANSMISSIONS.map((type) => (
+              <TouchableOpacity
+                key={type.id}
+                onPress={() => toggleItem("transmissions", type.id)}
+                style={[
+                  styles.pill,
+                  {
+                    backgroundColor: draft.transmissions.includes(type.id)
+                      ? colors.accentBg
+                      : colors.surface,
+                    borderColor: draft.transmissions.includes(type.id)
+                      ? colors.accent
+                      : "transparent",
+                  },
+                ]}
+              >
+                <Text
+                  style={{
+                    color: draft.transmissions.includes(type.id)
+                      ? colors.accent
+                      : colors.textPrimary,
+                    fontWeight: draft.transmissions.includes(type.id)
+                      ? "600"
+                      : "400",
+                  }}
+                >
+                  {type.label}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -528,15 +533,15 @@ export const FiltersModal = ({ visible, onClose }: FiltersModalProps) => {
           <View style={styles.pillsContainer}>
             {DRIVE_TYPES.map((type) => (
               <TouchableOpacity
-                key={type}
-                onPress={() => toggleItem("drive_types", type)}
+                key={type.id}
+                onPress={() => toggleItem("drive_types", type.id)}
                 style={[
                   styles.pill,
                   {
-                    backgroundColor: draft.drive_types.includes(type)
+                    backgroundColor: draft.drive_types.includes(type.id)
                       ? colors.accentBg
                       : colors.surface,
-                    borderColor: draft.drive_types.includes(type)
+                    borderColor: draft.drive_types.includes(type.id)
                       ? colors.accent
                       : "transparent",
                   },
@@ -544,15 +549,15 @@ export const FiltersModal = ({ visible, onClose }: FiltersModalProps) => {
               >
                 <Text
                   style={{
-                    color: draft.drive_types.includes(type)
+                    color: draft.drive_types.includes(type.id)
                       ? colors.accent
                       : colors.textPrimary,
-                    fontWeight: draft.drive_types.includes(type)
+                    fontWeight: draft.drive_types.includes(type.id)
                       ? "600"
                       : "400",
                   }}
                 >
-                  {type}
+                  {type.label}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -564,15 +569,15 @@ export const FiltersModal = ({ visible, onClose }: FiltersModalProps) => {
           <View style={styles.pillsContainer}>
             {FUEL_TYPES.map((fuel) => (
               <TouchableOpacity
-                key={fuel}
-                onPress={() => toggleItem("fuel_types", fuel)}
+                key={fuel.id}
+                onPress={() => toggleItem("fuel_types", fuel.id)}
                 style={[
                   styles.pill,
                   {
-                    backgroundColor: draft.fuel_types.includes(fuel)
+                    backgroundColor: draft.fuel_types.includes(fuel.id)
                       ? colors.accentBg
                       : colors.surface,
-                    borderColor: draft.fuel_types.includes(fuel)
+                    borderColor: draft.fuel_types.includes(fuel.id)
                       ? colors.accent
                       : "transparent",
                   },
@@ -580,18 +585,21 @@ export const FiltersModal = ({ visible, onClose }: FiltersModalProps) => {
               >
                 <Text
                   style={{
-                    color: draft.fuel_types.includes(fuel)
+                    color: draft.fuel_types.includes(fuel.id)
                       ? colors.accent
                       : colors.textPrimary,
-                    fontWeight: draft.fuel_types.includes(fuel) ? "600" : "400",
+                    fontWeight: draft.fuel_types.includes(fuel.id)
+                      ? "600"
+                      : "400",
                   }}
                 >
-                  {t(`fuel_${fuel.toLowerCase()}`, fuel)}
+                  {fuel.label}
                 </Text>
               </TouchableOpacity>
             ))}
           </View>
 
+          {/* ДИАПАЗОНЫ */}
           <View style={{ marginTop: 10 }}>
             {renderRangeInputsRow(
               "Год выпуска",
@@ -613,11 +621,12 @@ export const FiltersModal = ({ visible, onClose }: FiltersModalProps) => {
             )}
           </View>
 
+          {/* ОПЦИИ */}
           <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
             Комплектация
           </Text>
           <View style={styles.pillsContainer}>
-            {FEATURES_MOCK.map((feature) => {
+            {features.map((feature) => {
               const isActive = draft.feature_ids.includes(feature.id);
               return (
                 <TouchableOpacity
@@ -645,29 +654,29 @@ export const FiltersModal = ({ visible, onClose }: FiltersModalProps) => {
                       fontWeight: isActive ? "500" : "400",
                     }}
                   >
-                    {feature.name}
+                    {feature.description[currentLang] || feature.internal_name}
                   </Text>
                 </TouchableOpacity>
               );
             })}
           </View>
 
+          {/* ЦВЕТА */}
           <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
             Цвет кузова
           </Text>
           <View style={styles.pillsContainer}>
-            {COLORS.map((colorEnum) => {
-              const isActive = draft.colors.includes(colorEnum);
-              const hex = COLOR_MAP[colorEnum];
-              const isWhite = hex === "#FFFFFF";
+            {COLORS.map((colorObj) => {
+              const isActive = draft.colors.includes(colorObj.id);
+              const isWhite = colorObj.hex === "#FFFFFF";
               return (
                 <TouchableOpacity
-                  key={colorEnum}
-                  onPress={() => toggleItem("colors", colorEnum)}
+                  key={colorObj.id}
+                  onPress={() => toggleItem("colors", colorObj.id)}
                   style={[
                     styles.colorCircle,
                     {
-                      backgroundColor: hex,
+                      backgroundColor: colorObj.hex,
                       borderColor: isActive
                         ? colors.accent
                         : isWhite
@@ -678,67 +687,16 @@ export const FiltersModal = ({ visible, onClose }: FiltersModalProps) => {
                     },
                   ]}
                 >
-                  {isActive ? (
+                  {isActive && (
                     <Ionicons
                       name="checkmark"
                       size={20}
                       color={isWhite ? "#000" : "#FFF"}
                     />
-                  ) : null}
+                  )}
                 </TouchableOpacity>
               );
             })}
-          </View>
-
-          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
-            Рейтинг авто
-          </Text>
-          <View style={styles.pillsContainer}>
-            {[4.0, 4.5, 4.8].map((rating) => (
-              <TouchableOpacity
-                key={rating}
-                onPress={() =>
-                  setDraft({
-                    ...draft,
-                    min_rating:
-                      draft.min_rating === rating ? undefined : rating,
-                  })
-                }
-                style={[
-                  styles.pill,
-                  {
-                    flexDirection: "row",
-                    alignItems: "center",
-                    backgroundColor:
-                      draft.min_rating === rating
-                        ? colors.warningBg
-                        : colors.surface,
-                    borderColor:
-                      draft.min_rating === rating
-                        ? colors.warning
-                        : "transparent",
-                  },
-                ]}
-              >
-                <Ionicons
-                  name="star"
-                  size={14}
-                  color={colors.warning}
-                  style={{ marginRight: 4 }}
-                />
-                <Text
-                  style={{
-                    color:
-                      draft.min_rating === rating
-                        ? colors.warningText
-                        : colors.textPrimary,
-                    fontWeight: draft.min_rating === rating ? "600" : "400",
-                  }}
-                >
-                  {rating} и выше
-                </Text>
-              </TouchableOpacity>
-            ))}
           </View>
 
           <View style={{ height: 60 }} />
@@ -758,7 +716,7 @@ export const FiltersModal = ({ visible, onClose }: FiltersModalProps) => {
             style={[styles.applyBtn, { backgroundColor: colors.accent }]}
             activeOpacity={0.9}
           >
-            <Text style={styles.applyBtnText}>Показать машины</Text>
+            <Text style={styles.applyBtnText}>Показать {totalCars} авто</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -781,7 +739,6 @@ const styles = StyleSheet.create({
     marginTop: 24,
     marginBottom: 12,
   },
-
   priceInputsRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -796,7 +753,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
   },
-
   pillsContainer: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   pill: {
     paddingHorizontal: 16,
@@ -812,7 +768,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
   },
-
   activeTag: {
     flexDirection: "row",
     alignItems: "center",
@@ -820,7 +775,6 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 16,
   },
-
   colorCircle: {
     width: 44,
     height: 44,
@@ -833,7 +787,6 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 2,
   },
-
   footer: { padding: 20, borderTopWidth: 1, paddingBottom: 30 },
   applyBtn: {
     paddingVertical: 18,

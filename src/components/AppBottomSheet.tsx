@@ -1,7 +1,8 @@
+// src/components/AppBottomSheet.tsx
 import React, { useCallback, forwardRef } from "react";
 import { StyleSheet, Text } from "react-native";
 import {
-  BottomSheetModal, // 👈 ИСПОЛЬЗУЕМ MODAL
+  BottomSheetModal,
   BottomSheetBackdrop,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
@@ -10,12 +11,11 @@ import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 interface Props {
   title?: string;
   children: React.ReactNode;
-  snapPoints?: string[];
+  snapPoints?: string[]; // Оставляем для совместимости, но сделаем опциональным
 }
 
-// 👈 Типизируем ref как BottomSheetModal
 export const AppBottomSheet = forwardRef<BottomSheetModal, Props>(
-  ({ title, children, snapPoints = ["40%"] }, ref) => {
+  ({ title, children, snapPoints }, ref) => {
     const colors = useAppColors();
 
     const renderBackdrop = useCallback(
@@ -31,10 +31,12 @@ export const AppBottomSheet = forwardRef<BottomSheetModal, Props>(
     );
 
     return (
-      <BottomSheetModal // 👈 ИСПОЛЬЗУЕМ MODAL
+      <BottomSheetModal
         ref={ref}
-        index={0} // 👈 Для модалки 0 означает первый snapPoint (открыто)
-        snapPoints={snapPoints}
+        index={0}
+        // 👇 МАГИЯ ДИНАМИЧЕСКОЙ ВЫСОТЫ
+        snapPoints={snapPoints || []}
+        enableDynamicSizing={!snapPoints} // Если snapPoints не передали, подстраиваемся под контент
         enablePanDownToClose
         backdropComponent={renderBackdrop}
         handleIndicatorStyle={{ backgroundColor: colors.textSecondary }}
@@ -56,8 +58,8 @@ AppBottomSheet.displayName = "AppBottomSheet";
 
 const styles = StyleSheet.create({
   contentContainer: {
-    flex: 1,
     padding: 20,
+    paddingBottom: 40, // Отступ снизу для безопасной зоны на iPhone
   },
   title: {
     fontSize: 20,

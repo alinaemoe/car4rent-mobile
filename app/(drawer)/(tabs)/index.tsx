@@ -62,7 +62,12 @@ export default function CatalogScreen() {
     isRefetching,
   } = useCarsCatalog();
 
-  const cars = data?.pages.flatMap((page) => page.data) || [];
+  const rawCars = data?.pages.flatMap((page) => page.data) || [];
+
+  // 2. 🔥 ПРЕДОХРАНИТЕЛЬ: Убираем дубликаты по ID (чтобы FlatList никогда не зависал)
+  const cars = Array.from(
+    new Map(rawCars.map((car) => [car.id, car])).values(),
+  );
 
   // Хэндлеры открытия/действий
   const handleOpenSort = () => sortSheetRef.current?.present();

@@ -13,6 +13,7 @@ import {
   setGuestMode,
 } from "../src/store/slices/authSlice";
 import { loadFavorites } from "@/src/store/slices/favoritesSlice";
+import { fetchDictionaries } from "@/src/store/slices/dictionariesSlice";
 import { storage } from "../src/utils/storage";
 import { initI18n } from "@/src/utils/i18n";
 import { fetchAndCacheTranslations } from "@/src/api/translations";
@@ -53,6 +54,7 @@ function AppContent() {
         fetchAndCacheTranslations(); // Фоновя загрузка
 
         await dispatch(loadFavorites());
+        await dispatch(fetchDictionaries());
 
         // ПРОБУЕМ ДОСТАТЬ ТОКЕН
         const accessToken = await storage.getAccessToken();

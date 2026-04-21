@@ -30,15 +30,52 @@ export const axiosInstance = axios.create({
 });
 
 // 👇 Интерцептор ЗАПРОСА
-axiosInstance.interceptors.request.use(
-  async (config) => {
-    const token = await storage.getAccessToken();
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
+// src/api/axios-instance.ts
+
+// ... (остальной код) ...
+
+// 👇 Интерцептор ОТВЕТА
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    // 🔥 ИЗМЕНЕНИЕ: Не делаем рефреш, если это запрос на логаут!
+    const isLogoutRequest = originalRequest.url?.includes("/auth/logout");
+
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._isRetry &&
+      !isLogoutRequest
+    ) {
+      originalRequest._isRetry = true;
+
+      try {
+        const refreshToken = await storage.getRefreshToken();
+        if (!refreshToken) throw new Error("Нет refresh-токена");
+
+        const { data } = await axios.post(`${API_URL}/auth/refresh`, {
+          refresh_token: refreshToken,
+        });
+
+        await storage.setTokens(data.access_token, data.refresh_token);
+
+        originalRequest.headers.Authorization = `Bearer ${data.access_token}`;
+        return axiosInstance(originalRequest);
+      } catch (refreshError) {
+        await storage.removeTokens();
+
+        const { store } = require("../store");
+        const { logout } = require("../store/slices/authSlice");
+
+        store.dispatch(logout());
+
+        return Promise.reject(refreshError);
+      }
     }
-    return config;
+
+    return Promise.reject(error);
   },
-  (error) => Promise.reject(error),
 );
 
 // 👇 Интерцептор ОТВЕТА
@@ -65,13 +102,10 @@ axiosInstance.interceptors.response.use(
       } catch (refreshError) {
         await storage.removeTokens();
 
-        // 🔥 ВОТ ОНО! ДИНАМИЧЕСКИЙ ИМПОРТ 🔥
-        // Мы вызываем store только тогда, когда рефреш реально сдох.
-        // Это полностью убивает Require cycle!
-        const { store } = require("../store");
-        const { logout } = require("../store/slices/authSlice");
+        const storeModule = await import("../store");
+        const authSliceModule = await import("../store/slices/authSlice");
 
-        store.dispatch(logout());
+        storeModule.store.dispatch(authSliceModule.logout());
 
         return Promise.reject(refreshError);
       }

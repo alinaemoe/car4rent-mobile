@@ -21,15 +21,23 @@ function CustomDrawerContent(props: any) {
   const dispatch = useAppDispatch();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
+  const isGuest = useAppSelector((state) => state.auth?.isGuest ?? false);
+
   const handleLogout = async () => {
     setIsLoggingOut(true);
     try {
-      await axiosInstance.post("/auth/logout");
+      // 👇 2. Делаем запрос на логаут ТОЛЬКО если это реальный юзер
+      if (!isGuest) {
+        await axiosInstance.post("/auth/logout");
+      }
     } catch (error) {
       console.error("Ошибка при логауте на бэке:", error);
     } finally {
+      // 3. В любом случае (и для юзера, и для гостя) чистим хранилища
       await storage.removeTokens();
-      dispatch(logout());
+      await storage.setGuestMode(false); // На всякий случай зачищаем флаг гостя в памяти
+      dispatch(logout()); // Выкидывает на экран авторизации
+      setIsLoggingOut(false);
     }
   };
 

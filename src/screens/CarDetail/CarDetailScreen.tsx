@@ -130,7 +130,7 @@ export default function CarDetailScreen() {
       </SafeAreaView>
 
       <ScrollView
-        contentContainerStyle={{ paddingBottom: 40 }}
+        contentContainerStyle={{ paddingBottom: 110 }}
         showsVerticalScrollIndicator={false}
       >
         <CarCarousel images={car.images} />
@@ -205,6 +205,7 @@ export default function CarDetailScreen() {
         days={days}
         finalRentPrice={finalRentPrice}
         startDate={startDate}
+        endDate={endDate} // 👈 ВОТ ЭТУ СТРОЧКУ ОБЯЗАТЕЛЬНО ДОБАВЬ!
         onBookPress={handleBookPress}
       />
       <CalendarSheet

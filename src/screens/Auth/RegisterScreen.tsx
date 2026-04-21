@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, StyleSheet, Platform, KeyboardAvoidingView } from "react-native";
+import { StyleSheet, Platform, KeyboardAvoidingView } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 
@@ -17,12 +17,17 @@ export default function RegisterScreen() {
     setStep(2);
   };
 
-  // Делаем премиальный, едва заметный градиент.
-  // Верх — цвет фона, низ — цвет фона, слегка смешанный с акцентным.
-  const gradientColors = [colors.background, colors.surface] as const;
+  // 🔥 Тот же крутой диагональный градиент
+  const gradientColors = [colors.background, colors.gradientEnd] as const;
 
   return (
-    <LinearGradient colors={gradientColors} style={styles.container}>
+    <LinearGradient
+      colors={gradientColors}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      locations={[0.4, 1]}
+      style={styles.container}
+    >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.keyboardView}

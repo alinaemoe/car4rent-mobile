@@ -33,6 +33,21 @@ const MONTHS_RU = [
   "декабря",
 ];
 
+const formatPrice = (price: number) => {
+  // 1. parseFloat уберет лишние .00, если их нет, но оставит .32
+  // 2. Сначала форматируем число, чтобы не потерять копейки при замене
+  const cleanPrice = Number(parseFloat(price.toString()).toFixed(2));
+
+  // Если после точки идет 00, преобразуем в целое
+  const finalPrice =
+    cleanPrice % 1 === 0
+      ? cleanPrice.toString()
+      : cleanPrice.toString().replace(".", ",");
+
+  // 3. Добавляем разделение тысяч пробелом
+  return finalPrice.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+};
+
 export const StickyFooter = ({
   pricePerDay,
   days,
@@ -67,44 +82,48 @@ export const StickyFooter = ({
   };
 
   return (
-    <View
-      style={[
-        styles.container,
-        { backgroundColor: colors.background }, // borderTopColor убрали, чтобы не было грязных линий
-      ]}
-    >
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* Левый блок с ценами (строго ограничен по ширине) */}
       <View style={styles.priceInfo}>
         {!hasDates ? (
-          <Text style={[styles.pricePrimary, { color: colors.textPrimary }]}>
-            {t("from", "От")} {pricePerDay} ₽{" "}
-            <Text style={[styles.perDayText, { color: colors.textPrimary }]}>
-              / {t("day", "сутки")}
-            </Text>
+          <Text
+            style={[styles.pricePrimary, { color: colors.textPrimary }]}
+            numberOfLines={1}
+          >
+            {t("from", "От")} {formatPrice(pricePerDay)} ₽{" "}
+            <Text style={styles.perDayText}>/ {t("day", "сутки")}</Text>
           </Text>
         ) : (
-          <View>
+          <View style={styles.datesLayout}>
             <View style={styles.priceRow}>
               {hasDiscount && (
-                <Text style={styles.oldPrice}>{pricePerDay} ₽</Text>
+                <View style={styles.oldPriceContainer}>
+                  <Text style={styles.oldPriceText}>
+                    {formatPrice(pricePerDay)} ₽
+                  </Text>
+                  {/* 🔥 Имитация ручного зачеркивания дугой */}
+                  <View style={styles.strikeCurve} />
+                </View>
               )}
               <Text
                 style={[styles.pricePrimary, { color: colors.textPrimary }]}
               >
-                {discountedDailyPrice} ₽{" "}
-                <Text
-                  style={[styles.perDayText, { color: colors.textPrimary }]}
-                >
-                  / {t("day", "сутки")}
-                </Text>
+                {formatPrice(discountedDailyPrice)} ₽{" "}
+                <Text style={styles.perDayText}>/ {t("day", "сутки")}</Text>
               </Text>
             </View>
-            <Text style={[styles.dateRange, { color: colors.textPrimary }]}>
+
+            <Text
+              style={[styles.dateRange, { color: colors.textPrimary }]}
+              numberOfLines={1}
+            >
               {formatDates()}
             </Text>
           </View>
         )}
       </View>
 
+      {/* Правый блок: Кнопка */}
       <TouchableOpacity
         style={[styles.bookBtn, { backgroundColor: colors.accent }]}
         onPress={onBookPress}
@@ -122,64 +141,95 @@ export const StickyFooter = ({
 
 const styles = StyleSheet.create({
   container: {
-    // 🔥 МАГИЯ ЗДЕСЬ: Отрываем футер от общего потока
     position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
-
     flexDirection: "row",
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: Platform.OS === "ios" ? 32 : 16,
+    paddingHorizontal: 16, // Чуть уменьшили боковые отступы
+    paddingTop: 14,
+    paddingBottom: Platform.OS === "ios" ? 32 : 18,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     alignItems: "center",
     justifyContent: "space-between",
-
-    // Красивая тень, чтобы футер "парил"
     elevation: 15,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.08,
     shadowRadius: 12,
   },
+
+  // 🔥 ГАРАНТИЯ, ЧТО ТЕКСТ НЕ НАЕДЕТ НА КНОПКУ
   priceInfo: {
     flex: 1,
+    flexShrink: 1, // Позволяет блоку сжиматься
+    marginRight: 12, // Обязательный отступ от кнопки
     justifyContent: "center",
+  },
+
+  datesLayout: {
+    flexDirection: "column",
+    alignItems: "flex-start",
   },
   priceRow: {
     flexDirection: "row",
-    alignItems: "baseline",
-    flexWrap: "wrap",
+    alignItems: "center",
+    flexWrap: "wrap", // Разрешаем перенос, если экран ну очень узкий
+    marginBottom: 2,
   },
-  oldPrice: {
-    fontSize: 16,
-    color: "#999",
-    textDecorationLine: "line-through",
+
+  // Старая цена и ДУГА
+  oldPriceContainer: {
+    position: "relative",
     marginRight: 6,
+    justifyContent: "center",
   },
+  oldPriceText: {
+    fontSize: 14, // Сделали мельче
+    color: "#999",
+    fontWeight: "500",
+  },
+  strikeCurve: {
+    position: "absolute",
+    width: "115%",
+    height: 16, // Высота невидимого эллипса
+    borderTopWidth: 1.5, // Показываем только верхнюю границу
+    borderTopColor: "#999",
+    borderRadius: 50, // Делает границу дугообразной
+    //! TODO
+    top: "35%", // Сдвигаем дугу на центр текста
+    left: "-5%",
+    transform: [{ rotate: "-4deg" }], // Слегка наклоняем
+  },
+
+  // Основная цена
   pricePrimary: {
-    fontSize: 18,
+    fontSize: 15, // Сделали мельче
     fontWeight: "bold",
   },
   perDayText: {
-    fontSize: 16,
-    fontWeight: "600",
+    fontSize: 14, // Сделали мельче
+    fontWeight: "bold",
   },
+
+  // Даты
   dateRange: {
-    fontSize: 15,
-    marginTop: 4,
+    fontSize: 13, // Сделали мельче
     textDecorationLine: "underline",
+    fontWeight: "400",
   },
+
+  // Кнопка
   bookBtn: {
-    paddingVertical: 14,
-    paddingHorizontal: 20,
+    paddingVertical: 12, // Сделали кнопку чуть компактнее
+    paddingHorizontal: 16,
     borderRadius: 12,
+    flexShrink: 0, // Запрещаем кнопке сжиматься
   },
   bookBtnText: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: 14, // Сделали мельче
     fontWeight: "bold",
   },
 });

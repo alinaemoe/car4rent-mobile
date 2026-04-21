@@ -5,7 +5,7 @@ const tintColorDark = "#40a9ff";
 
 export const Colors = {
   light: {
-    // === Системные цвета Expo ===
+    // === Expo Brand Colors ===
     text: "#1a1a1a",
     background: "#ffffff",
     tint: tintColorLight,
@@ -21,14 +21,15 @@ export const Colors = {
     accent: "#2196f3",
     accentHover: "#1976d2",
     accentBg: "rgba(33, 150, 243, 0.1)",
+    gradientEnd: "#c3e0fd",
     surfaceTransparent: "rgba(245, 245, 245, 0.8)",
 
-    // 👇 ДОБАВЛЕНО: Для модалок, шторок и загрузок
-    overlay: "rgba(0, 0, 0, 0.5)", // Затемнение фона под модалкой
-    skeleton: "#e0e0e0", // Цвет "скелетона" при загрузке (ActivityIndicator)
-    skeletonHighlight: "#f5f5f5", // Перелив скелетона
+    // For curtains, drapes, and valances
+    overlay: "rgba(0, 0, 0, 0.5)", // Dimming the background behind the modal
+    skeleton: "#e0e0e0", // The color of the loading indicator (ActivityIndicator)
+    skeletonHighlight: "#f5f5f5", // Skeleton Overflow
 
-    // Статусы
+    // Status
     error: "#e57373",
     warning: "#ffd54f",
     warningText: "#7a5e00",
@@ -54,14 +55,14 @@ export const Colors = {
     accent: "#40a9ff",
     accentHover: "#1890ff",
     accentBg: "rgba(64, 169, 255, 0.15)",
+    gradientEnd: "#162736",
     surfaceTransparent: "rgba(28, 28, 30, 0.8)",
 
-    // 👇 ДОБАВЛЕНО
     overlay: "rgba(0, 0, 0, 0.7)",
     skeleton: "#2c2c2e",
     skeletonHighlight: "#3a3a3c",
 
-    // Статусы
+    // Statuses
     error: "#ef5350",
     warning: "#ffca28",
     warningText: "#ffca28",

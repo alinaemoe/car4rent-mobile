@@ -39,7 +39,16 @@ export default function TabLayout() {
           ),
         }}
       />
-      {/* ⚠️ ТРЕТИЙ ТАБ: Перехватываем клик и открываем дровер */}
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Профиль",
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="person-outline" size={24} color={color} />
+          ),
+        }}
+      />
+      {/* Перехватываем клик и открываем дровер */}
       <Tabs.Screen
         name="_menu_dummy"
         options={{

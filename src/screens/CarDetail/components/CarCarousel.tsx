@@ -1,15 +1,6 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  Dimensions,
-} from "react-native";
+import { View, Text, StyleSheet, FlatList, Dimensions } from "react-native";
 import { Image } from "expo-image";
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const blurhash = "L6PZfSi_.AyE_3t7t7R**0o#DgR4";
@@ -19,7 +10,6 @@ interface CarCarouselProps {
 }
 
 export const CarCarousel: React.FC<CarCarouselProps> = ({ images }) => {
-  const router = useRouter();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const displayImages =
@@ -50,9 +40,6 @@ export const CarCarousel: React.FC<CarCarouselProps> = ({ images }) => {
           />
         )}
       />
-      <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-        <Ionicons name="chevron-back" size={24} color="#000" />
-      </TouchableOpacity>
 
       <View style={styles.imageCounter}>
         <Text style={styles.imageCounterText}>
@@ -65,21 +52,9 @@ export const CarCarousel: React.FC<CarCarouselProps> = ({ images }) => {
 
 const styles = StyleSheet.create({
   carouselContainer: { position: "relative" },
-  backBtn: {
-    position: "absolute",
-    top: 50,
-    left: 16,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "rgba(255, 255, 255, 0.9)",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 10,
-  },
   imageCounter: {
     position: "absolute",
-    bottom: 44,
+    bottom: 44, // Висит ровно над наезжающей карточкой
     alignSelf: "center",
     backgroundColor: "rgba(0, 0, 0, 0.6)",
     paddingHorizontal: 12,

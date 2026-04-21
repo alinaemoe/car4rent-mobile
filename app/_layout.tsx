@@ -4,6 +4,12 @@ import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { Provider } from "react-redux";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+
+// 👇 НОВЫЕ ИМПОРТЫ ДЛЯ СТАТУС БАРА И SAFE AREA
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { StatusBar } from "expo-status-bar";
+import { useColorScheme } from "react-native";
 
 import { store, useAppDispatch, useAppSelector } from "../src/store";
 import {
@@ -19,20 +25,6 @@ import { initI18n } from "@/src/utils/i18n";
 import { fetchAndCacheTranslations } from "@/src/api/translations";
 import { axiosInstance } from "../src/api/axios-instance";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
-import { User } from "../src/types"; // 👈 Импортируем наш тип User
-import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
-
-//  if (storedToken) {
-//           const mockUser: User = {
-//             id: "uuid-1234-5678",
-//             email: "test@client.com",
-//             first_name: "Иван",
-//             last_name: "Иванов",
-//             roles: ["CLIENT"],
-//             status: "ACTIVE",
-//             is_verified: true,
-//           };
-//           dispatch(setCredentials({ user: mockUser, token: storedToken }));
 
 SplashScreen.preventAutoHideAsync();
 
@@ -51,12 +43,10 @@ function AppContent() {
     const initApp = async () => {
       try {
         await initI18n();
-        fetchAndCacheTranslations(); // Фоновя загрузка
-
+        fetchAndCacheTranslations();
         await dispatch(loadFavorites());
         await dispatch(fetchDictionaries());
 
-        // ПРОБУЕМ ДОСТАТЬ ТОКЕН
         const accessToken = await storage.getAccessToken();
         const isGuestSaved = await storage.getGuestMode();
 
@@ -64,13 +54,11 @@ function AppContent() {
           const { data: user } = await axiosInstance.get("/users/profile");
           dispatch(setCredentials({ user, token: accessToken }));
         } else if (isGuestSaved) {
-          // Если токена нет, но он нажимал "войти как гость" в прошлый раз:
           dispatch(setGuestMode());
         } else {
           dispatch(logout());
         }
       } catch (error) {
-        // Если что-то пошло не так (например, сервер лежит или оба токена умерли)
         console.error("Ошибка инициализации профиля:", error);
         dispatch(logout());
         await storage.removeTokens();
@@ -84,24 +72,14 @@ function AppContent() {
 
   useEffect(() => {
     if (!isAppReady) return;
-
     const inAuthGroup = (segments[0] as string) === "(auth)";
 
-    console.log(
-      `🔀 [ROUTER] App is ready. Token: ${!!token}, isGuest: ${isGuest}, inAuthGroup: ${inAuthGroup}`,
-    );
-
-    // 1. ЗАЩИТА: Нет токена И не гость И пытается зайти в каталог -> На логин
     if (!token && !isGuest && !inAuthGroup) {
-      console.log("➡️ [ROUTER] Кидаем на логин");
       router.replace("/login");
-    }
-    // 2. ПРОПУСК: Есть токен ИЛИ он гость, И при этом он сидит на экране логина/регистрации -> В каталог
-    else if ((token || isGuest) && inAuthGroup) {
-      console.log("➡️ [ROUTER] Кидаем в приложение (drawer)");
+    } else if ((token || isGuest) && inAuthGroup) {
       router.replace("/(drawer)/(tabs)");
     }
-  }, [token, isGuest, isAppReady, segments]); // 👈 Обязательно добавь isGuest в массив зависимостей!
+  }, [token, isGuest, isAppReady, segments]);
 
   if (!isAppReady) return null;
 
@@ -114,7 +92,6 @@ function AppContent() {
     >
       <Stack.Screen name="(drawer)" />
       <Stack.Screen name="(auth)" />
-      {/* 👇 ДОБАВЛЯЕМ НАШИ НОВЫЕ ЭКРАНЫ */}
       <Stack.Screen name="car/[id]" />
       <Stack.Screen name="checkout/[id]" />
     </Stack>
@@ -122,15 +99,28 @@ function AppContent() {
 }
 
 export default function RootLayout() {
+  const colors = useAppColors();
+  const theme = useColorScheme(); // 'light' или 'dark'
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <BottomSheetModalProvider>
-        <Provider store={store}>
-          <QueryClientProvider client={queryClient}>
-            <AppContent />
-          </QueryClientProvider>
-        </Provider>
-      </BottomSheetModalProvider>
+      {/* 1. ГЛАВНАЯ ОБЕРТКА SAFE AREA */}
+      <SafeAreaProvider>
+        {/* 2. СТАТУС БАР: Задаем ему цвет фона как у приложения, а иконки контрастные */}
+        <StatusBar
+          style={theme === "dark" ? "light" : "dark"}
+          backgroundColor={colors.background}
+          translucent={false} // Отключаем наезд контента под статус-бар на Android!
+        />
+
+        <BottomSheetModalProvider>
+          <Provider store={store}>
+            <QueryClientProvider client={queryClient}>
+              <AppContent />
+            </QueryClientProvider>
+          </Provider>
+        </BottomSheetModalProvider>
+      </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }

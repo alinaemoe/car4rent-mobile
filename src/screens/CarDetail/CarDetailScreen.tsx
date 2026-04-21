@@ -1,5 +1,13 @@
 import React, { useRef } from "react";
-import { View, ScrollView, StyleSheet, Text, Alert } from "react-native";
+import {
+  View,
+  ScrollView,
+  StyleSheet,
+  Text,
+  Alert,
+  TouchableOpacity,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter, Href } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
@@ -89,12 +97,45 @@ export default function CarDetailScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.surface }}>
+      <SafeAreaView
+        edges={["top"]} // Ограничиваем только верхом, чтобы снизу не было лишнего паддинга
+        style={{
+          backgroundColor: colors.background,
+          zIndex: 10,
+          elevation: 5,
+          // Вместо отдельного View-разделителя используем границу
+          borderBottomWidth: StyleSheet.hairlineWidth,
+          borderBottomColor: colors.border,
+        }}
+      >
+        <View style={styles.stickyHeader}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={styles.backBtn}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Ionicons
+              name="chevron-back-outline"
+              size={28}
+              color={colors.textPrimary}
+            />
+          </TouchableOpacity>
+          <Text
+            style={[styles.headerTitle, { color: colors.textPrimary }]}
+            numberOfLines={1}
+          >
+            {car.brand} {car.model}, {car.year}
+          </Text>
+        </View>
+      </SafeAreaView>
+
       <ScrollView
         contentContainerStyle={{ paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
       >
         <CarCarousel images={car.images} />
 
+        {/* КАРТОЧКА 1: ШАПКА (Наезжает на картинку) */}
         <View
           style={[styles.headerCard, { backgroundColor: colors.background }]}
         >
@@ -112,7 +153,6 @@ export default function CarDetailScreen() {
             style={{
               flexDirection: "row",
               alignItems: "center",
-              marginBottom: 16,
             }}
           >
             <Ionicons
@@ -177,10 +217,40 @@ export default function CarDetailScreen() {
 }
 
 const styles = StyleSheet.create({
+  // Стили для нового хедера
+  // Стили для нового хедера
+  stickyHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    height: 56,
+    paddingHorizontal: 16,
+    // Убрали justifyContent: "space-between", теперь всё прижато влево
+  },
+  backBtn: {
+    justifyContent: "center",
+    marginRight: 16, // Отступ между стрелкой и текстом
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    // Убрали flex: 1 и textAlign: "center"
+  },
+  headerDivider: {
+    height: StyleSheet.hairlineWidth, // Максимально тонкая линия (1 пиксель устройства)
+    marginHorizontal: 20, // Отступы по краям, чтобы линия была чуть уже экрана
+    opacity: 0.7, // Делаем линию чуть прозрачнее и неброской
+  },
+
+  // Стили для первой карточки (наезд на картинку) остаются без изменений:
   headerCard: {
     padding: 20,
+    paddingTop: 24,
     marginBottom: 12,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
+    marginTop: -24,
+    zIndex: 1,
   },
 });

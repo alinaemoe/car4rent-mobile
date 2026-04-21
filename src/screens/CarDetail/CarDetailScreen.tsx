@@ -22,6 +22,7 @@ import { CarSpecs } from "./components/CarSpecs";
 import { CarLocation } from "./components/CarLocation";
 import { CarRules } from "./components/CarRules";
 import { CarReviews } from "./components/CarReviews";
+import { CarHowItWorks } from "./components/CarHowItWorks";
 
 export default function CarDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -154,6 +155,7 @@ export default function CarDetailScreen() {
         <CarLocation />
         <CarRules car={car} />
         <CarReviews avgRating={car.avg_rating} />
+        <CarHowItWorks />
       </ScrollView>
 
       <StickyFooter

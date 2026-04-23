@@ -76,7 +76,7 @@ export const selectIsAdmin = (state: RootState) =>
 
 // Проверяет, подтверждены ли документы
 export const selectIsVerified = (state: RootState) =>
-  state.auth.user?.is_verified ?? false;
+  state.auth.user?.is_documents_verified ?? false;
 
 // Получить текущий статус юзера (ACTIVE, BANNED и тд)
 export const selectUserStatus = (state: RootState) => state.auth.user?.status;

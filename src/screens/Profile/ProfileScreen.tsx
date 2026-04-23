@@ -40,7 +40,7 @@ export default function ProfileScreen() {
   // Пока мы симулируем это на основе is_verified (UNVERIFIED если фолс).
   const docStatus = isGuest
     ? "GUEST"
-    : user?.is_verified
+    : user?.is_documents_verified
       ? "VERIFIED"
       : "UNVERIFIED";
 

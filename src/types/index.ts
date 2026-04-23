@@ -9,7 +9,8 @@ export interface User {
   avatar_url?: string | null;
   roles: Role[];
   status: "ACTIVE" | "BANNED" | "PENDING_VERIFICATION";
-  is_verified: boolean;
+  is_email_verified: boolean;
+  is_documents_verified: boolean;
 }
 
 export type CarStatus = "AVAILABLE" | "RENTED" | "MAINTENANCE";

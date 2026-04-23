@@ -5,19 +5,30 @@ import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 
 import { RegisterForm } from "./components/RegisterForm";
 import { OtpVerification } from "./components/OtpVerification";
+import { RegistrationSuccess } from "./components/RegistrationSuccess"; // 👈 Новый компонент
 
 export default function RegisterScreen() {
   const colors = useAppColors();
 
-  const [step, setStep] = useState<1 | 2>(1);
+  // Теперь у нас 3 шага
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   const [registeredEmail, setRegisteredEmail] = useState<string>("");
+
+  // Временное хранилище для данных юзера, пока он не выберет "Сейчас" или "Позже"
+  const [authData, setAuthData] = useState<{ user: any; token: string } | null>(
+    null,
+  );
 
   const handleRegistrationSuccess = (email: string) => {
     setRegisteredEmail(email);
     setStep(2);
   };
 
-  // 🔥 Тот же крутой диагональный градиент
+  const handleOtpSuccess = (user: any, token: string) => {
+    setAuthData({ user, token });
+    setStep(3); // 👈 Переключаем на 3-й шаг вместо редиректа
+  };
+
   const gradientColors = [colors.background, colors.gradientEnd] as const;
 
   return (
@@ -32,11 +43,15 @@ export default function RegisterScreen() {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.keyboardView}
       >
-        {step === 1 ? (
-          <RegisterForm onSuccess={handleRegistrationSuccess} />
-        ) : (
-          <OtpVerification email={registeredEmail} onBack={() => setStep(1)} />
+        {step === 1 && <RegisterForm onSuccess={handleRegistrationSuccess} />}
+        {step === 2 && (
+          <OtpVerification
+            email={registeredEmail}
+            onBack={() => setStep(1)}
+            onSuccess={handleOtpSuccess} // 👈 Передаем новый проп
+          />
         )}
+        {step === 3 && authData && <RegistrationSuccess authData={authData} />}
       </KeyboardAvoidingView>
     </LinearGradient>
   );

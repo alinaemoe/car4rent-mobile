@@ -18,11 +18,12 @@ import { storage } from "@/src/utils/storage";
 interface Props {
   email: string;
   onBack: () => void;
+  // 👇 Добавили коллбэк для передачи данных на 3-й шаг
+  onSuccess: (user: any, token: string) => void;
 }
 
-export const OtpVerification = ({ email, onBack }: Props) => {
+export const OtpVerification = ({ email, onBack, onSuccess }: Props) => {
   const colors = useAppColors();
-  const dispatch = useAppDispatch();
   const inputRef = useRef<TextInput>(null);
 
   const [otp, setOtp] = useState("");
@@ -30,7 +31,6 @@ export const OtpVerification = ({ email, onBack }: Props) => {
   const [isResending, setIsResending] = useState(false);
   const [errorText, setErrorText] = useState("");
 
-  // Фокусируемся на инпуте при появлении экрана
   useEffect(() => {
     setTimeout(() => inputRef.current?.focus(), 100);
   }, []);
@@ -48,9 +48,11 @@ export const OtpVerification = ({ email, onBack }: Props) => {
       });
       const { access_token, refresh_token, user } = response.data;
 
+      // Токены физически сохраняем, чтобы следующий лоад был успешным
       await storage.setTokens(access_token, refresh_token);
-      dispatch(setCredentials({ user, token: access_token }));
-      // Роутер сам подхватит авторизацию и выкинет в приложение
+
+      // 🔥 БОЛЬШЕ НЕТ DISPATCH ЗДЕСЬ! Передаем наверх
+      onSuccess(user, access_token);
     } catch (error: any) {
       setErrorText(error.response?.data?.message || "Неверный код");
     } finally {
@@ -73,7 +75,6 @@ export const OtpVerification = ({ email, onBack }: Props) => {
 
   return (
     <View style={styles.container}>
-      {/* Аккуратная кнопка назад без тяжелого хедера */}
       <TouchableOpacity
         onPress={onBack}
         style={styles.backBtn}

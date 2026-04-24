@@ -9,7 +9,7 @@ import {
   Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router"; // 👈 Добавили useLocalSearchParams
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { useFocusEffect } from "@react-navigation/native";
@@ -21,6 +21,10 @@ import { UserDocument, DocType } from "@/src/types";
 export default function UploadDocsScreen() {
   const colors = useAppColors();
   const router = useRouter();
+
+  // 👇 Ловим параметр из URL
+  const { from } = useLocalSearchParams<{ from: string }>();
+  const isFromRegistration = from === "registration";
 
   const [docs, setDocs] = useState<UserDocument[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -43,7 +47,6 @@ export default function UploadDocsScreen() {
     }, []),
   );
 
-  // Универсальная отправка FormData (работает с Cloudinary на бэке)
   const processImageUpload = async (
     type: DocType,
     result: ImagePicker.ImagePickerResult,
@@ -88,7 +91,7 @@ export default function UploadDocsScreen() {
 
     const result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.2, // Жесткое сжатие для экономии трафика и обхода 413 Payload Too Large
+      quality: 0.2,
     });
 
     await processImageUpload(type, result);
@@ -278,8 +281,11 @@ export default function UploadDocsScreen() {
         style={{ backgroundColor: colors.surface, zIndex: 10 }}
       >
         <View style={styles.stickyHeader}>
+          {/* Если пришли из реги, то можно скрыть крестик, либо оставить его (он тоже закроет модалку) */}
           <TouchableOpacity
-            onPress={() => router.back()}
+            onPress={() =>
+              isFromRegistration ? router.replace("/") : router.back()
+            }
             style={styles.backBtn}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
@@ -344,6 +350,30 @@ export default function UploadDocsScreen() {
             </Text>
           </View>
         </ScrollView>
+      )}
+
+      {/* 👇 ДОБАВЛЯЕМ ЛИПКИЙ ФУТЕР ТОЛЬКО ДЛЯ ПОТОКА РЕГИСТРАЦИИ */}
+      {isFromRegistration && (
+        <SafeAreaView
+          edges={["bottom"]}
+          style={[
+            styles.stickyFooter,
+            { backgroundColor: colors.surface, borderTopColor: colors.border },
+          ]}
+        >
+          <TouchableOpacity
+            style={[styles.continueBtn, { backgroundColor: colors.accent }]}
+            onPress={() => router.replace("/")} // Кидаем на главную в Каталог
+          >
+            <Text style={styles.continueBtnText}>Перейти к машинам</Text>
+            <Ionicons
+              name="arrow-forward"
+              size={20}
+              color="#fff"
+              style={{ marginLeft: 8 }}
+            />
+          </TouchableOpacity>
+        </SafeAreaView>
       )}
     </View>
   );
@@ -452,5 +482,33 @@ const styles = StyleSheet.create({
     marginTop: 8,
     padding: 20,
     borderRadius: 24,
+  },
+  // 👇 СТИЛИ ДЛЯ НОВОГО ФУТЕРА
+  stickyFooter: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
+    borderTopWidth: 1,
+    elevation: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+  },
+  continueBtn: {
+    flexDirection: "row",
+    height: 56,
+    borderRadius: 16,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+  },
+  continueBtnText: {
+    color: "#fff",
+    fontSize: 17,
+    fontWeight: "bold",
   },
 });

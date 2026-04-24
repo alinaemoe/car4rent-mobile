@@ -1,16 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { View, ScrollView, StyleSheet, ActivityIndicator } from "react-native";
 import { useRouter, Href } from "expo-router";
+import { useFocusEffect } from "@react-navigation/native";
 
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { useAppSelector, useAppDispatch } from "@/src/store";
-import { logout } from "@/src/store/slices/authSlice";
+import { logout, updateUser } from "@/src/store/slices/authSlice";
 import { storage } from "@/src/utils/storage";
 import { axiosInstance } from "@/src/api/axios-instance";
 
 // Компоненты
 import { ProfileHeader } from "./components/ProfileHeader";
-import { VerificationBanner } from "./components/VerificationBanner";
+import { VerificationBanner, DocStatus } from "./components/VerificationBanner";
 import { MenuSection } from "./components/MenuSection";
 
 export default function ProfileScreen() {
@@ -21,6 +22,25 @@ export default function ProfileScreen() {
   const user = useAppSelector((state) => state.auth.user);
   const isGuest = useAppSelector((state) => state.auth.isGuest);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      // Гостю профиль не обновляем, чтобы не ловить 401 ошибку
+      if (isGuest) return;
+
+      const fetchFreshProfile = async () => {
+        try {
+          const response = await axiosInstance.get("/users/profile");
+          // Закидываем свежие данные (включая массив documents) в Redux
+          dispatch(updateUser(response.data));
+        } catch (error) {
+          console.log("Не удалось обновить профиль в фоне", error);
+        }
+      };
+
+      fetchFreshProfile();
+    }, [isGuest, dispatch]),
+  );
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -36,13 +56,35 @@ export default function ProfileScreen() {
     }
   };
 
+  const getDocStatus = (): DocStatus => {
+    if (isGuest) return "GUEST";
+    if (user?.is_documents_verified) return "VERIFIED";
+
+    if (user?.documents && user.documents.length > 0) {
+      // 1. Если хотя бы один документ отклонен — трубим тревогу (REJECTED)
+      const hasRejected = user.documents.some((d) => d.status === "REJECTED");
+      if (hasRejected) return "REJECTED";
+
+      // 2. Проверяем, загружены ли ОБА обязательных документа
+      const hasPassport = user.documents.some((d) => d.type === "PASSPORT");
+      const hasLicense = user.documents.some(
+        (d) => d.type === "DRIVER_LICENSE",
+      );
+
+      // Если оба загружены и нет отклоненных -> значит они на проверке (PENDING)
+      if (hasPassport && hasLicense) return "PENDING";
+
+      // Если загружен только один (например, паспорт), то верификация еще не закончена
+      return "UNVERIFIED";
+    }
+
+    return "UNVERIFIED";
+  };
+
+  const docStatus = getDocStatus();
+
   // В реальном приложении мы бы брали docStatus из Redux (отдельный thunk или поле в User).
   // Пока мы симулируем это на основе is_verified (UNVERIFIED если фолс).
-  const docStatus = isGuest
-    ? "GUEST"
-    : user?.is_documents_verified
-      ? "VERIFIED"
-      : "UNVERIFIED";
 
   return (
     <ScrollView

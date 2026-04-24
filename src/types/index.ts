@@ -11,6 +11,7 @@ export interface User {
   status: "ACTIVE" | "BANNED" | "PENDING_VERIFICATION";
   is_email_verified: boolean;
   is_documents_verified: boolean;
+  documents?: UserDocument[];
 }
 
 export type DocType = "PASSPORT" | "DRIVER_LICENSE";

@@ -33,7 +33,7 @@ export const RegistrationSuccess = ({ authData }: Props) => {
     // 2. И сразу принудительно кидаем на экран загрузки доков.
     // Небольшой таймаут нужен, чтобы глобальный _layout успел отрендерить (drawer) группу
     setTimeout(() => {
-      router.replace("/(drawer)/upload-docs" as Href);
+      router.replace("/(drawer)/upload-docs?from=registration" as Href);
     }, 100);
   };
 

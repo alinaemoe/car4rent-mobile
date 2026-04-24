@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { useRouter } from "expo-router";
 import {
   View,
@@ -52,6 +52,54 @@ export default function CatalogScreen() {
   // Стейт Календаря
   const [markedDates, setMarkedDates] = useState<any>({});
   const [tempStart, setTempStart] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (filters.startDate && filters.endDate) {
+      // Если в Redux есть полный диапазон дат (выбрали на другом экране)
+      let newMarked: any = {
+        [filters.startDate]: {
+          startingDay: true,
+          color: colors.accent,
+          textColor: "white",
+        },
+        [filters.endDate]: {
+          endingDay: true,
+          color: colors.accent,
+          textColor: "white",
+        },
+      };
+
+      let curr = new Date(filters.startDate);
+      curr.setDate(curr.getDate() + 1);
+      const end = new Date(filters.endDate);
+
+      while (curr < end) {
+        const dateStr = curr.toISOString().split("T")[0];
+        newMarked[dateStr] = {
+          color: colors.surface,
+          textColor: colors.textPrimary,
+        };
+        curr.setDate(curr.getDate() + 1);
+      }
+
+      setMarkedDates(newMarked);
+      setTempStart(filters.startDate); // Чтобы логика кликов не ломалась
+    } else if (filters.startDate && !filters.endDate) {
+      // Если в Redux только старт
+      setMarkedDates({
+        [filters.startDate]: {
+          startingDay: true,
+          color: colors.accent,
+          textColor: "white",
+        },
+      });
+      setTempStart(filters.startDate);
+    } else {
+      // Если в Redux дат нет (сбросили)
+      setMarkedDates({});
+      setTempStart(null);
+    }
+  }, [filters.startDate, filters.endDate, colors]);
 
   // React Query
   const {
@@ -145,6 +193,18 @@ export default function CatalogScreen() {
       setMarkedDates(newMarked);
       setTimeout(() => calendarSheetRef.current?.dismiss(), 500);
     }
+  };
+
+  const handleClearDates = () => {
+    // 1. Очищаем локальные стейты календаря
+    setTempStart(null);
+    setMarkedDates({});
+
+    // 2. Затираем даты в Redux (применяем null)
+    dispatch(applyFilters({ startDate: null, endDate: null }));
+
+    // 3. Закрываем шторку
+    calendarSheetRef.current?.dismiss();
   };
 
   // ЗАГЛУШКА ДЛЯ ПУСТОГО СПИСКА
@@ -289,6 +349,7 @@ export default function CatalogScreen() {
         ref={calendarSheetRef}
         markedDates={markedDates}
         onDayPress={handleDayPress}
+        onClear={handleClearDates}
       />
       <FiltersModal
         visible={isFiltersVisible}

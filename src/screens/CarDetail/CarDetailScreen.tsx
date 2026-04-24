@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import {
   View,
   ScrollView,
@@ -17,6 +17,7 @@ import { useAppSelector, useAppDispatch } from "@/src/store";
 import { useCarDetail } from "@/src/api/queries/useCars";
 import { usePriceCalculator } from "@/src/hooks/usePriceCalculator";
 import { selectIsCarFavorite } from "@/src/store/slices/favoritesSlice";
+import { applyFilters } from "@/src/store/slices/filtersSlice";
 
 import { CalendarSheet } from "@/src/screens/Catalog/modals/CalendarSheet";
 import { StickyFooter } from "@/src/screens/CarDetail/components/StickyFooter";
@@ -38,6 +39,7 @@ export default function CarDetailScreen() {
   const router = useRouter();
   const colors = useAppColors();
   const { t } = useTranslation();
+  const dispatch = useAppDispatch();
 
   const { startDate, endDate } = useAppSelector((state) => state.filters);
   const isGuest = useAppSelector((state) => state.auth?.isGuest ?? false);
@@ -49,6 +51,126 @@ export default function CarDetailScreen() {
   const { days, finalRentPrice } = usePriceCalculator(car, startDate, endDate);
 
   const calendarSheetRef = useRef<any>(null);
+
+  const [markedDates, setMarkedDates] = useState<any>({});
+  const [tempStart, setTempStart] = useState<string | null>(startDate || null);
+
+  useEffect(() => {
+    if (startDate && endDate) {
+      let newMarked: any = {
+        [startDate]: {
+          startingDay: true,
+          color: colors.accent,
+          textColor: "white",
+        },
+        [endDate]: {
+          endingDay: true,
+          color: colors.accent,
+          textColor: "white",
+        },
+      };
+
+      let curr = new Date(startDate);
+      curr.setDate(curr.getDate() + 1);
+      const end = new Date(endDate);
+
+      while (curr < end) {
+        const dateStr = curr.toISOString().split("T")[0];
+        newMarked[dateStr] = {
+          color: colors.surface,
+          textColor: colors.textPrimary,
+        };
+        curr.setDate(curr.getDate() + 1);
+      }
+
+      setMarkedDates(newMarked);
+      setTempStart(startDate);
+    } else if (startDate && !endDate) {
+      setMarkedDates({
+        [startDate]: {
+          startingDay: true,
+          color: colors.accent,
+          textColor: "white",
+        },
+      });
+      setTempStart(startDate);
+    } else {
+      setMarkedDates({});
+      setTempStart(null);
+    }
+  }, [startDate, endDate, colors]);
+
+  const handleDayPress = (day: any) => {
+    const dateString = day.dateString;
+
+    if (!tempStart || (startDate && endDate)) {
+      setTempStart(dateString);
+      dispatch(applyFilters({ startDate: dateString, endDate: null }));
+      setMarkedDates({
+        [dateString]: {
+          startingDay: true,
+          color: colors.accent,
+          textColor: "white",
+        },
+      });
+    } else if (tempStart && !endDate) {
+      if (new Date(dateString) < new Date(tempStart)) {
+        setTempStart(dateString);
+        dispatch(applyFilters({ startDate: dateString, endDate: null }));
+        setMarkedDates({
+          [dateString]: {
+            startingDay: true,
+            color: colors.accent,
+            textColor: "white",
+          },
+        });
+        return;
+      }
+
+      dispatch(applyFilters({ endDate: dateString }));
+      let newMarked: any = {
+        [tempStart]: {
+          startingDay: true,
+          color: colors.accent,
+          textColor: "white",
+        },
+        [dateString]: {
+          endingDay: true,
+          color: colors.accent,
+          textColor: "white",
+        },
+      };
+
+      let curr = new Date(tempStart);
+      curr.setDate(curr.getDate() + 1);
+      const end = new Date(dateString);
+
+      // Закрашиваем все дни между стартом и концом
+      while (curr < end) {
+        const dateStr = curr.toISOString().split("T")[0];
+        newMarked[dateStr] = {
+          color: colors.surface, // Либо используй accentBg для легкого фона
+          textColor: colors.textPrimary,
+        };
+        curr.setDate(curr.getDate() + 1);
+      }
+
+      setMarkedDates(newMarked);
+      // Закрываем шторку с небольшой задержкой для красоты
+      setTimeout(() => calendarSheetRef.current?.dismiss(), 500);
+    }
+  };
+  const handleClearDates = () => {
+    // 1. Очищаем локальные стейты календаря
+    setTempStart(null);
+    setMarkedDates({});
+
+    // 2. Затираем даты в Redux (применяем null)
+    dispatch(applyFilters({ startDate: null, endDate: null }));
+
+    // 3. Закрываем шторку
+    calendarSheetRef.current?.dismiss();
+  };
 
   const handleBookPress = () => {
     if (!startDate || !endDate) {
@@ -210,8 +332,9 @@ export default function CarDetailScreen() {
       />
       <CalendarSheet
         ref={calendarSheetRef}
-        markedDates={{}}
-        onDayPress={() => {}}
+        markedDates={markedDates} // 👈 ТЕПЕРЬ ПЕРЕДАЕМ НАШ СТЕЙТ
+        onDayPress={handleDayPress} // 👈 И ПЕРЕДАЕМ ФУНКЦИЮ
+        onClear={handleClearDates}
       />
     </View>
   );

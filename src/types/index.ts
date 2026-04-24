@@ -13,6 +13,19 @@ export interface User {
   is_documents_verified: boolean;
 }
 
+export type DocType = "PASSPORT" | "DRIVER_LICENSE";
+export type DocStatus = "PENDING" | "VERIFIED" | "REJECTED";
+
+export interface UserDocument {
+  id: number;
+  type: DocType;
+  image_url: string;
+  document_number?: string;
+  status: DocStatus;
+  rejection_reason?: string | null;
+  created_at: string;
+}
+
 export type CarStatus = "AVAILABLE" | "RENTED" | "MAINTENANCE";
 
 export type BodyType = string;

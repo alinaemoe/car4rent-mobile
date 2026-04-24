@@ -5,16 +5,22 @@ import {
   TouchableOpacity,
   StyleSheet,
   Platform,
+  ActivityIndicator, // 👈 Не забудь импортировать
 } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 
 interface Props {
   isFormValid: boolean;
+  isLoading?: boolean; // 👈 Добавили новый проп (сделали необязательным на всякий случай)
   onSubmit: () => void;
 }
 
-export const CheckoutFooter = ({ isFormValid, onSubmit }: Props) => {
+export const CheckoutFooter = ({
+  isFormValid,
+  isLoading = false,
+  onSubmit,
+}: Props) => {
   const colors = useAppColors();
   const { t } = useTranslation();
 
@@ -36,12 +42,19 @@ export const CheckoutFooter = ({ isFormValid, onSubmit }: Props) => {
         ]}
         onPress={onSubmit}
         activeOpacity={0.8}
-        disabled={!isFormValid}
+        // 👇 Блокируем кнопку и если форма не валидна, и если идет отправка
+        disabled={!isFormValid || isLoading}
       >
-        <Text style={styles.submitBtnText}>
-          {t("checkout.continue", "Продолжить")}
-        </Text>
+        {/* 👇 Показываем либо крутилку, либо текст */}
+        {isLoading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.submitBtnText}>
+            {t("checkout.continue", "Продолжить")}
+          </Text>
+        )}
       </TouchableOpacity>
+
       <Text style={[styles.footerTip, { color: colors.textSecondary }]}>
         {t("checkout.footer_tip", "Укажите период аренды и регион поездки")}
       </Text>
@@ -56,7 +69,12 @@ const styles = StyleSheet.create({
     paddingBottom: Platform.OS === "ios" ? 32 : 16,
     borderTopWidth: StyleSheet.hairlineWidth,
   },
-  submitBtn: { paddingVertical: 16, borderRadius: 12, alignItems: "center" },
+  submitBtn: {
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center", // Выравнивает спиннер строго по центру
+  },
   submitBtnText: { color: "#fff", fontSize: 17, fontWeight: "600" },
   footerTip: { textAlign: "center", fontSize: 12, marginTop: 12 },
 });

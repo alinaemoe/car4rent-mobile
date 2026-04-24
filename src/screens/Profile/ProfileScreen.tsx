@@ -8,6 +8,7 @@ import { useAppSelector, useAppDispatch } from "@/src/store";
 import { logout, updateUser } from "@/src/store/slices/authSlice";
 import { storage } from "@/src/utils/storage";
 import { axiosInstance } from "@/src/api/axios-instance";
+import { Toast } from "@/src/components/Toast";
 
 // Компоненты
 import { ProfileHeader } from "./components/ProfileHeader";
@@ -54,6 +55,10 @@ export default function ProfileScreen() {
       dispatch(logout());
       setIsLoggingOut(false);
     }
+  };
+
+  const handletoast = async () => {
+    Toast.error("Профиль обновлен", "Ваши данные успешно сохранены.");
   };
 
   const getDocStatus = (): DocStatus => {
@@ -157,7 +162,7 @@ export default function ProfileScreen() {
           {
             icon: "chatbubble-ellipses-outline",
             title: "Служба поддержки",
-            onPress: () => {},
+            onPress: handletoast,
           },
         ]}
       />

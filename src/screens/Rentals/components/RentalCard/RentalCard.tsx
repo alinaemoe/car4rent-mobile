@@ -5,7 +5,7 @@ import { Rental } from "@/src/api/queries/useRentals";
 
 import { RentalCardHeader } from "./RentalCardHeader";
 import { RentalCardFooter } from "./RentalCardFooter";
-import { RentalCardActions } from "./RntalCardActions";
+import { RentalCardActions } from "./RentalCardActions";
 
 interface Props {
   rental: Rental;

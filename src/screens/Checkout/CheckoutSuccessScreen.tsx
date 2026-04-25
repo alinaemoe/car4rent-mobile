@@ -41,7 +41,7 @@ export default function CheckoutSuccessScreen() {
           onPress={() => {
             // Кидаем юзера в логическую вкладку "Мои поездки"
             // 👇 Замени на актуальный путь к табам, когда мы их создадим
-            router.replace("/(drawer)/(tabs)/bookings");
+            router.replace("/(drawer)/(tabs)/rentals");
           }}
           activeOpacity={0.8}
         >

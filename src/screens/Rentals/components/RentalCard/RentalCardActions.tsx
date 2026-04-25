@@ -18,7 +18,7 @@ interface Props {
   onFindOtherPress?: () => void;
 }
 
-const SUPPORT_PHONE = "+79991234567";
+const SUPPORT_PHONE = "+10000000000";
 
 export const RentalCardActions = ({
   rental,
@@ -28,10 +28,19 @@ export const RentalCardActions = ({
 }: Props) => {
   const colors = useAppColors();
 
-  const handleCallSupport = () => {
-    Linking.openURL(`tel:${SUPPORT_PHONE}`).catch(() => {
-      Alert.alert("Ошибка", "Не удалось открыть набор номера");
-    });
+  const handleCallSupport = async () => {
+    const url = `tel:${SUPPORT_PHONE}`;
+    const supported = await Linking.canOpenURL(url);
+
+    if (supported) {
+      await Linking.openURL(url);
+    } else {
+      Alert.alert(
+        "Ошибка",
+        "Ваше устройство не поддерживает телефонные звонки. Номер: " +
+          SUPPORT_PHONE,
+      );
+    }
   };
 
   const renderContent = () => {

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import {
   View,
   Text,
@@ -11,10 +11,12 @@ import {
 } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "expo-router";
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
 
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
-import { useMyRentals } from "@/src/api/queries/useRentals";
+import { useMyRentals, Rental } from "@/src/api/queries/useRentals";
 import { RentalCard } from "./components/RentalCard/RentalCard";
+import { ReviewBottomSheet } from "./components/ReviewBottomSheet";
 
 type TabType = "UPCOMING" | "ACTIVE" | "HISTORY";
 
@@ -24,6 +26,10 @@ export default function RentalsScreen() {
   const router = useRouter();
 
   const [activeTab, setActiveTab] = useState<TabType>("UPCOMING");
+
+  const reviewSheetRef = useRef<BottomSheetModal>(null);
+  const [selectedRentalForReview, setSelectedRentalForReview] =
+    useState<Rental | null>(null);
 
   const { data: rentals, isLoading, isRefetching, refetch } = useMyRentals();
 
@@ -60,6 +66,11 @@ export default function RentalsScreen() {
         </Text>
       </View>
     );
+  };
+
+  const handleOpenReview = (rental: Rental) => {
+    setSelectedRentalForReview(rental);
+    reviewSheetRef.current?.present();
   };
 
   return (
@@ -138,6 +149,15 @@ export default function RentalsScreen() {
                 // В будущем: router.push(`/rental-details/${item.id}`)
                 console.log("Card pressed:", item.id);
               }}
+              onReviewPress={() => handleOpenReview(item)} // 👈 Прокидываем функцию открытия!
+              onBookAgainPress={() => {
+                // Кидаем юзера на страницу авто, чтобы он забронировал снова
+                router.push(`/car/${item.car.id}`);
+              }}
+              onFindOtherPress={() => {
+                // Кидаем юзера в каталог
+                router.push("/(drawer)/(tabs)");
+              }}
             />
           )}
           refreshControl={
@@ -149,6 +169,11 @@ export default function RentalsScreen() {
           }
         />
       )}
+      <ReviewBottomSheet
+        ref={reviewSheetRef}
+        rental={selectedRentalForReview}
+        onClose={() => reviewSheetRef.current?.dismiss()}
+      />
     </View>
   );
 }

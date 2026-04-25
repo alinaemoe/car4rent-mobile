@@ -31,7 +31,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="bookings"
+        name="rentals"
         options={{
           title: "Мои Брони",
           tabBarIcon: ({ color }) => (

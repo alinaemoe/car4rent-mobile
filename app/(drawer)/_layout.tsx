@@ -1,5 +1,11 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ActivityIndicator,
+  StyleSheet,
+} from "react-native";
 import { Drawer } from "expo-router/drawer";
 import {
   DrawerContentScrollView,
@@ -7,6 +13,8 @@ import {
 } from "@react-navigation/drawer";
 import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { useLocalSearchParams, useRouter, Href } from "expo-router";
 
 // Наши хуки и утилиты
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
@@ -17,11 +25,13 @@ import { axiosInstance } from "@/src/api/axios-instance";
 
 function CustomDrawerContent(props: any) {
   const colors = useAppColors();
+  const router = useRouter();
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const isGuest = useAppSelector((state) => state.auth?.isGuest ?? false);
+  const isLessor = useAppSelector(selectIsLessor);
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -48,6 +58,20 @@ function CustomDrawerContent(props: any) {
         contentContainerStyle={{ flexGrow: 1 }}
       >
         <DrawerItemList {...props} />
+        {!isGuest && !isLessor && (
+          <TouchableOpacity
+            style={styles.drawerBanner}
+            onPress={() => router.push("/partner")}
+          >
+            <LinearGradient
+              colors={[colors.accent, "#4facfe"]}
+              style={styles.drawerGradient}
+            >
+              <Ionicons name="rocket-outline" size={20} color="#fff" />
+              <Text style={styles.drawerBannerText}>Сдать свой автомобиль</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        )}
       </DrawerContentScrollView>
 
       <View
@@ -141,3 +165,22 @@ export default function DrawerLayout() {
     </Drawer>
   );
 }
+
+const styles = StyleSheet.create({
+  drawerBanner: {
+    margin: 16,
+    borderRadius: 12,
+    overflow: "hidden",
+  },
+  drawerGradient: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 12,
+  },
+  drawerBannerText: {
+    color: "#fff",
+    fontWeight: "bold",
+    marginLeft: 10,
+    fontSize: 14,
+  },
+});

@@ -5,10 +5,15 @@ import { useFocusEffect } from "@react-navigation/native";
 
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { useAppSelector, useAppDispatch } from "@/src/store";
-import { logout, updateUser } from "@/src/store/slices/authSlice";
+import {
+  logout,
+  updateUser,
+  selectIsLessor,
+} from "@/src/store/slices/authSlice";
 import { storage } from "@/src/utils/storage";
 import { axiosInstance } from "@/src/api/axios-instance";
 import { Toast } from "@/src/components/Toast";
+import { LessorBanner } from "./components/LessorBanner";
 
 // Компоненты
 import { ProfileHeader } from "./components/ProfileHeader";
@@ -18,9 +23,11 @@ import { MenuSection } from "./components/MenuSection";
 export default function ProfileScreen() {
   const colors = useAppColors();
   const router = useRouter();
+
   const dispatch = useAppDispatch();
 
   const user = useAppSelector((state) => state.auth.user);
+  const isLessor = useAppSelector(selectIsLessor);
   const isGuest = useAppSelector((state) => state.auth.isGuest);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -107,6 +114,11 @@ export default function ProfileScreen() {
           onPress={() => router.push("/(drawer)/upload-docs" as Href)} // Сделаем этот экран позже
         />
       </View>
+      {!isGuest && !isLessor && (
+        <View style={styles.bannerContainer}>
+          <LessorBanner onPress={() => router.push("/partner")} />
+        </View>
+      )}
 
       {/* 3. НАВИГАЦИЯ: Сгруппированная (Islands) */}
       {!isGuest && (

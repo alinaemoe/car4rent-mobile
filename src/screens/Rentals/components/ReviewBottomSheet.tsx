@@ -98,7 +98,7 @@ export const ReviewBottomSheet = forwardRef<BottomSheetModal, Props>(
             </View>
           </View>
 
-          {/* Ввод текста (ТЕПЕРЬ СВЕРХУ) */}
+          {/* Ввод текста */}
           <Text style={[styles.label, { color: colors.textPrimary }]}>
             Расскажите о впечатлениях
           </Text>
@@ -123,11 +123,12 @@ export const ReviewBottomSheet = forwardRef<BottomSheetModal, Props>(
             value={comment}
             onChangeText={setComment}
             textAlignVertical="top"
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
+            // 👇 Затыкаем TypeScript с помощью as any, так как это косяк самой либы
+            onFocus={(() => setIsFocused(true)) as any}
+            onBlur={(() => setIsFocused(false)) as any}
           />
 
-          {/* Выбор звезд (ТЕПЕРЬ СНИЗУ) */}
+          {/* Выбор звезд */}
           <Text style={[styles.label, { color: colors.textPrimary }]}>
             Как всё прошло?
           </Text>
@@ -210,23 +211,25 @@ const styles = StyleSheet.create({
   },
 
   input: {
+    width: "100%", // 👈 МАГИЯ ЗДЕСЬ: Инпут теперь на всю ширину
     borderWidth: 1,
     borderRadius: 16,
     padding: 16,
     height: 120,
     fontSize: 16,
-    marginBottom: 24, // Сделали отступ до следующего заголовка
+    marginBottom: 24,
   },
 
   starsContainer: {
     flexDirection: "row",
     justifyContent: "center",
     gap: 12,
-    marginBottom: 32, // Отступ до кнопки
+    marginBottom: 32,
   },
   starBtn: { padding: 4 },
 
   submitBtn: {
+    width: "100%", // 👈 На всякий случай тоже растянули кнопку
     height: 56,
     borderRadius: 16,
     justifyContent: "center",

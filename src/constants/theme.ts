@@ -37,6 +37,14 @@ export const Colors = {
     successBg: "rgba(129, 199, 132, 0.2)",
     errorBg: "rgba(229, 115, 115, 0.2)",
     warningBg: "rgba(255, 213, 79, 0.3)",
+
+    // finance widget
+    widgetGradientStart: "#1e3c72",
+    widgetGradientEnd: "#2a5298",
+    widgetText: "#ffffff",
+    widgetTextDim: "rgba(255, 255, 255, 0.7)",
+    widgetOverlay: "rgba(255, 255, 255, 0.15)",
+    gold: "#FFD700",
   },
   dark: {
     // === Expo Brand Colors ===
@@ -70,5 +78,13 @@ export const Colors = {
     successBg: "rgba(102, 187, 106, 0.2)",
     errorBg: "rgba(239, 83, 80, 0.2)",
     warningBg: "rgba(255, 202, 40, 0.2)",
+
+    // finance widget
+    widgetGradientStart: "#0d1b2a",
+    widgetGradientEnd: "#1b2a47",
+    widgetText: "#e5e5e7",
+    widgetTextDim: "rgba(229, 229, 231, 0.7)",
+    widgetOverlay: "rgba(255, 255, 255, 0.1)",
+    gold: "#ffca28",
   },
 };

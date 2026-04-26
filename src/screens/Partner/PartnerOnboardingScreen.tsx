@@ -79,7 +79,7 @@ export default function PartnerOnboardingScreen() {
     } else {
       // ПОСЛЕДНИЙ СЛАЙД -> Переходим к заполнению заявки (создадим этот роут позже)
       console.log("Go to request form!");
-      //  router.push("/partner-request");
+      router.push("/partner-request");
     }
   };
 

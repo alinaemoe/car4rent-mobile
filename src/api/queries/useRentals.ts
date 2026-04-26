@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "../axios-instance";
 
 export type RentalStatus =
@@ -36,6 +36,20 @@ export const useMyRentals = () => {
     queryFn: async () => {
       const response = await axiosInstance.get("/rentals/my");
       return response.data;
+    },
+  });
+};
+export const useCancelRental = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const response = await axiosInstance.patch(`/rentals/${id}/cancel`);
+      return response.data;
+    },
+    onSuccess: () => {
+      // Обновляем список поездок, чтобы карточка перелетела в "Историю"
+      queryClient.invalidateQueries({ queryKey: ["my-rentals"] });
     },
   });
 };

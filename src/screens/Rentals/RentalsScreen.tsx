@@ -146,8 +146,10 @@ export default function RentalsScreen() {
             <RentalCard
               rental={item}
               onPress={() => {
-                // В будущем: router.push(`/rental-details/${item.id}`)
-                console.log("Card pressed:", item.id);
+                router.push({
+                  pathname: "/rental/[id]",
+                  params: { id: item.id },
+                });
               }}
               onReviewPress={() => handleOpenReview(item)} // 👈 Прокидываем функцию открытия!
               onBookAgainPress={() => {

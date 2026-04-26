@@ -139,7 +139,7 @@ export default function CheckoutScreen() {
       <AppBottomSheet
         ref={verificationSheetRef}
         title={t("checkout.verify_title", "Остался один шаг!")}
-        snapPoints={["45%"]}
+        snapPoints={["55%"]}
       >
         <View style={styles.sheetContent}>
           <View

@@ -8,7 +8,11 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { useTranslation } from "react-i18next";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+// 👇 Используем SafeAreaView
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
@@ -18,6 +22,7 @@ import { useLessorHistory } from "@/src/api/queries/useLessorFinances";
 import { MonthSelector } from "./components/MonthSelector";
 import { TransactionCard } from "./components/TransactionCard";
 import { EarningsChart } from "./components/EarningsChart";
+import { CarsIncomeChart } from "./components/CarsIncomeChart";
 
 export default function TransactionHistoryScreen() {
   const colors = useAppColors();
@@ -25,15 +30,11 @@ export default function TransactionHistoryScreen() {
   const insets = useSafeAreaInsets();
 
   const [selectedDate, setSelectedDate] = useState(new Date());
-
   const [activeChartIndex, setActiveChartIndex] = useState(0);
 
   const CHARTS = [
     { id: "INCOME", title: t("finance.income_dynamics", "Динамика дохода") },
-    {
-      id: "EXPENSES",
-      title: t("finance.expenses_dynamics", "Расходы и штрафы"),
-    },
+    { id: "CARS", title: t("finance.income_by_cars", "Доход по машинам") },
   ];
 
   const targetMonth = selectedDate.getMonth() + 1;
@@ -86,11 +87,16 @@ export default function TransactionHistoryScreen() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    // 👇 Оборачиваем в SafeAreaView. Если хедер Expo включен, используем только bottom
+    <SafeAreaView
+      edges={["bottom"]}
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
       <FlatList
         data={transactions}
         keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
+        // Убираем insets.bottom отсюда, так как SafeAreaView уже заботится об этом
+        contentContainerStyle={{ paddingBottom: 24 }}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
           <View style={styles.headerBlock}>
@@ -100,7 +106,7 @@ export default function TransactionHistoryScreen() {
               onChangeMonth={handleChangeMonth}
             />
 
-            {/* 👇 БЛОК ГРАФИКОВ: Рендерим ТОЛЬКО если есть данные */}
+            {/* БЛОК ГРАФИКОВ */}
             {!isLoading && hasTransactions && (
               <View style={styles.chartSection}>
                 {/* Карусель заголовков */}
@@ -149,26 +155,10 @@ export default function TransactionHistoryScreen() {
                     selectedDate={selectedDate}
                   />
                 ) : (
-                  <View
-                    style={[
-                      styles.placeholderChart,
-                      { backgroundColor: colors.surface },
-                    ]}
-                  >
-                    <Ionicons
-                      name="construct-outline"
-                      size={32}
-                      color={colors.textSecondary}
-                    />
-                    <Text
-                      style={[
-                        styles.placeholderText,
-                        { color: colors.textSecondary },
-                      ]}
-                    >
-                      Скоро появится
-                    </Text>
-                  </View>
+                  <CarsIncomeChart
+                    transactions={transactions}
+                    selectedDate={selectedDate}
+                  />
                 )}
               </View>
             )}
@@ -177,7 +167,7 @@ export default function TransactionHistoryScreen() {
         ListEmptyComponent={renderEmptyState}
         renderItem={({ item }) => <TransactionCard transaction={item} />}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -191,7 +181,7 @@ const styles = StyleSheet.create({
   // --- CHART SECTION ---
   chartSection: {
     marginHorizontal: 16,
-    marginTop: 24, // 👈 Отодвинули графики от селектора месяца
+    marginTop: 24,
     marginBottom: 16,
   },
   chartHeaderRow: {
@@ -205,7 +195,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
   },
-  // 👈 Сделали стрелки графика красивыми круглыми кнопками
   arrowButton: {
     width: 32,
     height: 32,

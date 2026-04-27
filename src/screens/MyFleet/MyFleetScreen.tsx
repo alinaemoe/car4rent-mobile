@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import {
   View,
   Text,
@@ -6,12 +6,17 @@ import {
   TouchableOpacity,
   FlatList,
   RefreshControl,
-  ActivityIndicator,
+  ScrollView,
+  useWindowDimensions,
 } from "react-native";
 import { useRouter, Href } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+// 👇 Импортируем SafeAreaView и Insets
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 // Хуки
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
@@ -31,12 +36,17 @@ import { useLessorStats } from "@/src/api/queries/useLessorFinances";
 import { FinancialWidget } from "./components/FinancialWidget";
 import { LessorCarCard } from "./components/LessorCarCard";
 import { RequestCard } from "./components/RequestCard";
+import { Skeleton } from "@/src/components/common/Skeleton";
 
 export default function MyFleetScreen() {
   const colors = useAppColors();
   const router = useRouter();
   const { t } = useTranslation();
+
+  // insets нужен только для нижнего отступа (FAB и подбородок iPhone)
   const insets = useSafeAreaInsets();
+  const { width: layoutWidth } = useWindowDimensions(); // Ширина экрана для свайпов
+  const scrollViewRef = useRef<ScrollView>(null);
 
   // Стейт табов: 0 - Мои автомобили, 1 - Заявки
   const [activeTab, setActiveTab] = useState<0 | 1>(0);
@@ -72,16 +82,25 @@ export default function MyFleetScreen() {
     setRefreshing(false);
   }, [refetchCars, refetchReqs, refetchStats]);
 
-  const handleToggleCar = (carId: number, isVisible: boolean) => {
+  const handleToggleCar = (carId: number, isVisible: boolean) =>
     toggleVisibility({ carId, isVisible });
+  const handleDeleteRequest = (requestId: number) => deleteRequest(requestId);
+  const handleFabPress = () => router.push("/partner-request");
+
+  // 👇 Хендлеры для Свайпов и Табов
+  const handleTabPress = (index: 0 | 1) => {
+    setActiveTab(index);
+    // Прокручиваем ScrollView до нужной страницы
+    scrollViewRef.current?.scrollTo({ x: index * layoutWidth, animated: true });
   };
 
-  const handleDeleteRequest = (requestId: number) => {
-    deleteRequest(requestId);
-  };
-
-  const handleFabPress = () => {
-    router.push("/partner-request"); // Переход на Wizard создания заявки
+  const handleMomentumScrollEnd = (e: any) => {
+    // Вычисляем текущую страницу после окончания свайпа
+    const offsetX = e.nativeEvent.contentOffset.x;
+    const newIndex = Math.round(offsetX / layoutWidth) as 0 | 1;
+    if (activeTab !== newIndex) {
+      setActiveTab(newIndex);
+    }
   };
 
   // === RENDERERS ===
@@ -99,7 +118,7 @@ export default function MyFleetScreen() {
               shadowOffset: { width: 0, height: 1 },
             },
           ]}
-          onPress={() => setActiveTab(0)}
+          onPress={() => handleTabPress(0)}
           activeOpacity={0.8}
         >
           <Text
@@ -126,7 +145,7 @@ export default function MyFleetScreen() {
               shadowOffset: { width: 0, height: 1 },
             },
           ]}
-          onPress={() => setActiveTab(1)}
+          onPress={() => handleTabPress(1)}
           activeOpacity={0.8}
         >
           <Text
@@ -139,7 +158,6 @@ export default function MyFleetScreen() {
             ]}
           >
             {t("fleet.tabs.requests", "Заявки")}
-            {/* Маленький бейдж, если есть заявки */}
             {requests.length > 0 && (
               <Text style={{ color: colors.accent }}> • {requests.length}</Text>
             )}
@@ -149,113 +167,178 @@ export default function MyFleetScreen() {
     </View>
   );
 
-  const renderEmptyState = () => {
-    if (isLoading) {
-      return (
-        <View style={styles.emptyContainer}>
-          <ActivityIndicator size="large" color={colors.accent} />
+  const renderSkeletons = () => (
+    <View style={{ marginTop: 16 }}>
+      {[1, 2, 3].map((key) => (
+        <View
+          key={key}
+          style={[styles.skeletonCard, { backgroundColor: colors.surface }]}
+        >
+          <Skeleton style={styles.skeletonImage} borderRadius={32} />
+          <View style={{ flex: 1 }}>
+            <Skeleton style={{ width: 80, height: 20, marginBottom: 8 }} />
+            <Skeleton style={{ width: 140, height: 24, marginBottom: 8 }} />
+            <Skeleton style={{ width: 100, height: 16 }} />
+          </View>
+          <Skeleton style={{ width: 50, height: 30, borderRadius: 16 }} />
         </View>
-      );
-    }
-
-    if (activeTab === 0) {
-      return (
-        <View style={styles.emptyContainer}>
-          <Ionicons name="car-sport-outline" size={64} color={colors.border} />
-          <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>
-            {t("fleet.empty.cars_title", "Ваш автопарк пуст")}
-          </Text>
-          <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
-            {t(
-              "fleet.empty.cars_sub",
-              "Добавьте свой первый автомобиль, чтобы начать зарабатывать.",
-            )}
-          </Text>
-        </View>
-      );
-    }
-
-    return (
-      <View style={styles.emptyContainer}>
-        <Ionicons
-          name="document-text-outline"
-          size={64}
-          color={colors.border}
-        />
-        <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>
-          {t("fleet.empty.requests_title", "Нет активных заявок")}
-        </Text>
-        <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
-          {t(
-            "fleet.empty.requests_sub",
-            "Здесь будут отображаться заявки на добавление новых автомобилей.",
-          )}
-        </Text>
-      </View>
-    );
-  };
+      ))}
+    </View>
+  );
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <FlatList
-        data={activeTab === 0 ? cars : requests}
-        // Хак: добавляем префикс, чтобы ключи машин и заявок не пересекались при смене табов
-        keyExtractor={(item) => `${activeTab}-${item.id}`}
-        contentContainerStyle={[
-          styles.scrollContent,
-          { paddingBottom: insets.bottom + 80 },
-        ]}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor={colors.accent}
-          />
-        }
-        // HEADER: Виджет + Табы
-        ListHeaderComponent={
-          <View style={styles.headerBlock}>
-            {hasCars && (
-              <FinancialWidget
-                totalEarned={stats?.total_earned_month || 0}
-                pendingPayout={stats?.pending_payout || 0}
-                month={new Date().getMonth() + 1}
-                year={new Date().getFullYear()}
-                onMonthSelectPress={() =>
-                  console.log("Открываем селектор месяца")
-                }
-                onWidgetPress={() => router.push("/transaction-history")}
+    // 👇 SafeAreaView для защиты челки. Указываем только edges={['top']}
+    <SafeAreaView
+      edges={["top"]}
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
+      {/* Фиксированные табы под статус-баром */}
+      {renderTabSelector()}
+
+      {/* 👇 ГОРИЗОНТАЛЬНЫЙ СВАЙПЕР */}
+      <ScrollView
+        ref={scrollViewRef}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        onMomentumScrollEnd={handleMomentumScrollEnd}
+        // Чтобы скролл не дергался на Android
+        overScrollMode="never"
+        bounces={false}
+      >
+        {/* ========================================== */}
+        {/* СТРАНИЦА 1: МОИ АВТОМОБИЛИ                 */}
+        {/* ========================================== */}
+        <View style={{ width: layoutWidth }}>
+          <FlatList
+            data={isLoading ? [] : cars}
+            keyExtractor={(item) => `car-${item.id}`}
+            contentContainerStyle={{ paddingBottom: insets.bottom + 80 }}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor={colors.accent}
               />
-            )}
-            {renderTabSelector()}
-          </View>
-        }
-        // EMPTY STATE
-        ListEmptyComponent={renderEmptyState}
-        // ITEMS
-        renderItem={({ item }) => {
-          if (activeTab === 0) {
-            const carItem = item as unknown as MyCar;
-            return (
+            }
+            // Финансовый виджет живет в шапке этого списка
+            ListHeaderComponent={
+              isLoading ? (
+                <Skeleton
+                  style={[
+                    styles.skeletonWidget,
+                    { marginHorizontal: 16, marginTop: 8 },
+                  ]}
+                  borderRadius={24}
+                />
+              ) : hasCars ? (
+                <FinancialWidget
+                  totalEarned={stats?.total_earned_month || 0}
+                  pendingPayout={stats?.pending_payout || 0}
+                  month={new Date().getMonth() + 1}
+                  year={new Date().getFullYear()}
+                  onMonthSelectPress={() => console.log("Селектор месяца")}
+                  onWidgetPress={() => router.push("/transaction-history")}
+                />
+              ) : null
+            }
+            ListEmptyComponent={
+              isLoading ? (
+                renderSkeletons()
+              ) : (
+                <View style={styles.emptyContainer}>
+                  <Ionicons
+                    name="car-sport-outline"
+                    size={64}
+                    color={colors.border}
+                  />
+                  <Text
+                    style={[styles.emptyTitle, { color: colors.textPrimary }]}
+                  >
+                    {t("fleet.empty.cars_title", "Ваш автопарк пуст")}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.emptySubtitle,
+                      { color: colors.textSecondary },
+                    ]}
+                  >
+                    {t(
+                      "fleet.empty.cars_sub",
+                      "Добавьте свой первый автомобиль, чтобы начать зарабатывать.",
+                    )}
+                  </Text>
+                </View>
+              )
+            }
+            renderItem={({ item }) => (
               <LessorCarCard
-                car={carItem}
-                // Приводим строку к Href, чтобы router.push не ругался
+                car={item as unknown as MyCar}
                 onPress={(id) => router.push(`/car-stats/${id}` as Href)}
                 onToggleVisibility={handleToggleCar}
               />
-            );
-          } else {
-            const requestItem = item as unknown as PartnershipRequest;
-            return (
+            )}
+          />
+        </View>
+
+        {/* ========================================== */}
+        {/* СТРАНИЦА 2: ЗАЯВКИ                         */}
+        {/* ========================================== */}
+        <View style={{ width: layoutWidth }}>
+          <FlatList
+            data={isLoading ? [] : requests}
+            keyExtractor={(item) => `req-${item.id}`}
+            contentContainerStyle={{
+              paddingTop: 8,
+              paddingBottom: insets.bottom + 80,
+            }}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor={colors.accent}
+              />
+            }
+            ListEmptyComponent={
+              isLoading ? (
+                renderSkeletons()
+              ) : (
+                <View style={styles.emptyContainer}>
+                  <Ionicons
+                    name="document-text-outline"
+                    size={64}
+                    color={colors.border}
+                  />
+                  <Text
+                    style={[styles.emptyTitle, { color: colors.textPrimary }]}
+                  >
+                    {t("fleet.empty.requests_title", "Нет активных заявок")}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.emptySubtitle,
+                      { color: colors.textSecondary },
+                    ]}
+                  >
+                    {t(
+                      "fleet.empty.requests_sub",
+                      "Здесь будут отображаться заявки на добавление новых автомобилей.",
+                    )}
+                  </Text>
+                </View>
+              )
+            }
+            renderItem={({ item }) => (
               <RequestCard
-                request={requestItem}
+                request={item as unknown as PartnershipRequest}
                 onDelete={handleDeleteRequest}
               />
-            );
-          }
-        }}
-      />
+            )}
+          />
+        </View>
+      </ScrollView>
 
       {/* FLOATING ACTION BUTTON (FAB) */}
       <TouchableOpacity
@@ -265,13 +348,13 @@ export default function MyFleetScreen() {
           styles.fab,
           {
             backgroundColor: colors.accent,
-            bottom: insets.bottom > 0 ? insets.bottom + 16 : 24, // Поднимаем над home bar iOS
+            bottom: insets.bottom > 0 ? insets.bottom + 16 : 24,
           },
         ]}
       >
         <Ionicons name="add" size={32} color="#ffffff" />
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -279,16 +362,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  scrollContent: {
-    paddingTop: 16,
-  },
-  headerBlock: {
-    marginBottom: 8,
-  },
   // --- TABS ---
   tabContainer: {
     paddingHorizontal: 16,
-    marginBottom: 16,
+    paddingVertical: 12, // Даем немного воздуха под SafeArea
   },
   tabSegmented: {
     flexDirection: "row",
@@ -308,7 +385,7 @@ const styles = StyleSheet.create({
   },
   // --- EMPTY STATES ---
   emptyContainer: {
-    paddingTop: 60,
+    paddingTop: 80,
     alignItems: "center",
     paddingHorizontal: 32,
   },
@@ -333,11 +410,28 @@ const styles = StyleSheet.create({
     borderRadius: 32,
     justifyContent: "center",
     alignItems: "center",
-    // Тень
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 6,
+  },
+  // --- SKELETONS ---
+  skeletonWidget: {
+    height: 140,
+    marginBottom: 16,
+  },
+  skeletonCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 12,
+    marginHorizontal: 16,
+    marginBottom: 12,
+    borderRadius: 16,
+  },
+  skeletonImage: {
+    width: 64,
+    height: 64,
+    marginRight: 14,
   },
 });

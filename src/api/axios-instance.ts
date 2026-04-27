@@ -28,19 +28,12 @@ export const axiosInstance = axios.create({
     "Content-Type": "application/json",
   },
 });
-
-// 👇 Интерцептор ЗАПРОСА
-// src/api/axios-instance.ts
-
-// ... (остальной код) ...
-
-// 👇 Интерцептор ОТВЕТА
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    // 🔥 ИЗМЕНЕНИЕ: Не делаем рефреш, если это запрос на логаут!
+    // Не делаем рефреш, если это запрос на логаут
     const isLogoutRequest = originalRequest.url?.includes("/auth/logout");
 
     if (
@@ -63,47 +56,13 @@ axiosInstance.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${data.access_token}`;
         return axiosInstance(originalRequest);
       } catch (refreshError) {
-        await storage.removeTokens();
-
-        const { store } = require("../store");
-        const { logout } = require("../store/slices/authSlice");
-
-        store.dispatch(logout());
-
-        return Promise.reject(refreshError);
-      }
-    }
-
-    return Promise.reject(error);
-  },
-);
-
-// 👇 Интерцептор ОТВЕТА
-axiosInstance.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-
-    if (error.response?.status === 401 && !originalRequest._isRetry) {
-      originalRequest._isRetry = true;
-
-      try {
-        const refreshToken = await storage.getRefreshToken();
-        if (!refreshToken) throw new Error("Нет refresh-токена");
-
-        const { data } = await axios.post(`${API_URL}/auth/refresh`, {
-          refresh_token: refreshToken,
-        });
-
-        await storage.setTokens(data.access_token, data.refresh_token);
-
-        originalRequest.headers.Authorization = `Bearer ${data.access_token}`;
-        return axiosInstance(originalRequest);
-      } catch (refreshError) {
+        // Если рефреш сдох — чистим сторадж и выкидываем юзера
         await storage.removeTokens();
 
         const storeModule = await import("../store");
         const authSliceModule = await import("../store/slices/authSlice");
+
+        // Если у тебя есть глобальный queryClient, импортируй его и сделай queryClient.clear() здесь.
 
         storeModule.store.dispatch(authSliceModule.logout());
 

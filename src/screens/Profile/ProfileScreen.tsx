@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from "react";
 import { View, ScrollView, StyleSheet, ActivityIndicator } from "react-native";
 import { useRouter, Href } from "expo-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { useFocusEffect } from "@react-navigation/native";
 
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
@@ -25,6 +26,7 @@ export default function ProfileScreen() {
   const router = useRouter();
 
   const dispatch = useAppDispatch();
+  const queryClient = useQueryClient();
 
   const user = useAppSelector((state) => state.auth.user);
   const isLessor = useAppSelector(selectIsLessor);
@@ -53,12 +55,21 @@ export default function ProfileScreen() {
   const handleLogout = async () => {
     setIsLoggingOut(true);
     try {
-      if (!isGuest) await axiosInstance.post("/auth/logout");
-    } catch (error) {
-      console.log("Logout backend error (ignored)");
+      if (!isGuest) {
+        await axiosInstance.post("/auth/logout");
+      }
+    } catch (error: any) {
+      // 3. Игнорируем 401, чтобы не пугать юзера, если токен и так протух
+      if (error.response?.status !== 401) {
+        console.warn("Logout backend error:", error.message);
+      }
     } finally {
+      // 4. Очищаем всё: токены, флаг гостя, а главное — КЭШ React Query
       await storage.removeTokens();
       await storage.setGuestMode(false);
+
+      queryClient.clear(); // 👈 ЭТО САМОЕ ВАЖНОЕ (очистит "Мои машины", "Заявки" и т.д.)
+
       dispatch(logout());
       setIsLoggingOut(false);
     }

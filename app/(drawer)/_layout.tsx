@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   StyleSheet,
 } from "react-native";
+import { useQueryClient } from "@tanstack/react-query";
 import { Drawer } from "expo-router/drawer";
 import {
   DrawerContentScrollView,
@@ -28,6 +29,7 @@ function CustomDrawerContent(props: any) {
   const router = useRouter();
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
+  const queryClient = useQueryClient();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const isGuest = useAppSelector((state) => state.auth?.isGuest ?? false);
@@ -36,16 +38,20 @@ function CustomDrawerContent(props: any) {
   const handleLogout = async () => {
     setIsLoggingOut(true);
     try {
-      // 👇 2. Делаем запрос на логаут ТОЛЬКО если это реальный юзер
+      // 1. Пытаемся разлогинить юзера на бэкенде (чтобы убить refresh-токен в базе)
       if (!isGuest) {
         await axiosInstance.post("/auth/logout");
       }
-    } catch (error) {
-      console.error("Ошибка при логауте на бэке:", error);
+    } catch (error: any) {
+      // 2. Игнорируем ошибку 401. Если он уже "не авторизован", то и логаут на бэке не нужен.
+      if (error.response?.status !== 401) {
+        console.warn("Ошибка при логауте на бэке:", error.message);
+      }
     } finally {
-      // 3. В любом случае (и для юзера, и для гостя) чистим хранилища
+      // 3. Железно зачищаем всё на клиенте
       await storage.removeTokens();
-      await storage.setGuestMode(false); // На всякий случай зачищаем флаг гостя в памяти
+      await storage.setGuestMode(false);
+      queryClient.clear(); // Сносим кэш React Query (машины, заявки и тд)
       dispatch(logout()); // Выкидывает на экран авторизации
       setIsLoggingOut(false);
     }

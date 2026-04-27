@@ -60,6 +60,15 @@ export interface CarImage {
   is_main: boolean;
 }
 
+export interface CarReviewPreview {
+  id: number;
+  rating: number;
+  comment: string;
+  createdAt: string;
+  userFirstName: string;
+  userLastName: string;
+}
+
 // === ПОЛНАЯ СУЩНОСТЬ АВТОМОБИЛЯ ===
 export interface Car {
   id: number;
@@ -84,6 +93,7 @@ export interface Car {
   reviews_count?: number; // Количество отзывов (считается на лету)
   avg_rating?: number; // Средний рейтинг (добавим позже)
   booked_dates?: { startDate: string; endDate: string }[];
+  latest_reviews?: CarReviewPreview[];
 
   // Цены и лимиты
   price_per_day: number;

@@ -374,7 +374,15 @@ export default function CarDetailScreen() {
         <CarSpecs car={car} />
         <CarLocation />
         <CarRules car={car} />
-        <CarReviews avgRating={car.avg_rating} />
+        <CarReviews
+          avgRating={car.avg_rating}
+          reviewsCount={car.reviews_count}
+          reviews={car.latest_reviews}
+          onViewAllPress={() => {
+            // 👇 Задел на ЭТАП 1: переход на экран со всеми отзывами
+            router.push(`/car/${car.id}/reviews`);
+          }}
+        />
         <CarHowItWorks />
         <CarFaq />
       </ScrollView>

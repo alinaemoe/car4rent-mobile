@@ -76,7 +76,7 @@ export default function CatalogScreen() {
       while (curr < end) {
         const dateStr = curr.toISOString().split("T")[0];
         newMarked[dateStr] = {
-          color: colors.surface,
+          color: `${colors.accent}30`, // 👈 МЕНЯЕМ ЗДЕСЬ
           textColor: colors.textPrimary,
         };
         curr.setDate(curr.getDate() + 1);
@@ -184,7 +184,7 @@ export default function CatalogScreen() {
       while (curr < end) {
         const dateStr = curr.toISOString().split("T")[0];
         newMarked[dateStr] = {
-          color: colors.surface,
+          color: `${colors.accent}30`, // 👈 И МЕНЯЕМ ЗДЕСЬ
           textColor: colors.textPrimary,
         };
         curr.setDate(curr.getDate() + 1);

@@ -5,7 +5,6 @@ import { Calendar } from "react-native-calendars";
 import { useTranslation } from "react-i18next";
 import { AppBottomSheet } from "@/src/components/AppBottomSheet";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
-// Обязательно импортируем файл с конфигурацией локали
 import "../constants";
 
 interface Props {
@@ -18,13 +17,16 @@ export const CalendarSheet = forwardRef<BottomSheetModal, Props>(
   ({ markedDates, onDayPress, onClear }, ref) => {
     const colors = useAppColors();
     const { t } = useTranslation();
-    const hasSelectedDates = Object.keys(markedDates).length > 0;
+    const hasSelectedDates = Object.keys(markedDates).some(
+      // Ищем хотя бы одну дату, которая не является просто disabled (забронированной кем-то)
+      (date) => markedDates[date].color || markedDates[date].startingDay,
+    );
 
     return (
       <AppBottomSheet
         ref={ref}
         title={t("select_dates_title", "Период аренды")}
-        snapPoints={["65%", "90%"]} // Чуть увеличили минимальную высоту под кнопку
+        snapPoints={["65%", "90%"]}
       >
         <View style={{ flex: 1, paddingBottom: 24 }}>
           <Calendar
@@ -46,7 +48,6 @@ export const CalendarSheet = forwardRef<BottomSheetModal, Props>(
             }}
           />
 
-          {/* 👇 КРАСИВАЯ КНОПКА СБРОСА */}
           <View style={styles.footer}>
             <TouchableOpacity
               style={[
@@ -59,6 +60,7 @@ export const CalendarSheet = forwardRef<BottomSheetModal, Props>(
               ]}
               onPress={onClear}
               activeOpacity={0.7}
+              disabled={!hasSelectedDates} // Отключаем клик, если нечего сбрасывать
             >
               <Text
                 style={[
@@ -72,7 +74,7 @@ export const CalendarSheet = forwardRef<BottomSheetModal, Props>(
               >
                 {hasSelectedDates
                   ? t("clear_dates", "Сбросить даты")
-                  : t("dates_unknown", "Даты пока не известны")}
+                  : t("dates_unknown", "Даты пока не выбраны")}
               </Text>
             </TouchableOpacity>
           </View>

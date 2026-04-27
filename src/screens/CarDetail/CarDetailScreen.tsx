@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useMemo } from "react";
 import {
   View,
   ScrollView,
@@ -34,6 +34,8 @@ import { CarReviews } from "./components/CarReviews";
 import { CarHowItWorks } from "./components/CarHowItWorks";
 import { CarFaq } from "./components/CarFaq";
 
+import { Toast } from "@/src/components/Toast";
+
 export default function CarDetailScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
@@ -55,19 +57,83 @@ export default function CarDetailScreen() {
   const [markedDates, setMarkedDates] = useState<any>({});
   const [tempStart, setTempStart] = useState<string | null>(startDate || null);
 
+  const addDaysToDateString = (dateStr: string, days: number) => {
+    // 1. Отрезаем время, если оно пришло с бэка: "2026-04-10T14:00:00Z" -> "2026-04-10"
+    const cleanDate = dateStr.split("T")[0];
+
+    // 2. Создаем дату ровно в полночь по UTC (чтобы часовые пояса не сдвинули день назад)
+    const d = new Date(`${cleanDate}T00:00:00Z`);
+
+    // 3. Сдвигаем на N дней
+    d.setUTCDate(d.getUTCDate() + days);
+
+    // Возвращаем строку YYYY-MM-DD
+    return d.toISOString().split("T")[0];
+  };
+
+  // 1. Создаем карту ЗАБЛОКИРОВАННЫХ дней
+  const disabledDatesMap = useMemo(() => {
+    if (!car?.booked_dates || car.booked_dates.length === 0) return {};
+
+    const blockedSet = new Set<string>();
+
+    // Шаг А: Собираем абсолютно ВСЕ занятые дни в единый Set
+    car.booked_dates.forEach((period: any) => {
+      if (!period.startDate || !period.endDate) return;
+
+      // Очищаем стартовую и конечную дату
+      let currStr = period.startDate.split("T")[0];
+      const endStr = period.endDate.split("T")[0];
+
+      // Защита от вечного цикла (макс 1000 дней = ~3 года)
+      let failsafe = 0;
+      while (currStr <= endStr && failsafe < 1000) {
+        blockedSet.add(currStr);
+        currStr = addDaysToDateString(currStr, 1);
+        failsafe++;
+      }
+    });
+
+    const map: any = {};
+
+    // Шаг Б: Проходимся по Set-у и рисуем закругления только на "краях" слепых зон
+    blockedSet.forEach((dateStr) => {
+      const prevDateStr = addDaysToDateString(dateStr, -1);
+      const nextDateStr = addDaysToDateString(dateStr, 1);
+
+      // День считается "стартом", если вчерашнего дня нет в списке заблокированных
+      const isStart = !blockedSet.has(prevDateStr);
+      // День считается "концом", если завтрашнего дня нет в списке заблокированных
+      const isEnd = !blockedSet.has(nextDateStr);
+
+      map[dateStr] = {
+        disabled: true,
+        disableTouchEvent: true,
+        color: colors.border, // Серый/приглушенный фон
+        textColor: colors.textSecondary,
+        startingDay: isStart,
+        endingDay: isEnd,
+      };
+    });
+
+    return map;
+  }, [car?.booked_dates, colors]);
+
   useEffect(() => {
+    let newMarked = { ...disabledDatesMap }; // База — это серые дни
+
     if (startDate && endDate) {
-      let newMarked: any = {
-        [startDate]: {
-          startingDay: true,
-          color: colors.accent,
-          textColor: "white",
-        },
-        [endDate]: {
-          endingDay: true,
-          color: colors.accent,
-          textColor: "white",
-        },
+      newMarked[startDate] = {
+        ...newMarked[startDate], // На всякий случай, если он почему-то был заблокирован
+        startingDay: true,
+        color: colors.accent,
+        textColor: "white",
+      };
+      newMarked[endDate] = {
+        ...newMarked[endDate],
+        endingDay: true,
+        color: colors.accent,
+        textColor: "white",
       };
 
       let curr = new Date(startDate);
@@ -77,7 +143,8 @@ export default function CarDetailScreen() {
       while (curr < end) {
         const dateStr = curr.toISOString().split("T")[0];
         newMarked[dateStr] = {
-          color: colors.surface,
+          // Полупрозрачный цвет для дней МЕЖДУ началом и концом
+          color: `${colors.accent}30`,
           textColor: colors.textPrimary,
         };
         curr.setDate(curr.getDate() + 1);
@@ -86,80 +153,70 @@ export default function CarDetailScreen() {
       setMarkedDates(newMarked);
       setTempStart(startDate);
     } else if (startDate && !endDate) {
-      setMarkedDates({
-        [startDate]: {
-          startingDay: true,
-          color: colors.accent,
-          textColor: "white",
-        },
-      });
+      newMarked[startDate] = {
+        ...newMarked[startDate],
+        startingDay: true,
+        endingDay: true, // Когда выбран 1 день, он должен быть круглым
+        color: colors.accent,
+        textColor: "white",
+      };
+      setMarkedDates(newMarked);
       setTempStart(startDate);
     } else {
-      setMarkedDates({});
+      // Если даты сброшены — показываем только disabled
+      setMarkedDates(disabledDatesMap);
       setTempStart(null);
     }
-  }, [startDate, endDate, colors]);
+  }, [startDate, endDate, disabledDatesMap, colors]);
 
   const handleDayPress = (day: any) => {
     const dateString = day.dateString;
 
+    // Если кликнули по заблокированной дате — игнорим
+    if (disabledDatesMap[dateString]) return;
+
     if (!tempStart || (startDate && endDate)) {
       setTempStart(dateString);
       dispatch(applyFilters({ startDate: dateString, endDate: null }));
-      setMarkedDates({
-        [dateString]: {
-          startingDay: true,
-          color: colors.accent,
-          textColor: "white",
-        },
-      });
     } else if (tempStart && !endDate) {
+      // Если кликнули на дату ДО старта — просто сдвигаем старт
       if (new Date(dateString) < new Date(tempStart)) {
         setTempStart(dateString);
         dispatch(applyFilters({ startDate: dateString, endDate: null }));
-        setMarkedDates({
-          [dateString]: {
-            startingDay: true,
-            color: colors.accent,
-            textColor: "white",
-          },
-        });
         return;
       }
 
-      dispatch(applyFilters({ endDate: dateString }));
-      let newMarked: any = {
-        [tempStart]: {
-          startingDay: true,
-          color: colors.accent,
-          textColor: "white",
-        },
-        [dateString]: {
-          endingDay: true,
-          color: colors.accent,
-          textColor: "white",
-        },
-      };
-
+      // ПРОВЕРКА: Нет ли между tempStart и dateString заблокированных дат?
       let curr = new Date(tempStart);
-      curr.setDate(curr.getDate() + 1);
       const end = new Date(dateString);
+      let hasConflict = false;
 
-      // Закрашиваем все дни между стартом и концом
-      while (curr < end) {
+      while (curr <= end) {
         const dateStr = curr.toISOString().split("T")[0];
-        newMarked[dateStr] = {
-          color: colors.surface, // Либо используй accentBg для легкого фона
-          textColor: colors.textPrimary,
-        };
+        if (disabledDatesMap[dateStr]) {
+          hasConflict = true;
+          break;
+        }
         curr.setDate(curr.getDate() + 1);
       }
 
-      setMarkedDates(newMarked);
-      // Закрываем шторку с небольшой задержкой для красоты
+      if (hasConflict) {
+        Toast.error(
+          t("dates_conflict_title", "Ошибка!"),
+          t("dates_conflict", "Эти даты пересекаются с другой бронью."),
+        );
+        // Сбрасываем выбор
+        setTempStart(null);
+        dispatch(applyFilters({ startDate: null, endDate: null }));
+        return;
+      }
+
+      // Все ок, применяем фильтр
+      dispatch(applyFilters({ endDate: dateString }));
       setTimeout(() => calendarSheetRef.current?.dismiss(), 500);
     }
   };
+
   const handleClearDates = () => {
     // 1. Очищаем локальные стейты календаря
     setTempStart(null);
@@ -326,6 +383,7 @@ export default function CarDetailScreen() {
         pricePerDay={car.price_per_day}
         days={days}
         finalRentPrice={finalRentPrice}
+        onDatesPress={() => calendarSheetRef.current?.present()}
         startDate={startDate}
         endDate={endDate} // 👈 ВОТ ЭТУ СТРОЧКУ ОБЯЗАТЕЛЬНО ДОБАВЬ!
         onBookPress={handleBookPress}

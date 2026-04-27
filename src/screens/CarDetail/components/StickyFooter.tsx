@@ -14,6 +14,8 @@ interface Props {
   days: number;
   finalRentPrice: number;
   onBookPress: () => void;
+  // 👇 Новый проп для открытия календаря
+  onDatesPress: () => void;
   startDate: string | null;
   endDate: string | null;
 }
@@ -34,17 +36,11 @@ const MONTHS_RU = [
 ];
 
 const formatPrice = (price: number) => {
-  // 1. parseFloat уберет лишние .00, если их нет, но оставит .32
-  // 2. Сначала форматируем число, чтобы не потерять копейки при замене
   const cleanPrice = Number(parseFloat(price.toString()).toFixed(2));
-
-  // Если после точки идет 00, преобразуем в целое
   const finalPrice =
     cleanPrice % 1 === 0
       ? cleanPrice.toString()
       : cleanPrice.toString().replace(".", ",");
-
-  // 3. Добавляем разделение тысяч пробелом
   return finalPrice.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
 };
 
@@ -53,6 +49,7 @@ export const StickyFooter = ({
   days,
   finalRentPrice,
   onBookPress,
+  onDatesPress, // 👈 Деструктурируем
   startDate,
   endDate,
 }: Props) => {
@@ -83,8 +80,12 @@ export const StickyFooter = ({
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Левый блок с ценами (строго ограничен по ширине) */}
-      <View style={styles.priceInfo}>
+      {/* 👇 Левый блок (Цена и Даты) теперь КЛИКАБЕЛЬНЫЙ */}
+      <TouchableOpacity
+        style={styles.priceInfo}
+        onPress={onDatesPress}
+        activeOpacity={0.6}
+      >
         {!hasDates ? (
           <Text
             style={[styles.pricePrimary, { color: colors.textPrimary }]}
@@ -101,7 +102,6 @@ export const StickyFooter = ({
                   <Text style={styles.oldPriceText}>
                     {formatPrice(pricePerDay)} ₽
                   </Text>
-                  {/* 🔥 Имитация ручного зачеркивания дугой */}
                   <View style={styles.strikeCurve} />
                 </View>
               )}
@@ -121,7 +121,7 @@ export const StickyFooter = ({
             </Text>
           </View>
         )}
-      </View>
+      </TouchableOpacity>
 
       {/* Правый блок: Кнопка */}
       <TouchableOpacity

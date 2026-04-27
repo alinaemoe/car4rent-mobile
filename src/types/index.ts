@@ -83,6 +83,7 @@ export interface Car {
   fuel_consumption: number;
   reviews_count?: number; // Количество отзывов (считается на лету)
   avg_rating?: number; // Средний рейтинг (добавим позже)
+  booked_dates?: { startDate: string; endDate: string }[];
 
   // Цены и лимиты
   price_per_day: number;

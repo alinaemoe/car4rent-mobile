@@ -1,10 +1,6 @@
 import React from "react";
-import { View, Text } from "react-native";
+import MyFleetScreen from "@/src/screens/MyFleet/MyFleetScreen";
 
-export default function MyFleetScreen() {
-  return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text>Мой автопарк (В разработке)</Text>
-    </View>
-  );
+export default function MyFleetPage() {
+  return <MyFleetScreen />;
 }

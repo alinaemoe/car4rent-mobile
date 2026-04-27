@@ -159,7 +159,6 @@ export default function DrawerLayout() {
         name="my-fleet"
         options={{
           title: "Мой автопарк",
-          drawerItemStyle: { display: isLessor ? "flex" : "none" },
         }}
       />
     </Drawer>

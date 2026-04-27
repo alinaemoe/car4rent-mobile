@@ -5,6 +5,7 @@ import {
   FlatList,
   ActivityIndicator,
   Text,
+  TouchableOpacity,
 } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -16,17 +17,25 @@ import { useLessorHistory } from "@/src/api/queries/useLessorFinances";
 // Импорт компонентов
 import { MonthSelector } from "./components/MonthSelector";
 import { TransactionCard } from "./components/TransactionCard";
+import { EarningsChart } from "./components/EarningsChart";
 
 export default function TransactionHistoryScreen() {
   const colors = useAppColors();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
 
-  // Стейт выбранного месяца (по умолчанию текущий)
   const [selectedDate, setSelectedDate] = useState(new Date());
 
-  // Передаем месяц (1-12) и год в хук.
-  // getMonth() возвращает 0-11, поэтому прибавляем 1.
+  const [activeChartIndex, setActiveChartIndex] = useState(0);
+
+  const CHARTS = [
+    { id: "INCOME", title: t("finance.income_dynamics", "Динамика дохода") },
+    {
+      id: "EXPENSES",
+      title: t("finance.expenses_dynamics", "Расходы и штрафы"),
+    },
+  ];
+
   const targetMonth = selectedDate.getMonth() + 1;
   const targetYear = selectedDate.getFullYear();
 
@@ -35,13 +44,21 @@ export default function TransactionHistoryScreen() {
     targetYear,
   );
 
-  // Хендлер переключения месяца (-1 назад, +1 вперед)
+  const hasTransactions = transactions.length > 0;
+
   const handleChangeMonth = (step: number) => {
     setSelectedDate((prevDate) => {
       const newDate = new Date(prevDate);
       newDate.setMonth(newDate.getMonth() + step);
       return newDate;
     });
+  };
+
+  const handlePrevChart = () => {
+    setActiveChartIndex((prev) => (prev === 0 ? CHARTS.length - 1 : prev - 1));
+  };
+  const handleNextChart = () => {
+    setActiveChartIndex((prev) => (prev === CHARTS.length - 1 ? 0 : prev + 1));
   };
 
   const renderEmptyState = () => {
@@ -52,7 +69,6 @@ export default function TransactionHistoryScreen() {
         </View>
       );
     }
-
     return (
       <View style={styles.emptyContainer}>
         <Ionicons name="receipt-outline" size={64} color={colors.border} />
@@ -76,13 +92,86 @@ export default function TransactionHistoryScreen() {
         keyExtractor={(item) => item.id.toString()}
         contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
         showsVerticalScrollIndicator={false}
-        // ШАПКА: Выбор месяца
         ListHeaderComponent={
           <View style={styles.headerBlock}>
+            {/* Селектор месяца */}
             <MonthSelector
               currentDate={selectedDate}
               onChangeMonth={handleChangeMonth}
             />
+
+            {/* 👇 БЛОК ГРАФИКОВ: Рендерим ТОЛЬКО если есть данные */}
+            {!isLoading && hasTransactions && (
+              <View style={styles.chartSection}>
+                {/* Карусель заголовков */}
+                <View style={styles.chartHeaderRow}>
+                  <TouchableOpacity
+                    onPress={handlePrevChart}
+                    style={[
+                      styles.arrowButton,
+                      { backgroundColor: colors.surface },
+                    ]}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  >
+                    <Ionicons
+                      name="chevron-back"
+                      size={18}
+                      color={colors.textPrimary}
+                    />
+                  </TouchableOpacity>
+
+                  <Text
+                    style={[styles.chartTitle, { color: colors.textPrimary }]}
+                  >
+                    {CHARTS[activeChartIndex].title}
+                  </Text>
+
+                  <TouchableOpacity
+                    onPress={handleNextChart}
+                    style={[
+                      styles.arrowButton,
+                      { backgroundColor: colors.surface },
+                    ]}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  >
+                    <Ionicons
+                      name="chevron-forward"
+                      size={18}
+                      color={colors.textPrimary}
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Рендер нужного графика */}
+                {activeChartIndex === 0 ? (
+                  <EarningsChart
+                    transactions={transactions}
+                    selectedDate={selectedDate}
+                  />
+                ) : (
+                  <View
+                    style={[
+                      styles.placeholderChart,
+                      { backgroundColor: colors.surface },
+                    ]}
+                  >
+                    <Ionicons
+                      name="construct-outline"
+                      size={32}
+                      color={colors.textSecondary}
+                    />
+                    <Text
+                      style={[
+                        styles.placeholderText,
+                        { color: colors.textSecondary },
+                      ]}
+                    >
+                      Скоро появится
+                    </Text>
+                  </View>
+                )}
+              </View>
+            )}
           </View>
         }
         ListEmptyComponent={renderEmptyState}
@@ -99,8 +188,55 @@ const styles = StyleSheet.create({
   headerBlock: {
     marginBottom: 16,
   },
+  // --- CHART SECTION ---
+  chartSection: {
+    marginHorizontal: 16,
+    marginTop: 24, // 👈 Отодвинули графики от селектора месяца
+    marginBottom: 16,
+  },
+  chartHeaderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+    paddingHorizontal: 4,
+  },
+  chartTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  // 👈 Сделали стрелки графика красивыми круглыми кнопками
+  arrowButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  placeholderChart: {
+    height: 180,
+    borderRadius: 24,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  placeholderText: {
+    marginTop: 8,
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  // --- EMPTY STATES ---
   emptyContainer: {
-    paddingTop: 80,
+    paddingTop: 40,
     alignItems: "center",
     paddingHorizontal: 32,
   },

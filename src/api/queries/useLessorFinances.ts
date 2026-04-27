@@ -14,7 +14,11 @@ export interface TransactionHistoryItem {
   payout_status: "PAID" | "PENDING";
   created_at: string;
   car?: { brand: string; model: string; license_plate: string };
-  rental?: { start_date: string; end_date: string };
+  rental?: {
+    start_date: string;
+    end_date: string;
+    penalty_price?: number; // 👈 Добавляем это поле!
+  };
 }
 
 // 1. Статистика (Виджет)

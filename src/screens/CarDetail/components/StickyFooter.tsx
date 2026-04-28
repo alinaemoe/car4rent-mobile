@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Platform,
+  useColorScheme, // 👈 Импортируем хук темы
 } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
@@ -14,7 +15,6 @@ interface Props {
   days: number;
   finalRentPrice: number;
   onBookPress: () => void;
-  // 👇 Новый проп для открытия календаря
   onDatesPress: () => void;
   startDate: string | null;
   endDate: string | null;
@@ -49,12 +49,16 @@ export const StickyFooter = ({
   days,
   finalRentPrice,
   onBookPress,
-  onDatesPress, // 👈 Деструктурируем
+  onDatesPress,
   startDate,
   endDate,
 }: Props) => {
   const colors = useAppColors();
   const { t } = useTranslation();
+
+  // 👇 Определяем, темная ли сейчас тема
+  const theme = useColorScheme();
+  const isDark = theme === "dark";
 
   const hasDates = startDate && endDate;
 
@@ -79,8 +83,22 @@ export const StickyFooter = ({
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* 👇 Левый блок (Цена и Даты) теперь КЛИКАБЕЛЬНЫЙ */}
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: colors.background,
+          // 👇 МАГИЯ ТЕМНОЙ ТЕМЫ
+          shadowColor: isDark ? "#979797" : "#000000",
+          shadowOpacity: isDark ? 0.01 : 0.08, // Белая тень почти прозрачная
+          borderTopWidth: isDark ? 0.1 : 0, // Включаем бордер только для темной темы
+          borderTopColor: "transparent",
+          shadowOffset: { width: 0, height: -4 },
+          shadowRadius: 12,
+        },
+      ]}
+    >
+      {/* Левый блок (Цена и Даты) */}
       <TouchableOpacity
         style={styles.priceInfo}
         onPress={onDatesPress}
@@ -146,25 +164,23 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     flexDirection: "row",
-    paddingHorizontal: 16, // Чуть уменьшили боковые отступы
+    paddingHorizontal: 16,
     paddingTop: 14,
     paddingBottom: Platform.OS === "ios" ? 32 : 18,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     alignItems: "center",
     justifyContent: "space-between",
+    // shadowColor и shadowOpacity мы вынесли в динамические стили
     elevation: 15,
-    shadowColor: "#000",
     shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.08,
     shadowRadius: 12,
   },
 
-  // 🔥 ГАРАНТИЯ, ЧТО ТЕКСТ НЕ НАЕДЕТ НА КНОПКУ
   priceInfo: {
     flex: 1,
-    flexShrink: 1, // Позволяет блоку сжиматься
-    marginRight: 12, // Обязательный отступ от кнопки
+    flexShrink: 1,
+    marginRight: 12,
     justifyContent: "center",
   },
 
@@ -175,61 +191,56 @@ const styles = StyleSheet.create({
   priceRow: {
     flexDirection: "row",
     alignItems: "center",
-    flexWrap: "wrap", // Разрешаем перенос, если экран ну очень узкий
+    flexWrap: "wrap",
     marginBottom: 2,
   },
 
-  // Старая цена и ДУГА
   oldPriceContainer: {
     position: "relative",
     marginRight: 6,
     justifyContent: "center",
   },
   oldPriceText: {
-    fontSize: 14, // Сделали мельче
+    fontSize: 14,
     color: "#999",
     fontWeight: "500",
   },
   strikeCurve: {
     position: "absolute",
     width: "115%",
-    height: 16, // Высота невидимого эллипса
-    borderTopWidth: 1.5, // Показываем только верхнюю границу
+    height: 16,
+    borderTopWidth: 1.5,
     borderTopColor: "#999",
-    borderRadius: 50, // Делает границу дугообразной
-    //! TODO
-    top: "35%", // Сдвигаем дугу на центр текста
+    borderRadius: 50,
+    top: "35%",
     left: "-5%",
-    transform: [{ rotate: "-4deg" }], // Слегка наклоняем
+    transform: [{ rotate: "-4deg" }],
   },
 
-  // Основная цена
   pricePrimary: {
-    fontSize: 15, // Сделали мельче
+    fontSize: 15,
     fontWeight: "bold",
   },
   perDayText: {
-    fontSize: 14, // Сделали мельче
+    fontSize: 14,
     fontWeight: "bold",
   },
 
-  // Даты
   dateRange: {
-    fontSize: 13, // Сделали мельче
+    fontSize: 13,
     textDecorationLine: "underline",
     fontWeight: "400",
   },
 
-  // Кнопка
   bookBtn: {
-    paddingVertical: 12, // Сделали кнопку чуть компактнее
+    paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 12,
-    flexShrink: 0, // Запрещаем кнопке сжиматься
+    flexShrink: 0,
   },
   bookBtnText: {
     color: "#fff",
-    fontSize: 14, // Сделали мельче
+    fontSize: 14,
     fontWeight: "bold",
   },
 });

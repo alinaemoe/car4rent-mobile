@@ -16,7 +16,8 @@ import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { useAppSelector, useAppDispatch } from "@/src/store";
 import { useCarDetail } from "@/src/api/queries/useCars";
 import { usePriceCalculator } from "@/src/hooks/usePriceCalculator";
-import { selectIsCarFavorite } from "@/src/store/slices/favoritesSlice";
+import { useCarReviews } from "@/src/api/queries/useCarReviews";
+import { selectIsCarFavorite } from "@/src/store/slices/favoritesSlice"; //todo
 import { applyFilters } from "@/src/store/slices/filtersSlice";
 
 import { CalendarSheet } from "@/src/screens/Catalog/modals/CalendarSheet";
@@ -51,6 +52,16 @@ export default function CarDetailScreen() {
 
   const { data: car, isLoading } = useCarDetail(Number(id));
   const { days, finalRentPrice } = usePriceCalculator(car, startDate, endDate);
+
+  const {
+    data: reviewsData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useCarReviews(Number(id), car?.latest_reviews, car?.reviews_count);
+
+  // Склеиваем все страницы отзывов в один плоский массив
+  const allReviews = reviewsData?.pages.flatMap((page) => page.data) || [];
 
   const calendarSheetRef = useRef<any>(null);
 
@@ -377,11 +388,10 @@ export default function CarDetailScreen() {
         <CarReviews
           avgRating={car.avg_rating}
           reviewsCount={car.reviews_count}
-          reviews={car.latest_reviews}
-          onViewAllPress={() => {
-            // 👇 Задел на ЭТАП 1: переход на экран со всеми отзывами
-            router.push(`/car/${car.id}/reviews`);
-          }}
+          reviews={allReviews} // 👈 Передаем массив из хука
+          hasNextPage={hasNextPage}
+          isFetchingNextPage={isFetchingNextPage}
+          fetchNextPage={fetchNextPage}
         />
         <CarHowItWorks />
         <CarFaq />

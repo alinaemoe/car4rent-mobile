@@ -4,15 +4,17 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { CarReviewPreview } from "@/src/types";
+import { Skeleton } from "@/src/components/common/Skeleton"; // 👈 Твои шикарные скелетоны
 
 interface CarReviewsProps {
   avgRating?: number;
   reviewsCount?: number;
   reviews?: CarReviewPreview[];
-  onViewAllPress?: () => void;
+  hasNextPage: boolean;
+  isFetchingNextPage: boolean;
+  fetchNextPage: () => void;
 }
 
-// Хелпер для рендера звездочек рейтинга (учитывает дробные числа для общего рейтинга)
 const renderStars = (rating: number, color: string, size = 16) => {
   const stars = [];
   for (let i = 1; i <= 5; i++) {
@@ -31,7 +33,6 @@ const renderStars = (rating: number, color: string, size = 16) => {
   return <View style={{ flexDirection: "row" }}>{stars}</View>;
 };
 
-// Хелпер для красивой даты
 const formatDate = (dateString: string) => {
   try {
     return new Intl.DateTimeFormat("ru-RU", {
@@ -48,12 +49,13 @@ export const CarReviews: React.FC<CarReviewsProps> = ({
   avgRating = 0,
   reviewsCount = 0,
   reviews = [],
-  onViewAllPress,
+  hasNextPage,
+  isFetchingNextPage,
+  fetchNextPage,
 }) => {
   const colors = useAppColors();
   const { t } = useTranslation();
 
-  // Если отзывов нет вообще — показываем красивую заглушку
   if (reviewsCount === 0 || reviews.length === 0) {
     return (
       <View style={[styles.card, { backgroundColor: colors.background }]}>
@@ -78,7 +80,6 @@ export const CarReviews: React.FC<CarReviewsProps> = ({
         {t("car_detail.reviews_title", "Отзывы и оценки")}
       </Text>
 
-      {/* Шапка рейтинга (например: 4.8 и 5 звезд) */}
       <View
         style={{ flexDirection: "row", alignItems: "center", marginBottom: 20 }}
       >
@@ -103,9 +104,8 @@ export const CarReviews: React.FC<CarReviewsProps> = ({
         </View>
       </View>
 
-      {/* Список последних отзывов (до 3 штук) */}
+      {/* РЕНДЕР ВСЕХ ЗАГРУЖЕННЫХ ОТЗЫВОВ */}
       {reviews.map((review, index) => {
-        // Достаем первую букву имени для аватара
         const initial = review.userFirstName
           ? review.userFirstName.charAt(0).toUpperCase()
           : "U";
@@ -115,9 +115,11 @@ export const CarReviews: React.FC<CarReviewsProps> = ({
             key={review.id}
             style={{
               borderBottomColor: colors.border,
-              borderBottomWidth: index === reviews.length - 1 ? 0 : 1, // Не рисуем линию у последнего
+              borderBottomWidth:
+                index === reviews.length - 1 && !hasNextPage ? 0 : 1,
               paddingBottom: 16,
-              marginBottom: index === reviews.length - 1 ? 0 : 16,
+              marginBottom:
+                index === reviews.length - 1 && !hasNextPage ? 0 : 16,
             }}
           >
             <View
@@ -127,7 +129,6 @@ export const CarReviews: React.FC<CarReviewsProps> = ({
                 marginBottom: 8,
               }}
             >
-              {/* Аватарка */}
               <View style={[styles.avatar, { backgroundColor: colors.accent }]}>
                 <Text
                   style={{ color: "#fff", fontWeight: "bold", fontSize: 18 }}
@@ -135,8 +136,6 @@ export const CarReviews: React.FC<CarReviewsProps> = ({
                   {initial}
                 </Text>
               </View>
-
-              {/* Имя и Дата */}
               <View style={{ flex: 1 }}>
                 <Text
                   style={{
@@ -167,8 +166,6 @@ export const CarReviews: React.FC<CarReviewsProps> = ({
                 </View>
               </View>
             </View>
-
-            {/* Текст отзыва */}
             <Text
               style={{
                 color: colors.textPrimary,
@@ -182,17 +179,46 @@ export const CarReviews: React.FC<CarReviewsProps> = ({
         );
       })}
 
-      {/* Кнопка "Смотреть все", если отзывов больше, чем мы отрендерили (3) */}
-      {reviewsCount > reviews.length && (
+      {/* 💎 СКЕЛЕТОНЫ ПОДГРУЗКИ */}
+      {isFetchingNextPage && (
+        <View style={{ marginTop: 8 }}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              marginBottom: 8,
+            }}
+          >
+            <Skeleton style={styles.avatar} borderRadius={20} />
+            <View>
+              <Skeleton style={{ width: 120, height: 16, marginBottom: 4 }} />
+              <Skeleton style={{ width: 80, height: 12 }} />
+            </View>
+          </View>
+          <Skeleton style={{ width: "100%", height: 40, borderRadius: 8 }} />
+        </View>
+      )}
+
+      {/* КНОПКА "БОЛЬШЕ ОТЗЫВОВ" */}
+      {hasNextPage && !isFetchingNextPage && (
         <TouchableOpacity
-          style={{ marginTop: 20, alignItems: "center", paddingVertical: 8 }}
-          onPress={onViewAllPress}
+          style={{
+            marginTop: 12,
+            alignItems: "center",
+            paddingVertical: 12,
+            backgroundColor: colors.surface,
+            borderRadius: 12,
+          }}
+          onPress={fetchNextPage}
         >
           <Text
-            style={{ color: colors.accent, fontSize: 16, fontWeight: "bold" }}
+            style={{
+              color: colors.textPrimary,
+              fontSize: 15,
+              fontWeight: "bold",
+            }}
           >
-            {t("car_detail.view_all_reviews", "Смотреть все отзывы")} (
-            {reviewsCount})
+            {t("car_detail.load_more_reviews", "Больше отзывов")}
           </Text>
         </TouchableOpacity>
       )}

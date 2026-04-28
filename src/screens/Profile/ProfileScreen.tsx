@@ -162,14 +162,12 @@ export default function ProfileScreen() {
           {
             icon: "color-palette-outline",
             title: "Оформление",
-            value: "Системное",
-            onPress: () => {},
+            onPress: () => router.push("/settings/theme"), // 👈 Проваливаемся
           },
           {
             icon: "language-outline",
             title: "Язык",
-            value: "Русский",
-            onPress: () => {},
+            onPress: () => router.push("/settings/language"), // 👈 Проваливаемся
           },
         ]}
       />

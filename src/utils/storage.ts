@@ -8,6 +8,7 @@ const GUEST_MODE_KEY = "car4rent_guest_mode";
 const LANGUAGE_KEY = "car4rent_language";
 const TRANSLATIONS_CACHE_KEY = "car4rent_translations_cache";
 const FAVORITES_KEY = "car4rent_favorites";
+const THEME_KEY = "car4rent_theme";
 
 export const storage = {
   // === ТОКЕНЫ (Access + Refresh) ===
@@ -139,6 +140,24 @@ export const storage = {
       return json ? JSON.parse(json) : [];
     } catch (error) {
       return [];
+    }
+  },
+
+  setTheme: async (theme: "system" | "light" | "dark") => {
+    try {
+      if (Platform.OS === "web") localStorage.setItem(THEME_KEY, theme);
+      else await AsyncStorage.setItem(THEME_KEY, theme);
+    } catch (error) {}
+  },
+  getTheme: async (): Promise<"system" | "light" | "dark"> => {
+    try {
+      const val =
+        Platform.OS === "web"
+          ? localStorage.getItem(THEME_KEY)
+          : await AsyncStorage.getItem(THEME_KEY);
+      return (val as "system" | "light" | "dark") || "system";
+    } catch (error) {
+      return "system";
     }
   },
 };

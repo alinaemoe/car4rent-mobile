@@ -144,7 +144,7 @@ export default function ProfileScreen() {
             {
               icon: "shield-checkmark-outline",
               title: "Безопасность",
-              onPress: () => {},
+              onPress: () => router.push("/settings/security"),
             },
             {
               icon: "document-text-outline",

@@ -149,7 +149,8 @@ export default function ProfileScreen() {
             {
               icon: "document-text-outline",
               title: "Мои документы",
-              onPress: () => {},
+              // Просто пушим на этот же экран, но без параметра from="registration"
+              onPress: () => router.push("/(drawer)/upload-docs"),
             },
           ]}
         />

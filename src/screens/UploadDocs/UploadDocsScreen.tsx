@@ -9,10 +9,11 @@ import {
   Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter, useLocalSearchParams } from "expo-router"; // 👈 Добавили useLocalSearchParams
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { useFocusEffect } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 
 import { axiosInstance } from "@/src/api/axios-instance";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
@@ -21,8 +22,9 @@ import { UserDocument, DocType } from "@/src/types";
 export default function UploadDocsScreen() {
   const colors = useAppColors();
   const router = useRouter();
+  const { t } = useTranslation();
 
-  // 👇 Ловим параметр из URL
+  // Ловим параметр (если from === "registration", показываем футер)
   const { from } = useLocalSearchParams<{ from: string }>();
   const isFromRegistration = from === "registration";
 
@@ -56,7 +58,6 @@ export default function UploadDocsScreen() {
     setUploadingType(type);
     try {
       const asset = result.assets[0];
-
       const formData = new FormData();
       formData.append("type", type);
       formData.append("file", {
@@ -66,17 +67,15 @@ export default function UploadDocsScreen() {
       } as any);
 
       await axiosInstance.post("/documents/upload", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        headers: { "Content-Type": "multipart/form-data" },
       });
 
       await fetchMyDocs();
     } catch (error: any) {
       Alert.alert(
-        "Ошибка загрузки",
+        t("common.error", "Ошибка"),
         error.response?.data?.message ||
-          "Не удалось отправить документ на сервер.",
+          t("docs.upload_error", "Не удалось отправить документ на сервер."),
       );
     } finally {
       setUploadingType(null);
@@ -86,14 +85,15 @@ export default function UploadDocsScreen() {
   const openCamera = async (type: DocType) => {
     const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
     if (!permissionResult.granted) {
-      return Alert.alert("Ошибка", "Необходим доступ к камере.");
+      return Alert.alert(
+        t("common.error", "Ошибка"),
+        t("docs.camera_permission", "Необходим доступ к камере."),
+      );
     }
-
     const result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 0.2,
     });
-
     await processImageUpload(type, result);
   };
 
@@ -101,27 +101,50 @@ export default function UploadDocsScreen() {
     const permissionResult =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permissionResult.granted) {
-      return Alert.alert("Ошибка", "Необходим доступ к галерее.");
+      return Alert.alert(
+        t("common.error", "Ошибка"),
+        t("docs.gallery_permission", "Необходим доступ к галерее."),
+      );
     }
-
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 0.2,
     });
-
     await processImageUpload(type, result);
   };
 
   const handleUploadSelection = (type: DocType) => {
     Alert.alert(
-      "Загрузить фото",
-      "Выберите источник фотографии",
+      t("docs.select_source_title", "Загрузить фото"),
+      t("docs.select_source_msg", "Выберите источник фотографии"),
       [
-        { text: "Камера", onPress: () => openCamera(type) },
-        { text: "Галерея", onPress: () => openGallery(type) },
-        { text: "Отмена", style: "cancel" },
+        { text: t("docs.camera", "Камера"), onPress: () => openCamera(type) },
+        {
+          text: t("docs.gallery", "Галерея"),
+          onPress: () => openGallery(type),
+        },
+        { text: t("common.cancel", "Отмена"), style: "cancel" },
       ],
       { cancelable: true },
+    );
+  };
+
+  // 🔥 ТОТ САМЫЙ ALERT ПЕРЕД ОБНОВЛЕНИЕМ ВЕРИФИЦИРОВАННОГО ДОКУМЕНТА
+  const handleUpdateVerifiedDoc = (type: DocType) => {
+    Alert.alert(
+      t("docs.warning_title", "Внимание!"),
+      t(
+        "docs.warning_msg",
+        "При обновлении документов ваш профиль будет отправлен на повторную проверку. Вы не сможете арендовать авто до подтверждения модератором. Продолжить?",
+      ),
+      [
+        { text: t("common.cancel", "Отмена"), style: "cancel" },
+        {
+          text: t("common.continue", "Продолжить"),
+          style: "destructive",
+          onPress: () => handleUploadSelection(type),
+        },
+      ],
     );
   };
 
@@ -134,7 +157,7 @@ export default function UploadDocsScreen() {
     const isUploading = uploadingType === type;
 
     let statusColor = colors.textSecondary;
-    let statusText = "Не загружен";
+    let statusText = t("docs.status_missing", "Не загружен");
     let CardIcon = (
       <Ionicons name={iconName} size={28} color={colors.textSecondary} />
     );
@@ -150,7 +173,9 @@ export default function UploadDocsScreen() {
           color="#fff"
           style={{ marginRight: 8 }}
         />
-        <Text style={styles.actionBtnText}>Загрузить</Text>
+        <Text style={styles.actionBtnText}>
+          {t("docs.btn_upload", "Загрузить")}
+        </Text>
       </TouchableOpacity>
     );
 
@@ -158,7 +183,7 @@ export default function UploadDocsScreen() {
       switch (doc.status) {
         case "PENDING":
           statusColor = colors.warningText || colors.warning;
-          statusText = "На проверке";
+          statusText = t("docs.status_pending", "На проверке");
           CardIcon = <Ionicons name="time" size={28} color={statusColor} />;
           ActionButton = (
             <View
@@ -168,33 +193,48 @@ export default function UploadDocsScreen() {
               ]}
             >
               <Text style={[styles.statusBadgeText, { color: statusColor }]}>
-                Проверяем...
+                {t("docs.btn_checking", "Проверяем...")}
               </Text>
             </View>
           );
           break;
+
         case "VERIFIED":
           statusColor = colors.success;
-          statusText = "Подтвержден";
+          statusText = t("docs.status_verified", "Подтвержден");
           CardIcon = (
             <Ionicons name="checkmark-circle" size={28} color={statusColor} />
           );
+          // 🔥 ТЕПЕРЬ ТУТ КНОПКА "ОБНОВИТЬ", А НЕ ПРОСТО ПЛАШКА
           ActionButton = (
-            <View
+            <TouchableOpacity
               style={[
-                styles.statusBadge,
-                { backgroundColor: colors.successBg },
+                styles.actionBtnOutline,
+                { borderColor: colors.border, backgroundColor: colors.surface },
               ]}
+              onPress={() => handleUpdateVerifiedDoc(type)}
             >
-              <Text style={[styles.statusBadgeText, { color: statusColor }]}>
-                Принято
+              <Ionicons
+                name="refresh-outline"
+                size={18}
+                color={colors.textPrimary}
+                style={{ marginRight: 8 }}
+              />
+              <Text
+                style={[
+                  styles.actionBtnOutlineText,
+                  { color: colors.textPrimary },
+                ]}
+              >
+                {t("common.update", "Обновить")}
               </Text>
-            </View>
+            </TouchableOpacity>
           );
           break;
+
         case "REJECTED":
           statusColor = colors.error;
-          statusText = "Отклонен";
+          statusText = t("docs.status_rejected", "Отклонен");
           CardIcon = (
             <Ionicons name="close-circle" size={28} color={statusColor} />
           );
@@ -209,7 +249,9 @@ export default function UploadDocsScreen() {
                 color="#fff"
                 style={{ marginRight: 8 }}
               />
-              <Text style={styles.actionBtnText}>Загрузить заново</Text>
+              <Text style={styles.actionBtnText}>
+                {t("docs.btn_reupload", "Загрузить заново")}
+              </Text>
             </TouchableOpacity>
           );
           break;
@@ -249,7 +291,9 @@ export default function UploadDocsScreen() {
                 lineHeight: 20,
               }}
             >
-              <Text style={{ fontWeight: "bold" }}>Причина: </Text>
+              <Text style={{ fontWeight: "bold" }}>
+                {t("docs.reason", "Причина:")}{" "}
+              </Text>
               {doc.rejection_reason}
             </Text>
           </View>
@@ -263,7 +307,7 @@ export default function UploadDocsScreen() {
                 style={{ marginRight: 8 }}
               />
               <Text style={{ color: colors.accent, fontWeight: "600" }}>
-                Отправка файла...
+                {t("docs.uploading", "Отправка файла...")}
               </Text>
             </View>
           ) : (
@@ -281,7 +325,6 @@ export default function UploadDocsScreen() {
         style={{ backgroundColor: colors.surface, zIndex: 10 }}
       >
         <View style={styles.stickyHeader}>
-          {/* Если пришли из реги, то можно скрыть крестик, либо оставить его (он тоже закроет модалку) */}
           <TouchableOpacity
             onPress={() =>
               isFromRegistration ? router.replace("/") : router.back()
@@ -290,13 +333,16 @@ export default function UploadDocsScreen() {
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
             <Ionicons
-              name="close-outline"
+              name={isFromRegistration ? "close-outline" : "chevron-back"}
               size={28}
               color={colors.textPrimary}
             />
           </TouchableOpacity>
+          {/* 🔥 ДИНАМИЧЕСКИЙ ЗАГОЛОВОК */}
           <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>
-            Верификация
+            {isFromRegistration
+              ? t("docs.verification_title", "Верификация")
+              : t("profile.my_documents", "Мои документы")}
           </Text>
         </View>
         <View
@@ -314,16 +360,22 @@ export default function UploadDocsScreen() {
           showsVerticalScrollIndicator={false}
         >
           <Text style={[styles.pageTitle, { color: colors.textPrimary }]}>
-            Ваши документы
+            {t("docs.page_title", "Ваши документы")}
           </Text>
           <Text style={[styles.pageSubtitle, { color: colors.textSecondary }]}>
-            Сделайте четкие фотографии оригиналов. Мы гарантируем безопасность
-            ваших данных.
+            {t(
+              "docs.page_subtitle",
+              "Сделайте четкие фотографии оригиналов. Мы гарантируем безопасность ваших данных.",
+            )}
           </Text>
 
-          {renderDocCard("Паспорт (разворот)", "PASSPORT", "book-outline")}
           {renderDocCard(
-            "Водительские права",
+            t("docs.passport", "Паспорт (разворот)"),
+            "PASSPORT",
+            "book-outline",
+          )}
+          {renderDocCard(
+            t("docs.license", "Водительские права"),
             "DRIVER_LICENSE",
             "card-outline",
           )}
@@ -345,14 +397,16 @@ export default function UploadDocsScreen() {
                 lineHeight: 20,
               }}
             >
-              Ваши данные надежно зашифрованы и используются исключительно для
-              проверки службой безопасности.
+              {t(
+                "docs.security_hint",
+                "Ваши данные надежно зашифрованы и используются исключительно для проверки службой безопасности.",
+              )}
             </Text>
           </View>
         </ScrollView>
       )}
 
-      {/* 👇 ДОБАВЛЯЕМ ЛИПКИЙ ФУТЕР ТОЛЬКО ДЛЯ ПОТОКА РЕГИСТРАЦИИ */}
+      {/* ФУТЕР ТОЛЬКО ДЛЯ РЕГИСТРАЦИИ */}
       {isFromRegistration && (
         <SafeAreaView
           edges={["bottom"]}
@@ -363,9 +417,11 @@ export default function UploadDocsScreen() {
         >
           <TouchableOpacity
             style={[styles.continueBtn, { backgroundColor: colors.accent }]}
-            onPress={() => router.replace("/")} // Кидаем на главную в Каталог
+            onPress={() => router.replace("/")}
           >
-            <Text style={styles.continueBtnText}>Перейти к машинам</Text>
+            <Text style={styles.continueBtnText}>
+              {t("docs.go_to_cars", "Перейти к машинам")}
+            </Text>
             <Ionicons
               name="arrow-forward"
               size={20}
@@ -386,49 +442,21 @@ const styles = StyleSheet.create({
     height: 56,
     paddingHorizontal: 16,
   },
-  backBtn: {
-    justifyContent: "center",
-    marginRight: 16,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-  headerDivider: {
-    height: StyleSheet.hairlineWidth,
-    marginHorizontal: 20,
-    opacity: 0.7,
-  },
-  center: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  scrollContent: {
-    padding: 16,
-    paddingBottom: 40,
-  },
+  backBtn: { justifyContent: "center", marginRight: 16 },
+  headerTitle: { fontSize: 20, fontWeight: "bold" },
+  headerDivider: { height: StyleSheet.hairlineWidth, opacity: 0.7 },
+  center: { flex: 1, justifyContent: "center", alignItems: "center" },
+  scrollContent: { padding: 16, paddingBottom: 40 },
   pageTitle: {
     fontSize: 28,
     fontWeight: "bold",
     marginBottom: 8,
     marginTop: 8,
   },
-  pageSubtitle: {
-    fontSize: 15,
-    lineHeight: 22,
-    marginBottom: 24,
-  },
-  card: {
-    padding: 20,
-    marginBottom: 16,
-    borderRadius: 24,
-  },
-  cardHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 16,
-  },
+  pageSubtitle: { fontSize: 15, lineHeight: 22, marginBottom: 24 },
+
+  card: { padding: 20, marginBottom: 16, borderRadius: 24 },
+  cardHeader: { flexDirection: "row", alignItems: "center", marginBottom: 16 },
   iconBox: {
     width: 48,
     height: 48,
@@ -437,19 +465,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginRight: 16,
   },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 4,
-  },
-  rejectReasonBox: {
-    padding: 16,
-    borderRadius: 16,
-    marginBottom: 16,
-  },
-  cardFooter: {
-    alignItems: "flex-start",
-  },
+  cardTitle: { fontSize: 18, fontWeight: "bold", marginBottom: 4 },
+  rejectReasonBox: { padding: 16, borderRadius: 16, marginBottom: 16 },
+  cardFooter: { alignItems: "flex-start" },
+
   actionBtn: {
     flexDirection: "row",
     alignItems: "center",
@@ -457,20 +476,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 16,
   },
-  actionBtnText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 15,
-  },
-  statusBadge: {
+  actionBtnText: { color: "#fff", fontWeight: "bold", fontSize: 15 },
+
+  // 👇 НОВАЯ КНОПКА "ОБНОВИТЬ" (Outline style)
+  actionBtnOutline: {
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 12,
+    paddingHorizontal: 18,
+    borderRadius: 14,
+    borderWidth: 1,
   },
-  statusBadgeText: {
-    fontWeight: "bold",
-    fontSize: 14,
-  },
+  actionBtnOutlineText: { fontWeight: "600", fontSize: 14 },
+
+  statusBadge: { paddingVertical: 10, paddingHorizontal: 16, borderRadius: 12 },
+  statusBadgeText: { fontWeight: "bold", fontSize: 14 },
   uploadingContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -483,11 +503,12 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 24,
   },
-  // 👇 СТИЛИ ДЛЯ НОВОГО ФУТЕРА
+
   stickyFooter: {
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 8,
+    borderWidth: 0,
     borderTopWidth: 1,
     elevation: 8,
     shadowColor: "#000",
@@ -506,9 +527,5 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
   },
-  continueBtnText: {
-    color: "#fff",
-    fontSize: 17,
-    fontWeight: "bold",
-  },
+  continueBtnText: { color: "#fff", fontSize: 17, fontWeight: "bold" },
 });

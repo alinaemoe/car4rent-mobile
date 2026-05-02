@@ -46,20 +46,16 @@ export const LoginForm = () => {
     setIsLoading(true);
 
     try {
-      // 1. Логинимся, получаем Access и Refresh токены
       const authRes = await axiosInstance.post("/auth/login", {
         email: trimmedEmail,
         password,
       });
       const { access_token, refresh_token } = authRes.data;
 
-      // 2. Сохраняем токены физически
       await storage.setTokens(access_token, refresh_token);
 
-      // 3. Запрашиваем данные профиля по новому токену
       const profileRes = await axiosInstance.get("/users/profile");
       console.log("✅ PROFILE DATA:", JSON.stringify(profileRes.data, null, 2));
-      // 4. Пишем в Redux -> Logic в _layout.tsx сама перекинет нас вTabs
       dispatch(setCredentials({ user: profileRes.data, token: access_token }));
     } catch (error: any) {
       setErrorText(error.response?.data?.message || "Ошибка авторизации");

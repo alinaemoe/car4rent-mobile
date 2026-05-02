@@ -158,7 +158,18 @@ export default function ProfileScreen() {
       <MenuSection
         title="Приложение"
         items={[
-          { icon: "heart-outline", title: "Избранные авто", onPress: () => {} },
+          {
+            icon: "heart-outline",
+            title: "Избранные авто",
+            onPress: () => {
+              // 👇 Переходим на экран каталога и прокидываем параметр
+              // Если твой каталог лежит в корне табов, то pathname: "/"
+              router.push({
+                pathname: "/", // или "/(drawer)/(tabs)" в зависимости от роутера
+                params: { showFavorites: "true" },
+              });
+            },
+          },
           {
             icon: "color-palette-outline",
             title: "Оформление",

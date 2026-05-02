@@ -9,7 +9,7 @@ import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 // 👇 НОВЫЕ ИМПОРТЫ ДЛЯ СТАТУС БАРА И SAFE AREA
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
-import { useColorScheme } from "react-native";
+import { Appearance, useColorScheme } from "react-native";
 
 import { store, useAppDispatch, useAppSelector } from "../src/store";
 import {
@@ -102,6 +102,14 @@ function AppContent() {
 export default function RootLayout() {
   const colors = useAppColors();
   const theme = useColorScheme(); // 'light' или 'dark'
+
+  useEffect(() => {
+    storage.getTheme().then((savedTheme) => {
+      if (savedTheme && savedTheme !== "system") {
+        Appearance.setColorScheme(savedTheme);
+      }
+    });
+  }, []);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

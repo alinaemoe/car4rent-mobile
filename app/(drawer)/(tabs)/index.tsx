@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import {
   View,
   FlatList,
@@ -32,6 +32,7 @@ import { QuickFilterSheet } from "@/src/screens/Catalog/modals/QuickFilterSheet"
 
 export default function CatalogScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams();
   const colors = useAppColors();
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
@@ -52,6 +53,17 @@ export default function CatalogScreen() {
   // Стейт Календаря
   const [markedDates, setMarkedDates] = useState<any>({});
   const [tempStart, setTempStart] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Если мы перешли с профиля с параметром showFavorites=true
+    if (params.showFavorites === "true") {
+      // Автоматически включаем фильтр "только избранное"
+      dispatch(applyFilters({ onlyFavorites: true }));
+      // Опционально можно сбросить параметр, чтоб при возврате назад не багалось,
+      // но в Expo Router он обычно сам затирается при нормальной навигации
+      router.setParams({ showFavorites: "" });
+    }
+  }, [params.showFavorites, dispatch, router]);
 
   useEffect(() => {
     if (filters.startDate && filters.endDate) {

@@ -194,7 +194,7 @@ export default function ProfileScreen() {
           {
             icon: "chatbubble-ellipses-outline",
             title: "Служба поддержки",
-            onPress: handletoast,
+            onPress: () => router.push("/settings/support"),
           },
         ]}
       />

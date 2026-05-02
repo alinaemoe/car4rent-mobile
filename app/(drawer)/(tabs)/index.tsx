@@ -124,6 +124,7 @@ export default function CatalogScreen() {
     isRefetching,
   } = useCarsCatalog();
 
+  const totalCarsCount = data?.pages[0]?.meta?.total || 0;
   const rawCars = data?.pages.flatMap((page) => page.data) || [];
 
   // 2. 🔥 ПРЕДОХРАНИТЕЛЬ: Убираем дубликаты по ID (чтобы FlatList никогда не зависал)
@@ -305,7 +306,7 @@ export default function CatalogScreen() {
           contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 80 }}
           ListHeaderComponent={
             <CatalogListHeader
-              carsCount={cars.length}
+              carsCount={totalCarsCount}
               isFavoritesOnly={!!filters.onlyFavorites}
               onToggleFavorites={handleToggleFavorites}
               onOpenQuickFilter={handleOpenQuickFilter}

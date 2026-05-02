@@ -8,7 +8,6 @@ export const useCarsCatalog = () => {
   const favoriteIds = useAppSelector(selectFavoriteCarIds);
 
   return useInfiniteQuery({
-    // 🔥 Хак для надежного кэширования сложных объектов
     queryKey: [
       "cars",
       "catalog",
@@ -16,14 +15,25 @@ export const useCarsCatalog = () => {
       favoriteIds.join(","),
     ],
     queryFn: async ({ pageParam = 1 }) => {
+      // Если включены только избранные, но их нет — не мучаем бэк
       if (filters.onlyFavorites && favoriteIds.length === 0) {
-        return { data: [], meta: { page: 1, totalPages: 1 } };
+        return { data: [], meta: { page: 1, totalPages: 1, total: 0 } };
       }
 
       const params: any = { page: pageParam, limit: 10 };
 
       Object.entries(filters).forEach(([key, value]) => {
         if (key === "onlyFavorites") return;
+
+        // 👇 МАППИНГ ДАТ ДЛЯ БЭКЕНДА (camelCase -> snake_case)
+        if (key === "startDate") {
+          params.start_date = value;
+          return;
+        }
+        if (key === "endDate") {
+          params.end_date = value;
+          return;
+        }
 
         if (Array.isArray(value)) {
           if (value.length > 0) params[key] = value.join(",");

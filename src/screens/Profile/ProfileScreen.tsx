@@ -139,7 +139,7 @@ export default function ProfileScreen() {
             {
               icon: "person-outline",
               title: "Личные данные",
-              onPress: () => {},
+              onPress: () => router.push("/settings/personal-data"),
             },
             {
               icon: "shield-checkmark-outline",

@@ -69,6 +69,14 @@ export interface CarReviewPreview {
   userLastName: string;
 }
 
+export interface LocationInfo {
+  id: number;
+  name: string;
+  address: string;
+  latitude: number | null;
+  longitude: number | null;
+}
+
 // === ПОЛНАЯ СУЩНОСТЬ АВТОМОБИЛЯ ===
 export interface Car {
   id: number;
@@ -94,6 +102,7 @@ export interface Car {
   avg_rating?: number; // Средний рейтинг (добавим позже)
   booked_dates?: { startDate: string; endDate: string }[];
   latest_reviews?: CarReviewPreview[];
+  location?: LocationInfo | null;
 
   // Цены и лимиты
   price_per_day: number;

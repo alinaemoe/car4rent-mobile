@@ -190,7 +190,7 @@ export default function ProfileScreen() {
           {
             icon: "help-circle-outline",
             title: "Частые вопросы (FAQ)",
-            onPress: () => {},
+            onPress: () => router.push("/settings/faq"),
           },
           {
             icon: "chatbubble-ellipses-outline",

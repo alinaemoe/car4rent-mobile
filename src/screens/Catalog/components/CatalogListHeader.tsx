@@ -230,12 +230,16 @@ export const CatalogListHeader = ({
         </ScrollView>
       </View>
 
-      {/* TABS КЛАССОВ (СИНХРОНИЗИРОВАНЫ С ЦЕНОЙ) */}
-      <View style={{ height: 130, marginTop: 16 }}>
+      {/* TABS КЛАССОВ С ЭФФЕКТНЫМ ВЫЛЕТОМ */}
+      <View style={{ height: 170, marginTop: 10, marginBottom: 5 }}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}
+          contentContainerStyle={{
+            paddingHorizontal: 16,
+            gap: 14,
+            paddingTop: 40, // Место для "вылета" крыши машины
+          }}
         >
           {CAR_CLASSES.map((item) => {
             const isActive =
@@ -249,29 +253,57 @@ export const CatalogListHeader = ({
                 style={[
                   styles.classCard,
                   {
-                    backgroundColor: isActive
-                      ? colors.accentBg
-                      : colors.surface,
+                    // Оставляем фон всегда surface, чтобы не было "тяжелого" выделения
+                    backgroundColor: colors.surface,
+                    // Рамка становится акцентной только при активации
                     borderColor: isActive ? colors.accent : "transparent",
+                    // Тень для активной карточки (Glow effect)
+                    shadowColor: isActive ? colors.accent : "#000",
+                    shadowOpacity: isActive ? 0.25 : 0.05,
+                    shadowRadius: isActive ? 12 : 8,
+                    elevation: isActive ? 6 : 2,
+                    // Легкий подъем активной карточки
+                    transform: [{ scale: isActive ? 1.05 : 1 }],
                   },
                 ]}
               >
-                <Image
-                  source={item.img}
-                  style={styles.classImg}
-                  resizeMode="contain"
-                />
-                <Text
-                  style={{
-                    color: isActive ? colors.accent : colors.textPrimary,
-                    fontWeight: "bold",
-                  }}
-                >
-                  {item.label}
-                </Text>
-                <Text style={{ color: colors.textSecondary, fontSize: 11 }}>
-                  {item.priceText}
-                </Text>
+                {/* МАШИНА: Вылетает за границы карточки */}
+                <View style={styles.imgWrapper}>
+                  <Image
+                    source={item.img}
+                    style={[
+                      styles.classImg,
+                      {
+                        // Машинка тоже реагирует на выбор
+                        transform: [{ scale: isActive ? 1.1 : 1 }],
+                        // Можно добавить легкий tint или насыщенность, если нужно, но лучше оставить натив
+                      },
+                    ]}
+                    resizeMode="contain"
+                  />
+                </View>
+
+                {/* ТЕКСТ: Теперь цвета строго привязаны к isActive */}
+                <View style={styles.labelWrapper}>
+                  <Text
+                    style={[
+                      styles.priceText,
+                      { color: isActive ? colors.accent : colors.textPrimary }, // Тут не теряем!
+                    ]}
+                  >
+                    {item.priceText}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.classLabel,
+                      {
+                        color: isActive ? colors.accent : colors.textSecondary,
+                      }, // И тут!
+                    ]}
+                  >
+                    {item.label}
+                  </Text>
+                </View>
               </TouchableOpacity>
             );
           })}
@@ -300,21 +332,56 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   classCard: {
-    width: 140,
-    height: 110,
-    padding: 10,
-    borderRadius: 16,
+    width: 145,
+    height: 90,
+    borderRadius: 24,
     borderWidth: 2,
     alignItems: "center",
+    justifyContent: "flex-end",
+    paddingBottom: 14,
+    position: "relative",
+    // Важно для теней на iOS
+    shadowOffset: { width: 0, height: 4 },
   },
-  classImg: { width: 80, height: 40, marginBottom: 8 },
+
+  imgWrapper: {
+    position: "absolute",
+    top: -42, // Глубокий вылет
+    zIndex: 10,
+    width: "100%",
+    alignItems: "center",
+  },
+
+  classImg: {
+    width: 110,
+    height: 70,
+  },
+
+  labelWrapper: {
+    alignItems: "center",
+    zIndex: 1,
+  },
+
+  priceText: {
+    fontSize: 16,
+    fontWeight: "900", // Жирный акцент на цену
+    letterSpacing: -0.5,
+  },
+
+  classLabel: {
+    fontSize: 11,
+    fontWeight: "600",
+    marginTop: 1,
+    letterSpacing: 0.5,
+    opacity: 0.9,
+  },
+
   resultsRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 16,
-    marginVertical: 10,
-    paddingTop: 10,
+    paddingHorizontal: 20,
+    marginTop: 15,
   },
   resultsTitle: { fontSize: 18, fontWeight: "bold" },
   sortBtn: { padding: 8, borderRadius: 8, backgroundColor: "rgba(0,0,0,0.05)" },

@@ -58,27 +58,51 @@ export const QUICK_FILTERS = [
 // === ПРЕСЕТЫ КЛАССОВ (UI карточки) ===
 export const CAR_CLASSES = [
   {
-    id: "ECONOMY",
-    label: "Эконом",
-    priceText: "до 3000 Br",
+    id: "BUDGET",
+    label: "Бюджет",
+    priceText: "до 2500 Br",
     minPrice: 0,
-    maxPrice: 3000,
-    img: require("@/assets/images/icon.png"),
+    maxPrice: 2500,
+    img: require("@/assets/images/classes/budget.png"), // Маленький хэтчбек
   },
   {
-    id: "COMFORT",
-    label: "Комфорт",
-    priceText: "3000 - 6000 Br",
-    minPrice: 3000,
-    maxPrice: 6000,
-    img: require("@/assets/images/icon.png"),
+    id: "STANDARD",
+    label: "Стандарт",
+    priceText: "2500 - 4500 Br",
+    minPrice: 2500,
+    maxPrice: 4500,
+    img: require("@/assets/images/classes/standard.png"), // Обычный седан
+  },
+  {
+    id: "COMFORT_PLUS",
+    label: "Комфорт+",
+    priceText: "4500 - 7500 Br",
+    minPrice: 4500,
+    maxPrice: 7500,
+    img: require("@/assets/images/classes/comfort.png"), // Хороший кроссовер
   },
   {
     id: "BUSINESS",
     label: "Бизнес",
-    priceText: "от 6000 Br",
-    minPrice: 6000,
-    maxPrice: undefined, // Бесконечность
-    img: require("@/assets/images/icon.png"),
+    priceText: "7500 - 12000 Br",
+    minPrice: 7500,
+    maxPrice: 12000,
+    img: require("@/assets/images/classes/business.png"), // Представительский седан
+  },
+  {
+    id: "PREMIUM",
+    label: "Премиум",
+    priceText: "12000 - 25000 Br",
+    minPrice: 12000,
+    maxPrice: 25000,
+    img: require("@/assets/images/classes/premium.png"), // Тяжелый внедорожник
+  },
+  {
+    id: "ELITE",
+    label: "Элита",
+    priceText: "от 25000 Br",
+    minPrice: 25000,
+    maxPrice: undefined,
+    img: require("@/assets/images/classes/elite.png"), // Суперкар
   },
 ];

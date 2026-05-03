@@ -24,6 +24,7 @@ import { FiltersModal } from "@/src/components/FiltersModal";
 import { CatalogHeader } from "@/src/screens/Catalog/components/CatalogHeader";
 import { CatalogListHeader } from "@/src/screens/Catalog/components/CatalogListHeader";
 import { MapFab } from "@/src/screens/Catalog/components/MapFab";
+import { CatalogMap } from "@/src/screens/CarDetail/components/CatalogMap";
 
 // Модалки
 import { CalendarSheet } from "@/src/screens/Catalog/modals/CalendarSheet";
@@ -49,6 +50,7 @@ export default function CatalogScreen() {
   const [activeQuickFilter, setActiveQuickFilter] = useState<string | null>(
     null,
   );
+  const [isMapView, setIsMapView] = useState(false);
 
   // Стейт Календаря
   const [markedDates, setMarkedDates] = useState<any>({});
@@ -299,7 +301,11 @@ export default function CatalogScreen() {
           color={colors.accent}
           style={{ marginTop: 40 }}
         />
+      ) : isMapView ? (
+        // 🔥 РЕЖИМ КАРТЫ
+        <CatalogMap cars={cars} />
       ) : (
+        // 🔥 РЕЖИМ СПИСКА
         <FlatList
           data={cars}
           keyExtractor={(item) => item.id.toString()}
@@ -350,7 +356,12 @@ export default function CatalogScreen() {
         />
       )}
 
-      <MapFab />
+      {!isLoading && cars.length > 0 && (
+        <MapFab
+          isMapView={isMapView}
+          onToggle={() => setIsMapView(!isMapView)}
+        />
+      )}
 
       {/* Модалки и Шторки */}
       <QuickFilterSheet

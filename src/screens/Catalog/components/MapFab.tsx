@@ -4,7 +4,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 
-export const MapFab = () => {
+interface Props {
+  isMapView: boolean;
+  onToggle: () => void;
+}
+
+export const MapFab = ({ isMapView, onToggle }: Props) => {
   const colors = useAppColors();
   const { t } = useTranslation();
 
@@ -12,9 +17,16 @@ export const MapFab = () => {
     <TouchableOpacity
       style={[styles.mapFab, { backgroundColor: colors.accent }]}
       activeOpacity={0.9}
+      onPress={onToggle}
     >
-      <Text style={styles.mapFabText}>{t("map", "Карта")}</Text>
-      <Ionicons name="map-outline" size={20} color="#fff" />
+      <Text style={styles.mapFabText}>
+        {isMapView ? t("list", "Список") : t("map", "Карта")}
+      </Text>
+      <Ionicons
+        name={isMapView ? "list-outline" : "map-outline"}
+        size={20}
+        color="#fff"
+      />
     </TouchableOpacity>
   );
 };
@@ -22,18 +34,18 @@ export const MapFab = () => {
 const styles = StyleSheet.create({
   mapFab: {
     position: "absolute",
-    bottom: 20,
+    bottom: 24, // Чуть приподняли
     alignSelf: "center",
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 24,
     paddingVertical: 14,
     borderRadius: 30,
-    elevation: 5,
+    elevation: 8,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
   },
   mapFabText: {
     color: "#fff",

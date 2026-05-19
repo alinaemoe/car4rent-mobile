@@ -8,6 +8,7 @@ import {
   Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { Rental } from "@/src/api/queries/useRentals";
 
@@ -27,6 +28,7 @@ export const RentalCardActions = ({
   onFindOtherPress,
 }: Props) => {
   const colors = useAppColors();
+  const { t } = useTranslation();
 
   const handleCallSupport = async () => {
     const url = `tel:${SUPPORT_PHONE}`;
@@ -36,9 +38,12 @@ export const RentalCardActions = ({
       await Linking.openURL(url);
     } else {
       Alert.alert(
-        "Ошибка",
-        "Ваше устройство не поддерживает телефонные звонки. Номер: " +
-          SUPPORT_PHONE,
+        t("common.error", "Ошибка"),
+        t("rental_actions.call_error", {
+          phone: SUPPORT_PHONE,
+          defaultValue:
+            "Ваше устройство не поддерживает телефонные звонки. Номер: {{phone}}",
+        }),
       );
     }
   };
@@ -61,7 +66,7 @@ export const RentalCardActions = ({
           <Text
             style={[styles.actionBtnTextOutline, { color: colors.textPrimary }]}
           >
-            Связаться с сервисом
+            {t("rental_actions.contact_service", "Связаться с сервисом")}
           </Text>
         </TouchableOpacity>
       );
@@ -79,7 +84,9 @@ export const RentalCardActions = ({
             color="#fff"
             style={{ marginRight: 6 }}
           />
-          <Text style={styles.actionBtnTextPrimary}>Служба поддержки</Text>
+          <Text style={styles.actionBtnTextPrimary}>
+            {t("rental_actions.support_service", "Служба поддержки")}
+          </Text>
         </TouchableOpacity>
       );
     }
@@ -100,7 +107,9 @@ export const RentalCardActions = ({
               color="#fff"
               style={{ marginRight: 6 }}
             />
-            <Text style={styles.actionBtnTextPrimary}>Оценить поездку</Text>
+            <Text style={styles.actionBtnTextPrimary}>
+              {t("rental_actions.rate_trip", "Оценить поездку")}
+            </Text>
           </TouchableOpacity>
         );
       }
@@ -118,7 +127,7 @@ export const RentalCardActions = ({
           <Text
             style={[styles.actionBtnTextOutline, { color: colors.textPrimary }]}
           >
-            Забронировать снова
+            {t("rental_actions.book_again", "Забронировать снова")}
           </Text>
         </TouchableOpacity>
       );
@@ -142,7 +151,7 @@ export const RentalCardActions = ({
           <Text
             style={[styles.actionBtnTextPrimary, { color: colors.background }]}
           >
-            Подобрать другое авто
+            {t("rental_actions.find_another_car", "Подобрать другое авто")}
           </Text>
         </TouchableOpacity>
       );

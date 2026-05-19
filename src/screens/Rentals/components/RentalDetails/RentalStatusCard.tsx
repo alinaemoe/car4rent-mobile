@@ -17,34 +17,38 @@ export const RentalStatusCard = ({ rental }: Props) => {
     switch (status) {
       case "CREATED":
         return {
-          label: "На рассмотрении",
+          label: t("status.created", "На рассмотрении"),
           color: colors.warning,
           bg: colors.warningBg,
         };
       case "APPROVED":
         return {
-          label: "Подтверждено",
+          label: t("status.approved", "Подтверждено"),
           color: colors.success,
           bg: colors.successBg,
         };
       case "ACTIVE":
         return {
-          label: "В поездке",
+          label: t("status.active", "В поездке"),
           color: colors.accent,
           bg: colors.accentBg,
         };
       case "COMPLETED":
         return {
-          label: "Завершена",
+          label: t("status.completed", "Завершена"),
           color: colors.textSecondary,
           bg: colors.border,
         };
       case "CANCELED":
       case "REJECTED":
-        return { label: "Отменена", color: colors.error, bg: colors.errorBg };
+        return {
+          label: t("status.canceled", "Отменена"),
+          color: colors.error,
+          bg: colors.errorBg,
+        };
       default:
         return {
-          label: status,
+          label: t(`status.${status.toLowerCase()}`, status),
           color: colors.textSecondary,
           bg: colors.border,
         };
@@ -70,7 +74,10 @@ export const RentalStatusCard = ({ rental }: Props) => {
       </View>
 
       <Text style={[styles.bookingId, { color: colors.textSecondary }]}>
-        Бронь #{rental.id}
+        {t("rental.booking_id", {
+          id: rental.id,
+          defaultValue: "Бронь #{{id}}",
+        })}
       </Text>
 
       {/* Памятка для предстоящих поездок */}
@@ -83,8 +90,10 @@ export const RentalStatusCard = ({ rental }: Props) => {
             style={styles.memoIcon}
           />
           <Text style={[styles.memoText, { color: colors.textPrimary }]}>
-            Для получения автомобиля вам понадобятся оригиналы паспорта и
-            водительского удостоверения.
+            {t(
+              "rental.memo_text",
+              "Для получения автомобиля вам понадобятся оригиналы паспорта и водительского удостоверения.",
+            )}
           </Text>
         </View>
       )}

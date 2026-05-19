@@ -49,60 +49,71 @@ LocaleConfig.defaultLocale = "ru";
 export const MAX_SLIDER_PRICE = 30000;
 
 // === ТАБЛЕТКИ БЫСТРЫХ ФИЛЬТРОВ (Шторки) ===
+// === ТАБЛЕТКИ БЫСТРЫХ ФИЛЬТРОВ (Шторки) ===
 export const QUICK_FILTERS = [
-  { id: "brand", label: i18next.t("filter.brand", "Марка") },
-  { id: "body_type", label: i18next.t("filter.body_type", "Тип кузова") },
-  { id: "transmission", label: i18next.t("filter.transmission", "Коробка") },
+  { id: "brand", labelKey: "filter.brand", defaultLabel: "Марка" },
+  { id: "body_type", labelKey: "filter.body_type", defaultLabel: "Тип кузова" },
+  {
+    id: "transmission",
+    labelKey: "filter.transmission",
+    defaultLabel: "Коробка",
+  },
 ];
 
 // === ПРЕСЕТЫ КЛАССОВ (UI карточки) ===
 export const CAR_CLASSES = [
   {
     id: "BUDGET",
-    label: i18next.t("class.budget", "Бюджет"),
-    priceText: `${i18next.t("common.up_to", "до")} 70 ${i18next.t("common.currency_br", "Br")}`,
+    labelKey: "class.budget",
+    defaultLabel: "Бюджет",
     minPrice: 0,
     maxPrice: 70,
-    img: require("@/assets/images/classes/budget.png"), // Маленький хэтчбек (типа Logan)
+    type: "up_to", // Флаг для рендера строки "до 70 Br"
+    img: require("@/assets/images/classes/budget.png"),
   },
   {
     id: "STANDARD",
-    label: i18next.t("class.standard", "Стандарт"),
-    priceText: `70 - 130 ${i18next.t("common.currency_br", "Br")}`,
+    labelKey: "class.standard",
+    defaultLabel: "Стандарт",
     minPrice: 70,
     maxPrice: 130,
-    img: require("@/assets/images/classes/standard.png"), // Обычный седан (Polo, Rio)
+    type: "range", // Флаг для рендера строки "70 - 130 Br"
+    img: require("@/assets/images/classes/standard.png"),
   },
   {
     id: "COMFORT_PLUS",
-    label: i18next.t("class.comfort_plus", "Комфорт+"),
-    priceText: `130 - 250 ${i18next.t("common.currency_br", "Br")}`,
+    labelKey: "class.comfort_plus",
+    defaultLabel: "Комфорт+",
     minPrice: 130,
     maxPrice: 250,
-    img: require("@/assets/images/classes/comfort.png"), // Хороший кроссовер (Geely Coolray)
+    type: "range",
+    img: require("@/assets/images/classes/comfort.png"),
   },
   {
     id: "BUSINESS",
-    label: i18next.t("class.business", "Бизнес"),
-    priceText: `250 - 500 ${i18next.t("common.currency_br", "Br")}`,
+    labelKey: "class.business",
+    defaultLabel: "Бизнес",
     minPrice: 250,
     maxPrice: 500,
-    img: require("@/assets/images/classes/business.png"), // BMW 5, Mercedes E-class
+    type: "range",
+    img: require("@/assets/images/classes/business.png"),
   },
   {
     id: "PREMIUM",
-    label: i18next.t("class.premium", "Премиум"),
-    priceText: `500 - 1000 ${i18next.t("common.currency_br", "Br")}`,
+    labelKey: "class.premium",
+    defaultLabel: "Премиум",
     minPrice: 500,
     maxPrice: 1000,
-    img: require("@/assets/images/classes/premium.png"), // Тяжелый внедорожник
+    type: "range",
+    img: require("@/assets/images/classes/premium.png"),
   },
   {
     id: "ELITE",
-    label: i18next.t("class.elite", "Элита"),
-    priceText: `${i18next.t("common.from", "от")} 1000 ${i18next.t("common.currency_br", "Br")}`,
+    labelKey: "class.elite",
+    defaultLabel: "Элита",
     minPrice: 1000,
     maxPrice: undefined,
-    img: require("@/assets/images/classes/elite.png"), // Суперкар
+    type: "from", // Флаг для рендера строки "от 1000 Br"
+    img: require("@/assets/images/classes/elite.png"),
   },
 ];

@@ -1,17 +1,17 @@
-import { useAppColors } from "@/src/hooks/use-color-scheme.web";
-import { useAppDispatch, useAppSelector } from "@/src/store";
-import { applyFilters, FiltersState } from "@/src/store/slices/filtersSlice"; // 👈 не забудь импорт FiltersState
-import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { useTranslation } from "react-i18next";
 import {
-  Image,
-  ScrollView,
-  StyleSheet,
+  View,
   Text,
   TouchableOpacity,
-  View,
+  ScrollView,
+  Image,
+  StyleSheet,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
+import { useAppColors } from "@/src/hooks/use-color-scheme.web";
+import { useAppDispatch, useAppSelector } from "@/src/store";
+import { applyFilters, FiltersState } from "@/src/store/slices/filtersSlice";
 import { CAR_CLASSES, QUICK_FILTERS } from "../constants";
 
 interface Props {
@@ -33,13 +33,10 @@ export const CatalogListHeader = ({
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
 
-  // Достаем весь объект фильтров
   const filters = useAppSelector((state) => state.filters);
   const { min_price, max_price } = filters;
 
   // --- ЛОГИКА АКТИВНЫХ БЕЙДЖЕЙ ---
-
-  // Собираем все выбранные массивы в плоский список
   const activeTags: { key: keyof FiltersState; val: any; label: string }[] = [
     ...(filters.brands || []).map((v) => ({
       key: "brands" as const,
@@ -80,17 +77,12 @@ export const CatalogListHeader = ({
     })),
   ];
 
-  // Удаление конкретного тега
   const handleRemoveTag = (key: keyof FiltersState, val: any) => {
     const list = (filters[key] as any[]) || [];
-
-    // 🔥 Приводим всё к строке для надежного сравнения (чтобы 1 !== "1" нас не сломало)
     const updatedList = list.filter((item) => String(item) !== String(val));
-
     dispatch(applyFilters({ [key]: updatedList }));
   };
 
-  // Сброс вообще всех фильтров
   const handleClearAll = () => {
     dispatch(
       applyFilters({
@@ -107,13 +99,25 @@ export const CatalogListHeader = ({
     );
   };
 
-  // Логика нажатия на класс авто
   const handleClassSelect = (min: number, max?: number) => {
     if (min_price === min && max_price === max) {
       dispatch(applyFilters({ min_price: undefined, max_price: undefined }));
     } else {
       dispatch(applyFilters({ min_price: min, max_price: max }));
     }
+  };
+
+  // 🔥 ХЕЛПЕР ДЛЯ БЕЗОПАСНОЙ ГЕНЕРАЦИИ ТЕКСТА ЦЕНЫ НА ЛЕТУ
+  const renderPriceText = (item: (typeof CAR_CLASSES)[number]) => {
+    const currency = t("common.currency_br", "Br");
+
+    if (item.type === "up_to") {
+      return `${t("common.up_to", "до")} ${item.maxPrice} ${currency}`;
+    }
+    if (item.type === "from") {
+      return `${t("common.from", "от")} ${item.minPrice} ${currency}`;
+    }
+    return `${item.minPrice} - ${item.maxPrice} ${currency}`;
   };
 
   return (
@@ -131,7 +135,6 @@ export const CatalogListHeader = ({
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: 16, gap: 8 }}
         >
-          {/* 1. КНОПКА СБРОСА ВСЕХ ФИЛЬТРОВ (показываем, если есть хоть 1 тег) */}
           {activeTags.length > 0 && (
             <TouchableOpacity
               onPress={handleClearAll}
@@ -150,16 +153,15 @@ export const CatalogListHeader = ({
             </TouchableOpacity>
           )}
 
-          {/* 2. АКТИВНЫЕ ВЫБРАННЫЕ БЕЙДЖИКИ (Transparent Style) */}
           {activeTags.map((tag, idx) => (
             <TouchableOpacity
               key={`active-${tag.key}-${idx}`}
               style={[
                 styles.quickPill,
                 {
-                  backgroundColor: colors.accentBg, // 👈 Тот самый полупрозрачный фон
+                  backgroundColor: colors.accentBg,
                   borderWidth: 1,
-                  borderColor: colors.accent, // 👈 Тонкая рамка в цвет текста
+                  borderColor: colors.accent,
                 },
               ]}
               activeOpacity={0.8}
@@ -167,7 +169,7 @@ export const CatalogListHeader = ({
             >
               <Text
                 style={{
-                  color: colors.accent, // 👈 Акцентный текст вместо белого
+                  color: colors.accent,
                   fontSize: 14,
                   fontWeight: "600",
                   marginRight: 6,
@@ -175,12 +177,10 @@ export const CatalogListHeader = ({
               >
                 {tag.label}
               </Text>
-              {/* Крестик тоже красим в акцентный цвет */}
               <Ionicons name="close-circle" size={18} color={colors.accent} />
             </TouchableOpacity>
           ))}
 
-          {/* 3. Кнопка Избранное */}
           <TouchableOpacity
             style={[
               styles.quickPill,
@@ -212,7 +212,6 @@ export const CatalogListHeader = ({
             </Text>
           </TouchableOpacity>
 
-          {/* 4. Остальные выпадающие пилюли */}
           {QUICK_FILTERS.map((pill) => (
             <TouchableOpacity
               key={pill.id}
@@ -228,7 +227,8 @@ export const CatalogListHeader = ({
               onPress={() => onOpenQuickFilter(pill.id)}
             >
               <Text style={{ color: colors.textPrimary, fontSize: 14 }}>
-                {pill.label}
+                {t(pill.labelKey, pill.defaultLabel)}{" "}
+                {/* 🔥 Безопасный перевод таблеток */}
               </Text>
               <Ionicons
                 name="chevron-down"
@@ -249,7 +249,7 @@ export const CatalogListHeader = ({
           contentContainerStyle={{
             paddingHorizontal: 16,
             gap: 14,
-            paddingTop: 40, // Место для "вылета" крыши машины
+            paddingTop: 40,
           }}
         >
           {CAR_CLASSES.map((item) => {
@@ -264,55 +264,47 @@ export const CatalogListHeader = ({
                 style={[
                   styles.classCard,
                   {
-                    // Оставляем фон всегда surface, чтобы не было "тяжелого" выделения
                     backgroundColor: colors.surface,
-                    // Рамка становится акцентной только при активации
                     borderColor: isActive ? colors.accent : "transparent",
-                    // Тень для активной карточки (Glow effect)
                     shadowColor: isActive ? colors.accent : "#000",
                     shadowOpacity: isActive ? 0.25 : 0.05,
                     shadowRadius: isActive ? 12 : 8,
                     elevation: isActive ? 6 : 2,
-                    // Легкий подъем активной карточки
                     transform: [{ scale: isActive ? 1.05 : 1 }],
                   },
                 ]}
               >
-                {/* МАШИНА: Вылетает за границы карточки */}
                 <View style={styles.imgWrapper}>
                   <Image
                     source={item.img}
                     style={[
                       styles.classImg,
-                      {
-                        // Машинка тоже реагирует на выбор
-                        transform: [{ scale: isActive ? 1.1 : 1 }],
-                        // Можно добавить легкий tint или насыщенность, если нужно, но лучше оставить натив
-                      },
+                      { transform: [{ scale: isActive ? 1.1 : 1 }] },
                     ]}
                     resizeMode="contain"
                   />
                 </View>
 
-                {/* ТЕКСТ: Теперь цвета строго привязаны к isActive */}
                 <View style={styles.labelWrapper}>
                   <Text
                     style={[
                       styles.priceText,
-                      { color: isActive ? colors.accent : colors.textPrimary }, // Тут не теряем!
+                      { color: isActive ? colors.accent : colors.textPrimary },
                     ]}
                   >
-                    {item.priceText}
+                    {renderPriceText(item)}{" "}
+                    {/* 🔥 Сборка строки цены на лету, без багов! */}
                   </Text>
                   <Text
                     style={[
                       styles.classLabel,
                       {
                         color: isActive ? colors.accent : colors.textSecondary,
-                      }, // И тут!
+                      },
                     ]}
                   >
-                    {item.label}
+                    {t(item.labelKey, item.defaultLabel)}{" "}
+                    {/* 🔥 Безопасный перевод названия */}
                   </Text>
                 </View>
               </TouchableOpacity>
@@ -333,6 +325,8 @@ export const CatalogListHeader = ({
     </View>
   );
 };
+
+// Стили оставляй свои (styles.quickPill, styles.classCard, и т.д.)
 
 const styles = StyleSheet.create({
   quickPill: {

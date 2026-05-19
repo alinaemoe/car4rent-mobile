@@ -10,14 +10,16 @@ interface Props {
 
 export const RentalReceiptCard = ({ rental }: Props) => {
   const colors = useAppColors();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const formatPrice = (price: string | number | null) => {
-    if (!price) return "0 Br";
-    return Number(price).toLocaleString("ru-RU") + " Br";
+    const currency = t("common.currency_br", "Br");
+    if (!price) return `0 ${currency}`;
+
+    return Number(price).toLocaleString(i18n.language || "ru") + ` ${currency}`;
   };
 
-  const deposit = Number(rental.car.id || 0); //TODO
+  const deposit = Number(rental.car.id || 0); // TODO: временно завязано на id, поменяешь по логике бэка
   const basePrice = Number(rental.base_price || 0);
   const penalty = Number(rental.penalty_price || 0);
   const total = Number(rental.total_price || basePrice);
@@ -25,12 +27,12 @@ export const RentalReceiptCard = ({ rental }: Props) => {
   return (
     <View style={[styles.card, { backgroundColor: colors.surface }]}>
       <Text style={[styles.title, { color: colors.textPrimary }]}>
-        Детали оплаты
+        {t("receipt.title", "Детали оплаты")}
       </Text>
 
       <View style={styles.row}>
         <Text style={[styles.label, { color: colors.textSecondary }]}>
-          Стоимость аренды
+          {t("receipt.rental_cost", "Стоимость аренды")}
         </Text>
         <Text style={[styles.value, { color: colors.textPrimary }]}>
           {formatPrice(basePrice)}
@@ -39,7 +41,7 @@ export const RentalReceiptCard = ({ rental }: Props) => {
 
       <View style={styles.row}>
         <Text style={[styles.label, { color: colors.textSecondary }]}>
-          Возвратный залог
+          {t("receipt.deposit", "Возвратный залог")}
         </Text>
         <Text style={[styles.value, { color: colors.textPrimary }]}>
           {formatPrice(deposit)}
@@ -49,7 +51,7 @@ export const RentalReceiptCard = ({ rental }: Props) => {
       {penalty > 0 && (
         <View style={styles.row}>
           <Text style={[styles.label, { color: colors.error }]}>
-            Штрафы / Перерасход
+            {t("receipt.penalties", "Штрафы / Перерасход")}
           </Text>
           <Text style={[styles.value, { color: colors.error }]}>
             + {formatPrice(penalty)}
@@ -61,7 +63,7 @@ export const RentalReceiptCard = ({ rental }: Props) => {
 
       <View style={styles.row}>
         <Text style={[styles.totalLabel, { color: colors.textPrimary }]}>
-          Итого к оплате
+          {t("receipt.total", "Итого к оплате")}
         </Text>
         <Text style={[styles.totalValue, { color: colors.textPrimary }]}>
           {formatPrice(total)}

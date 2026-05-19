@@ -182,7 +182,7 @@ export default function PartnerRequestScreen() {
         </Text>
         <TextInput
           style={[styles.input, { color: colors.textPrimary }]}
-          placeholder="2022"
+          placeholder={t("request.year_placeholder", "Например, 2022")}
           placeholderTextColor={colors.border}
           keyboardType="number-pad"
           maxLength={4}
@@ -264,6 +264,8 @@ export default function PartnerRequestScreen() {
         </Text>
         <TextInput
           style={[styles.input, { color: colors.textPrimary }]}
+          placeholder={t("request.name_placeholder", "Введите ваше имя")}
+          placeholderTextColor={colors.border}
           value={formData.owner_name}
           onChangeText={(text) =>
             setFormData({ ...formData, owner_name: text })
@@ -277,6 +279,8 @@ export default function PartnerRequestScreen() {
         </Text>
         <TextInput
           style={[styles.input, { color: colors.textPrimary }]}
+          placeholder={t("request.phone_placeholder", "+7 (***) ***-**-**")}
+          placeholderTextColor={colors.border}
           keyboardType="phone-pad"
           value={formData.owner_phone}
           onChangeText={(text) =>

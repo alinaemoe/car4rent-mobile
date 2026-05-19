@@ -1,11 +1,12 @@
-import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter, Href } from "expo-router";
+import { Href, useRouter } from "expo-router";
+import React from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { useAppDispatch } from "@/src/store";
 import { setCredentials } from "@/src/store/slices/authSlice";
+import { useTranslation } from "react-i18next";
 
 interface Props {
   authData: {
@@ -16,6 +17,7 @@ interface Props {
 
 export const RegistrationSuccess = ({ authData }: Props) => {
   const colors = useAppColors();
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const router = useRouter();
 
@@ -47,12 +49,13 @@ export const RegistrationSuccess = ({ authData }: Props) => {
         </View>
 
         <Text style={[styles.title, { color: colors.textPrimary }]}>
-          Аккаунт создан!
+          {t("auth.account_created", "Аккаунт создан!")}
         </Text>
         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-          Добро пожаловать в Car4Rent.{"\n"}
-          Чтобы забронировать авто, нам понадобятся ваши документы (Паспорт и
-          Права).
+          {t(
+            "auth.welcome_upload_docs",
+            "Добро пожаловать в Car4Rent.\nЧтобы забронировать авто, нам понадобятся ваши документы (Паспорт и Права).",
+          )}
         </Text>
       </View>
 
@@ -62,12 +65,14 @@ export const RegistrationSuccess = ({ authData }: Props) => {
           onPress={handleUploadNow}
           activeOpacity={0.8}
         >
-          <Text style={styles.primaryBtnText}>Загрузить документы сейчас</Text>
+          <Text style={styles.primaryBtnText}>
+            {t("auth.upload_docs_now", "Загрузить документы сейчас")}
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.secondaryBtn} onPress={handleLater}>
           <Text style={[styles.secondaryBtnText, { color: colors.accent }]}>
-            Позже, хочу посмотреть машины
+            {t("auth.later_look_cars", "Позже, хочу посмотреть машины")}
           </Text>
         </TouchableOpacity>
       </View>

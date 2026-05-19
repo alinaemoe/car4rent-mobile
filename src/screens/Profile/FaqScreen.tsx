@@ -1,19 +1,19 @@
+import { useFaqs } from "@/src/api/queries/useFaqs";
+import { useAppColors } from "@/src/hooks/use-color-scheme.web";
+import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
+  ActivityIndicator,
   LayoutAnimation,
   Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
   UIManager,
-  ActivityIndicator,
+  View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useTranslation } from "react-i18next";
-import { useAppColors } from "@/src/hooks/use-color-scheme.web";
-import { useFaqs } from "@/src/api/queries/useFaqs";
 
 if (
   Platform.OS === "android" &&

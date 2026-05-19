@@ -1,16 +1,16 @@
-import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Switch,
-  Alert,
-  Platform,
-} from "react-native";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
+import React from "react";
 import { useTranslation } from "react-i18next";
+import {
+  Alert,
+  Platform,
+  StyleSheet,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 
@@ -57,7 +57,12 @@ export const LessorCarCard = ({ car, onPress, onToggleVisibility }: Props) => {
           const endDate = new Date(car.active_rental_end_date);
           const day = endDate.getDate().toString().padStart(2, "0");
           const month = (endDate.getMonth() + 1).toString().padStart(2, "0");
-          rentLabel += ` до ${day}.${month}`;
+          // 👈 Оборачиваем всю фразу с переменными
+          rentLabel = t("fleet.status.rented_until", {
+            defaultValue: "В поездке до {{day}}.{{month}}",
+            day,
+            month,
+          });
         }
         return {
           label: rentLabel,

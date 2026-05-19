@@ -1,18 +1,18 @@
+import { Ionicons } from "@expo/vector-icons";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
   Linking,
   Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { useTranslation } from "react-i18next";
-import { Ionicons } from "@expo/vector-icons";
 
-import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { Toast } from "@/src/components/Toast";
+import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 
 export default function SupportScreen() {
   const colors = useAppColors();
@@ -23,7 +23,10 @@ export default function SupportScreen() {
     try {
       await Linking.openURL(url);
     } catch (error) {
-      Toast.error("Ошибка", "Не удалось открыть Telegram.");
+      Toast.error(
+        t("common.error", "Ошибка"),
+        t("support.err_telegram", "Не удалось открыть Telegram."),
+      );
     }
   };
 
@@ -32,7 +35,10 @@ export default function SupportScreen() {
     try {
       await Linking.openURL(url);
     } catch (error) {
-      Toast.error("Ошибка", "Ваше устройство не поддерживает звонки.");
+      Toast.error(
+        t("common.error", "Ошибка"),
+        t("support.err_calls", "Ваше устройство не поддерживает звонки."),
+      );
     }
   };
 
@@ -43,7 +49,10 @@ export default function SupportScreen() {
     try {
       await Linking.openURL(url);
     } catch (error) {
-      Toast.error("Ошибка", "Не удалось открыть почтовый клиент.");
+      Toast.error(
+        t("common.error", "Ошибка"),
+        t("support.err_email", "Не удалось открыть почтовый клиент."),
+      );
     }
   };
 

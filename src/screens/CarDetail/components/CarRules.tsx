@@ -23,7 +23,7 @@ export const CarRules: React.FC<CarRulesProps> = ({ car }) => {
       />
       <CarSpecRow
         label={t("car_detail.over_limit", "Перепробег")}
-        value={`${car.price_per_km_over_limit} ${t("car_detail.rub_per_km", "₽ / км")}`}
+        value={`${car.price_per_km_over_limit} ${t("car_detail.rub_per_km", "Br / км")}`}
       />
       <CarSpecRow
         label={t("car_detail.min_age_label", "Минимальный возраст")}

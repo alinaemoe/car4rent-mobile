@@ -1,8 +1,8 @@
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useTranslation } from "react-i18next";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
+import { Ionicons } from "@expo/vector-icons";
+import React from "react";
+import { useTranslation } from "react-i18next";
+import { StyleSheet, Text, View } from "react-native";
 
 interface Props {
   days: number;
@@ -41,26 +41,32 @@ export const CheckoutSummary = ({
           />
         </View>
         <Text style={[styles.priceTitle, { color: colors.textPrimary }]}>
-          {finalRentPrice} ₽
+          {finalRentPrice} {t("common.currency_br", "Br")}
         </Text>
       </View>
 
       <View style={styles.priceRow}>
         <Text style={{ color: colors.textPrimary, fontSize: 15 }}>
-          Аренда {days} сут.
+          {t("checkout.rent_days", {
+            count: days,
+            defaultValue: "Аренда {{count}} сут.",
+          })}
         </Text>
         <Text style={{ color: colors.textPrimary, fontSize: 15 }}>
-          {baseTotal} ₽
+          {baseTotal} {t("common.currency_br", "Br")}
         </Text>
       </View>
 
       {discountAmount > 0 ? (
         <View style={styles.priceRow}>
           <Text style={{ color: colors.error, fontSize: 15 }}>
-            Скидка на аренду от {minDiscountDays} дней
+            {t("checkout.discount_from_days", {
+              count: Number(minDiscountDays),
+              defaultValue: "Скидка на аренду от {{count}} дней",
+            })}
           </Text>
           <Text style={{ color: colors.error, fontSize: 15 }}>
-            -{discountAmount} ₽
+            -{discountAmount} {t("common.currency_br", "Br")}
           </Text>
         </View>
       ) : null}
@@ -71,7 +77,7 @@ export const CheckoutSummary = ({
         </Text>
         <Text style={[styles.priceTitle, { color: colors.textPrimary }]}>
           {deposit > 0
-            ? `${deposit} ₽`
+            ? `${deposit} ${t("common.currency_br", "Br")}`
             : t("checkout.no_deposit", "Без залога")}
         </Text>
       </View>

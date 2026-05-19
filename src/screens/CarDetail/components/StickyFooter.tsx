@@ -1,14 +1,14 @@
+import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import {
-  View,
+  Platform,
+  StyleSheet,
   Text,
   TouchableOpacity,
-  StyleSheet,
-  Platform,
-  useColorScheme, // 👈 Импортируем хук темы
+  useColorScheme,
+  View,
 } from "react-native";
-import { useTranslation } from "react-i18next";
-import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 
 interface Props {
   pricePerDay: number;
@@ -19,21 +19,6 @@ interface Props {
   startDate: string | null;
   endDate: string | null;
 }
-
-const MONTHS_RU = [
-  "января",
-  "февраля",
-  "марта",
-  "апреля",
-  "мая",
-  "июня",
-  "июля",
-  "августа",
-  "сентября",
-  "октября",
-  "ноября",
-  "декабря",
-];
 
 const formatPrice = (price: number) => {
   const cleanPrice = Number(parseFloat(price.toString()).toFixed(2));
@@ -54,7 +39,7 @@ export const StickyFooter = ({
   endDate,
 }: Props) => {
   const colors = useAppColors();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation(); // 👈 Достали i18n для дат
 
   // 👇 Определяем, темная ли сейчас тема
   const theme = useColorScheme();
@@ -70,16 +55,12 @@ export const StickyFooter = ({
     if (!startDate || !endDate) return null;
     const d1 = new Date(startDate);
     const d2 = new Date(endDate);
-    const m1 = MONTHS_RU[d1.getMonth()];
-    const m2 = MONTHS_RU[d2.getMonth()];
 
-    if (
-      d1.getMonth() === d2.getMonth() &&
-      d1.getFullYear() === d2.getFullYear()
-    ) {
-      return `${d1.getDate()} - ${d2.getDate()} ${m1}`;
-    }
-    return `${d1.getDate()} ${m1} - ${d2.getDate()} ${m2}`;
+    // 🔥 Магия Intl: сам поймет, совпадают ли месяцы, и переведет на нужный язык
+    return new Intl.DateTimeFormat(i18n.language || "ru", {
+      day: "numeric",
+      month: "long",
+    }).formatRange(d1, d2);
   };
 
   return (
@@ -109,7 +90,8 @@ export const StickyFooter = ({
             style={[styles.pricePrimary, { color: colors.textPrimary }]}
             numberOfLines={1}
           >
-            {t("from", "От")} {formatPrice(pricePerDay)} ₽{" "}
+            {t("from", "От")} {formatPrice(pricePerDay)}{" "}
+            {t("common.currency_br", "Br")}{" "}
             <Text style={styles.perDayText}>/ {t("day", "сутки")}</Text>
           </Text>
         ) : (
@@ -118,7 +100,7 @@ export const StickyFooter = ({
               {hasDiscount && (
                 <View style={styles.oldPriceContainer}>
                   <Text style={styles.oldPriceText}>
-                    {formatPrice(pricePerDay)} ₽
+                    {formatPrice(pricePerDay)} {t("common.currency_br", "Br")}
                   </Text>
                   <View style={styles.strikeCurve} />
                 </View>
@@ -126,7 +108,8 @@ export const StickyFooter = ({
               <Text
                 style={[styles.pricePrimary, { color: colors.textPrimary }]}
               >
-                {formatPrice(discountedDailyPrice)} ₽{" "}
+                {formatPrice(discountedDailyPrice)}{" "}
+                {t("common.currency_br", "Br")}{" "}
                 <Text style={styles.perDayText}>/ {t("day", "сутки")}</Text>
               </Text>
             </View>
@@ -171,7 +154,6 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 24,
     alignItems: "center",
     justifyContent: "space-between",
-    // shadowColor и shadowOpacity мы вынесли в динамические стили
     elevation: 15,
     shadowOffset: { width: 0, height: -4 },
     shadowRadius: 12,

@@ -1,21 +1,21 @@
+import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
-  View,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
+  View,
 } from "react-native";
-import { useTranslation } from "react-i18next";
-import { Ionicons } from "@expo/vector-icons";
-import { Image } from "expo-image"; // 👈 Обязательно используем expo-image для кэширования
 
+import { Toast } from "@/src/components/Toast";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { useAppSelector } from "@/src/store";
-import { Toast } from "@/src/components/Toast";
 
 export default function PersonalDataScreen() {
   const colors = useAppColors();
@@ -34,7 +34,10 @@ export default function PersonalDataScreen() {
 
   const handleAvatarChange = () => {
     console.log("Открываем ImagePicker...");
-    Toast.info("Смена фото", "Загрузка фото скоро появится!");
+    Toast.info(
+      t("profile.photo_change_title", "Смена фото"),
+      t("profile.photo_change_msg", "Загрузка фото скоро появится!"),
+    );
   };
 
   const handleSave = () => {
@@ -44,7 +47,10 @@ export default function PersonalDataScreen() {
       first_name: firstName.trim(),
       last_name: lastName.trim(),
     });
-    Toast.success("Успешно", "Ваши данные обновлены.");
+    Toast.success(
+      t("common.success", "Успешно"),
+      t("profile.update_success", "Ваши данные обновлены."),
+    );
   };
 
   const initial = user?.first_name
@@ -116,7 +122,10 @@ export default function PersonalDataScreen() {
               value={firstName}
               onChangeText={setFirstName}
               placeholderTextColor={colors.border}
-              placeholder="Введите ваше имя"
+              placeholder={t(
+                "profile.first_name_placeholder",
+                "Введите ваше имя",
+              )}
             />
           </View>
 
@@ -132,7 +141,10 @@ export default function PersonalDataScreen() {
               value={lastName}
               onChangeText={setLastName}
               placeholderTextColor={colors.border}
-              placeholder="Введите вашу фамилию"
+              placeholder={t(
+                "profile.last_name_placeholder",
+                "Введите вашу фамилию",
+              )}
             />
           </View>
         </View>
@@ -202,7 +214,7 @@ export default function PersonalDataScreen() {
               <Text
                 style={[styles.lockedText, { color: colors.textSecondary }]}
               >
-                {user?.email || "Не указан"}
+                {user?.email || t("profile.not_specified", "Не указан")}
               </Text>
             </View>
             <View

@@ -25,7 +25,7 @@ export const RentalCardFooter = ({ rental }: Props) => {
 
   const formatPrice = (price: string | null) => {
     if (!price) return "";
-    return Number(price).toLocaleString("ru-RU") + " ₽";
+    return Number(price).toLocaleString("ru-RU") + " Br";
   };
 
   return (

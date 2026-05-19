@@ -1,28 +1,28 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ActivityIndicator,
-  StyleSheet,
-} from "react-native";
-import { useQueryClient } from "@tanstack/react-query";
-import { Drawer } from "expo-router/drawer";
+import { Ionicons } from "@expo/vector-icons";
 import {
   DrawerContentScrollView,
   DrawerItemList,
 } from "@react-navigation/drawer";
-import { useTranslation } from "react-i18next";
-import { Ionicons } from "@expo/vector-icons";
+import { useQueryClient } from "@tanstack/react-query";
 import { LinearGradient } from "expo-linear-gradient";
-import { useLocalSearchParams, useRouter, Href } from "expo-router";
+import { useRouter } from "expo-router";
+import { Drawer } from "expo-router/drawer";
+import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
+import {
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 // Наши хуки и утилиты
+import { axiosInstance } from "@/src/api/axios-instance";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { useAppDispatch, useAppSelector } from "@/src/store";
 import { logout, selectIsLessor } from "@/src/store/slices/authSlice";
 import { storage } from "@/src/utils/storage";
-import { axiosInstance } from "@/src/api/axios-instance";
 
 function CustomDrawerContent(props: any) {
   const colors = useAppColors();
@@ -38,21 +38,18 @@ function CustomDrawerContent(props: any) {
   const handleLogout = async () => {
     setIsLoggingOut(true);
     try {
-      // 1. Пытаемся разлогинить юзера на бэкенде (чтобы убить refresh-токен в базе)
       if (!isGuest) {
         await axiosInstance.post("/auth/logout");
       }
     } catch (error: any) {
-      // 2. Игнорируем ошибку 401. Если он уже "не авторизован", то и логаут на бэке не нужен.
       if (error.response?.status !== 401) {
         console.warn("Ошибка при логауте на бэке:", error.message);
       }
     } finally {
-      // 3. Железно зачищаем всё на клиенте
       await storage.removeTokens();
       await storage.setGuestMode(false);
-      queryClient.clear(); // Сносим кэш React Query (машины, заявки и тд)
-      dispatch(logout()); // Выкидывает на экран авторизации
+      queryClient.clear();
+      dispatch(logout());
       setIsLoggingOut(false);
     }
   };
@@ -74,7 +71,9 @@ function CustomDrawerContent(props: any) {
               style={styles.drawerGradient}
             >
               <Ionicons name="rocket-outline" size={20} color="#fff" />
-              <Text style={styles.drawerBannerText}>Сдать свой автомобиль</Text>
+              <Text style={styles.drawerBannerText}>
+                {t("drawer.become_partner_banner", "Сдать свой автомобиль")}
+              </Text>
             </LinearGradient>
           </TouchableOpacity>
         )}
@@ -156,15 +155,22 @@ export default function DrawerLayout() {
         name="faq"
         options={{ title: t("drawer_faq", "Частые вопросы (FAQ)") }}
       />
+
+      {/* Скрываем "Стать партнером", если юзер уже Lessor */}
       <Drawer.Screen
         name="partner"
-        options={{ title: t("drawer_partner", "Стать партнером") }}
+        options={{
+          title: t("drawer_partner", "Стать партнером"),
+          drawerItemStyle: isLessor ? { display: "none" } : undefined,
+        }}
       />
-      {/* 👇 ПРАВИЛЬНОЕ СКРЫТИЕ ЭКРАНА */}
+
+      {/* Показываем "Мой автопарк" только если юзер — Lessor */}
       <Drawer.Screen
         name="my-fleet"
         options={{
-          title: "Мой автопарк",
+          title: t("drawer.my_fleet", "Мой автопарк"),
+          drawerItemStyle: !isLessor ? { display: "none" } : undefined,
         }}
       />
     </Drawer>

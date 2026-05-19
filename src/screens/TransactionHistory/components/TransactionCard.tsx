@@ -1,10 +1,10 @@
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import React from "react";
 import { useTranslation } from "react-i18next";
+import { StyleSheet, Text, View } from "react-native";
 
-import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { TransactionHistoryItem } from "@/src/api/queries/useLessorFinances";
+import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 
 interface Props {
   transaction: TransactionHistoryItem;
@@ -12,7 +12,7 @@ interface Props {
 
 export const TransactionCard = ({ transaction }: Props) => {
   const colors = useAppColors();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const isPaid = transaction.payout_status === "PAID";
   const statusConfig = isPaid
@@ -28,7 +28,7 @@ export const TransactionCard = ({ transaction }: Props) => {
       };
 
   const formatDate = (dateStr: string) =>
-    new Intl.DateTimeFormat("ru-RU", {
+    new Intl.DateTimeFormat(i18n.language || "ru", {
       day: "2-digit",
       month: "2-digit",
       hour: "2-digit",
@@ -36,9 +36,9 @@ export const TransactionCard = ({ transaction }: Props) => {
     }).format(new Date(dateStr));
 
   const formatMoney = (amount: number) =>
-    new Intl.NumberFormat("ru-RU", {
+    new Intl.NumberFormat(i18n.language || "ru", {
       style: "currency",
-      currency: "RUB",
+      currency: "BYN",
       maximumFractionDigits: 0,
     }).format(amount);
 

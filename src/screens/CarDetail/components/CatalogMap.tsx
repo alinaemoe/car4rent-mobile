@@ -1,10 +1,11 @@
-import React, { useState, useMemo } from "react";
-import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
-import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import { CarCard } from "@/src/components/CarCard";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { Car } from "@/src/types";
-import { CarCard } from "@/src/components/CarCard";
 import { useRouter } from "expo-router";
+import React, { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { StyleSheet, Text, View } from "react-native";
+import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 
 interface Props {
   cars: Car[];
@@ -12,6 +13,7 @@ interface Props {
 
 export const CatalogMap = ({ cars }: Props) => {
   const colors = useAppColors();
+  const { t } = useTranslation();
   const router = useRouter();
   const [selectedCar, setSelectedCar] = useState<Car | null>(null);
 
@@ -103,7 +105,8 @@ export const CatalogMap = ({ cars }: Props) => {
                     { color: isSelected ? "#fff" : colors.textPrimary },
                   ]}
                 >
-                  {Math.round(car.price_per_day)} Br
+                  {Math.round(car.price_per_day)}{" "}
+                  {t("common.currency_br", "Br")}
                 </Text>
               </View>
             </Marker>

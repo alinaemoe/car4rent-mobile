@@ -1,29 +1,31 @@
-import React, { useState, useCallback } from "react";
-import { View, ScrollView, StyleSheet, ActivityIndicator } from "react-native";
-import { useRouter, Href } from "expo-router";
-import { useQueryClient } from "@tanstack/react-query";
 import { useFocusEffect } from "@react-navigation/native";
+import { useQueryClient } from "@tanstack/react-query";
+import { Href, useRouter } from "expo-router";
+import React, { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { ActivityIndicator, ScrollView, StyleSheet, View } from "react-native";
 
-import { useAppColors } from "@/src/hooks/use-color-scheme.web";
-import { useAppSelector, useAppDispatch } from "@/src/store";
-import {
-  logout,
-  updateUser,
-  selectIsLessor,
-} from "@/src/store/slices/authSlice";
-import { storage } from "@/src/utils/storage";
 import { axiosInstance } from "@/src/api/axios-instance";
 import { Toast } from "@/src/components/Toast";
+import { useAppColors } from "@/src/hooks/use-color-scheme.web";
+import { useAppDispatch, useAppSelector } from "@/src/store";
+import {
+  logout,
+  selectIsLessor,
+  updateUser,
+} from "@/src/store/slices/authSlice";
+import { storage } from "@/src/utils/storage";
 import { LessorBanner } from "./components/LessorBanner";
 
 // Компоненты
-import { ProfileHeader } from "./components/ProfileHeader";
-import { VerificationBanner, DocStatus } from "./components/VerificationBanner";
 import { MenuSection } from "./components/MenuSection";
+import { ProfileHeader } from "./components/ProfileHeader";
+import { DocStatus, VerificationBanner } from "./components/VerificationBanner";
 
 export default function ProfileScreen() {
   const colors = useAppColors();
   const router = useRouter();
+  const { t } = useTranslation();
 
   const dispatch = useAppDispatch();
   const queryClient = useQueryClient();
@@ -76,7 +78,10 @@ export default function ProfileScreen() {
   };
 
   const handletoast = async () => {
-    Toast.error("Профиль обновлен", "Ваши данные успешно сохранены.");
+    Toast.error(
+      t("profile.updated_title", "Профиль обновлен"),
+      t("profile.updated_msg", "Ваши данные успешно сохранены."),
+    );
   };
 
   const getDocStatus = (): DocStatus => {
@@ -134,21 +139,21 @@ export default function ProfileScreen() {
       {/* 3. НАВИГАЦИЯ: Сгруппированная (Islands) */}
       {!isGuest && (
         <MenuSection
-          title="Аккаунт"
+          title={t("profile.menu_account", "Аккаунт")}
           items={[
             {
               icon: "person-outline",
-              title: "Личные данные",
+              title: t("profile.menu_personal_data", "Личные данные"),
               onPress: () => router.push("/settings/personal-data"),
             },
             {
               icon: "shield-checkmark-outline",
-              title: "Безопасность",
+              title: t("profile.menu_security", "Безопасность"),
               onPress: () => router.push("/settings/security"),
             },
             {
               icon: "document-text-outline",
-              title: "Мои документы",
+              title: t("profile.menu_documents", "Мои документы"),
               // Просто пушим на этот же экран, но без параметра from="registration"
               onPress: () => router.push("/(drawer)/upload-docs"),
             },
@@ -157,11 +162,11 @@ export default function ProfileScreen() {
       )}
 
       <MenuSection
-        title="Приложение"
+        title={t("profile.menu_app", "Приложение")}
         items={[
           {
             icon: "heart-outline",
-            title: "Избранные авто",
+            title: t("profile.menu_favorites", "Избранные авто"),
             onPress: () => {
               // 👇 Переходим на экран каталога и прокидываем параметр
               // Если твой каталог лежит в корне табов, то pathname: "/"
@@ -173,28 +178,28 @@ export default function ProfileScreen() {
           },
           {
             icon: "color-palette-outline",
-            title: "Оформление",
+            title: t("profile.menu_theme", "Оформление"),
             onPress: () => router.push("/settings/theme"), // 👈 Проваливаемся
           },
           {
             icon: "language-outline",
-            title: "Язык",
+            title: t("profile.menu_language", "Язык"),
             onPress: () => router.push("/settings/language"), // 👈 Проваливаемся
           },
         ]}
       />
 
       <MenuSection
-        title="Помощь"
+        title={t("profile.menu_help", "Помощь")}
         items={[
           {
             icon: "help-circle-outline",
-            title: "Частые вопросы (FAQ)",
+            title: t("profile.menu_faq", "Частые вопросы (FAQ)"),
             onPress: () => router.push("/settings/faq"),
           },
           {
             icon: "chatbubble-ellipses-outline",
-            title: "Служба поддержки",
+            title: t("profile.menu_support", "Служба поддержки"),
             onPress: () => router.push("/settings/support"),
           },
         ]}
@@ -207,8 +212,8 @@ export default function ProfileScreen() {
           {
             icon: isGuest ? "log-in-outline" : "log-out-outline",
             title: isGuest
-              ? "Войти или Зарегистрироваться"
-              : "Выйти из аккаунта",
+              ? t("profile.menu_login", "Войти или Зарегистрироваться")
+              : t("profile.menu_logout", "Выйти из аккаунта"),
             iconColor: isGuest ? colors.accent : colors.error,
             titleColor: isGuest ? colors.accent : colors.error,
             onPress: handleLogout,

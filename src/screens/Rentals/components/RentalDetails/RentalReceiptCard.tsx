@@ -13,8 +13,8 @@ export const RentalReceiptCard = ({ rental }: Props) => {
   const { t } = useTranslation();
 
   const formatPrice = (price: string | number | null) => {
-    if (!price) return "0 ₽";
-    return Number(price).toLocaleString("ru-RU") + " ₽";
+    if (!price) return "0 Br";
+    return Number(price).toLocaleString("ru-RU") + " Br";
   };
 
   const deposit = Number(rental.car.id || 0); //TODO

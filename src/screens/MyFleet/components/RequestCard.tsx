@@ -1,18 +1,18 @@
-import React, { useRef } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Animated,
-} from "react-native";
-import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
+import React, { useRef } from "react";
 import { useTranslation } from "react-i18next";
+import {
+  Animated,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 
-import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { PartnershipRequest } from "@/src/api/queries/usePartnershipRequests";
+import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 
 interface Props {
   request: PartnershipRequest;
@@ -21,13 +21,13 @@ interface Props {
 
 export const RequestCard = ({ request, onDelete }: Props) => {
   const colors = useAppColors();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const swipeableRef = useRef<Swipeable>(null);
 
   // 1. Форматируем дату подачи
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return new Intl.DateTimeFormat("ru-RU", {
+    return new Intl.DateTimeFormat(i18n.language || "ru", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",

@@ -1,27 +1,27 @@
-import React, { useState, useEffect } from "react";
-import {
-  Modal,
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  TextInput,
-  Dimensions,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import MultiSlider from "@ptomasroos/react-native-multi-slider";
-import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
+import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import {
+  Dimensions,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
+import { axiosInstance } from "@/src/api/axios-instance";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { useAppDispatch, useAppSelector } from "@/src/store";
 import { applyFilters, FiltersState } from "@/src/store/slices/filtersSlice";
-import { axiosInstance } from "@/src/api/axios-instance";
 import { MAX_SLIDER_PRICE } from "../screens/Catalog/constants";
 // 👇 ИМПОРТИРУЕМ НОВЫЕ ТИПЫ ДЛЯ СЛОВАРЕЙ
-import { DictOption, DictColorOption } from "@/src/types";
+import { DictColorOption, DictOption } from "@/src/types";
 
 const { width } = Dimensions.get("window");
 
@@ -32,7 +32,7 @@ interface FiltersModalProps {
 
 export const FiltersModal = ({ visible, onClose }: FiltersModalProps) => {
   const colors = useAppColors();
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
   const dispatch = useAppDispatch();
   const currentLang = i18n.language || "ru";
 
@@ -277,7 +277,7 @@ export const FiltersModal = ({ visible, onClose }: FiltersModalProps) => {
               { color: colors.textPrimary, flex: 2, textAlign: "center" },
             ]}
           >
-            Фильтры
+            {t("filters.title", "Фильтры")}
           </Text>
           <View style={{ flex: 1 }} />
         </View>
@@ -329,7 +329,7 @@ export const FiltersModal = ({ visible, onClose }: FiltersModalProps) => {
                     fontWeight: "500",
                   }}
                 >
-                  Очистить все
+                  {t("common.clear_all", "Очистить все")}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -342,7 +342,7 @@ export const FiltersModal = ({ visible, onClose }: FiltersModalProps) => {
               { color: colors.textPrimary, marginTop: 0 },
             ]}
           >
-            Цена за сутки, Br
+            {t("filters.price_per_day", "Цена за сутки, Br")}
           </Text>
           <View style={styles.priceInputsRow}>
             <View
@@ -358,7 +358,7 @@ export const FiltersModal = ({ visible, onClose }: FiltersModalProps) => {
                   fontSize: 14,
                 }}
               >
-                от
+                {t("common.from_short", "от")}
               </Text>
               <TextInput
                 style={{ color: colors.textPrimary, fontSize: 16, flex: 1 }}
@@ -382,14 +382,14 @@ export const FiltersModal = ({ visible, onClose }: FiltersModalProps) => {
                   fontSize: 14,
                 }}
               >
-                до
+                {t("common.to_short", "до")}
               </Text>
               <TextInput
                 style={{ color: colors.textPrimary, fontSize: 16, flex: 1 }}
                 keyboardType="numeric"
                 value={draft.max_price ? draft.max_price.toString() : ""}
                 onChangeText={(t) => handlePriceInput("max", t)}
-                placeholder="Любая"
+                placeholder={t("common.any", "Любая")}
                 placeholderTextColor={colors.textSecondary}
               />
             </View>
@@ -420,7 +420,7 @@ export const FiltersModal = ({ visible, onClose }: FiltersModalProps) => {
 
           {/* МАРКИ */}
           <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
-            Марка автомобиля
+            {t("filters.brand", "Марка автомобиля")}
           </Text>
           <View style={styles.pillsContainer}>
             {BRANDS.map((brand) => (
@@ -455,7 +455,7 @@ export const FiltersModal = ({ visible, onClose }: FiltersModalProps) => {
 
           {/* КУЗОВ */}
           <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
-            Тип кузова
+            {t("filters.body_type", "Тип кузова")}
           </Text>
           <View style={styles.pillsContainer}>
             {BODY_TYPES.map((type) => (
@@ -492,7 +492,7 @@ export const FiltersModal = ({ visible, onClose }: FiltersModalProps) => {
 
           {/* КОРОБКА И ПРИВОД И ТОПЛИВО */}
           <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
-            Коробка передач
+            {t("filters.transmission", "Коробка передач")}
           </Text>
           <View style={styles.pillsContainer}>
             {TRANSMISSIONS.map((type) => (
@@ -528,7 +528,7 @@ export const FiltersModal = ({ visible, onClose }: FiltersModalProps) => {
           </View>
 
           <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
-            Привод
+            {t("filters.drive_type", "Привод")}
           </Text>
           <View style={styles.pillsContainer}>
             {DRIVE_TYPES.map((type) => (
@@ -564,7 +564,7 @@ export const FiltersModal = ({ visible, onClose }: FiltersModalProps) => {
           </View>
 
           <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
-            Двигатель
+            {t("filters.engine", "Двигатель")}
           </Text>
           <View style={styles.pillsContainer}>
             {FUEL_TYPES.map((fuel) => (
@@ -602,19 +602,19 @@ export const FiltersModal = ({ visible, onClose }: FiltersModalProps) => {
           {/* ДИАПАЗОНЫ */}
           <View style={{ marginTop: 10 }}>
             {renderRangeInputsRow(
-              "Год выпуска",
+              t("filters.year_label", "Год выпуска"),
               "min_year",
               "max_year",
               "2020",
             )}
             {renderRangeInputsRow(
-              "Пробег, км",
+              t("filters.mileage_label", "Пробег, км"),
               "min_mileage",
               "max_mileage",
               "0",
             )}
             {renderRangeInputsRow(
-              "Мощность, л.с.",
+              t("filters.power_label", "Мощность, л.с."),
               "min_power",
               "max_power",
               "150",
@@ -623,7 +623,7 @@ export const FiltersModal = ({ visible, onClose }: FiltersModalProps) => {
 
           {/* ОПЦИИ */}
           <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
-            Комплектация
+            {t("filters.features", "Комплектация")}
           </Text>
           <View style={styles.pillsContainer}>
             {features.map((feature) => {
@@ -663,7 +663,7 @@ export const FiltersModal = ({ visible, onClose }: FiltersModalProps) => {
 
           {/* ЦВЕТА */}
           <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
-            Цвет кузова
+            {t("filters.color", "Цвет кузова")}
           </Text>
           <View style={styles.pillsContainer}>
             {COLORS.map((colorObj) => {
@@ -716,7 +716,12 @@ export const FiltersModal = ({ visible, onClose }: FiltersModalProps) => {
             style={[styles.applyBtn, { backgroundColor: colors.accent }]}
             activeOpacity={0.9}
           >
-            <Text style={styles.applyBtnText}>Показать {totalCars} авто</Text>
+            <Text style={styles.applyBtnText}>
+              {t("filters.show_results", {
+                count: totalCars,
+                defaultValue: "Показать {{count}} авто",
+              })}
+            </Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>

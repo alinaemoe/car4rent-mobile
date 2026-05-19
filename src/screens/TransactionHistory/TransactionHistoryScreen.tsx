@@ -1,28 +1,28 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
-  View,
-  StyleSheet,
-  FlatList,
   ActivityIndicator,
+  FlatList,
+  StyleSheet,
   Text,
   TouchableOpacity,
+  View,
 } from "react-native";
-import { useTranslation } from "react-i18next";
 // 👇 Используем SafeAreaView
+import { Ionicons } from "@expo/vector-icons";
 import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
 
-import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { useLessorHistory } from "@/src/api/queries/useLessorFinances";
+import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 
 // Импорт компонентов
+import { CarsIncomeChart } from "./components/CarsIncomeChart";
+import { EarningsChart } from "./components/EarningsChart";
 import { MonthSelector } from "./components/MonthSelector";
 import { TransactionCard } from "./components/TransactionCard";
-import { EarningsChart } from "./components/EarningsChart";
-import { CarsIncomeChart } from "./components/CarsIncomeChart";
 
 export default function TransactionHistoryScreen() {
   const colors = useAppColors();

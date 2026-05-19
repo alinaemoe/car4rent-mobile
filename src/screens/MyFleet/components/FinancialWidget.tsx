@@ -1,15 +1,15 @@
+import { useAppColors } from "@/src/hooks/use-color-scheme.web";
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import {
-  View,
-  Text,
   StyleSheet,
+  Text,
   TouchableOpacity,
+  View,
   ViewStyle,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
-import { Ionicons } from "@expo/vector-icons";
-import { useTranslation } from "react-i18next";
-import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 
 interface FinancialWidgetProps {
   totalEarned: number;
@@ -31,19 +31,19 @@ export const FinancialWidget = ({
   style,
 }: FinancialWidgetProps) => {
   const colors = useAppColors();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   // Форматируем месяц с заглавной буквы
   const date = new Date(year, month - 1);
-  const monthName = new Intl.DateTimeFormat("ru-RU", { month: "long" }).format(
-    date,
-  );
+  const monthName = new Intl.DateTimeFormat(i18n.language || "ru", {
+    month: "long",
+  }).format(date);
   const formattedMonth = `${monthName.charAt(0).toUpperCase() + monthName.slice(1)} ${year}`;
 
   const formatMoney = (amount: number) => {
-    return new Intl.NumberFormat("ru-RU", {
+    return new Intl.NumberFormat(i18n.language || "ru", {
       style: "currency",
-      currency: "RUB",
+      currency: "BYN",
       maximumFractionDigits: 0,
     }).format(amount);
   };

@@ -1,11 +1,13 @@
-import React from "react";
-import { Tabs } from "expo-router";
-import { DrawerActions } from "@react-navigation/native";
-import { Ionicons } from "@expo/vector-icons";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
+import { Ionicons } from "@expo/vector-icons";
+import { DrawerActions } from "@react-navigation/native";
+import { Tabs } from "expo-router";
+import React from "react";
+import { useTranslation } from "react-i18next";
 
 export default function TabLayout() {
   const colors = useAppColors();
+  const { t } = useTranslation();
 
   return (
     <Tabs
@@ -24,7 +26,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Каталог",
+          title: t("tabs.catalog", "Каталог"), // 👈
           tabBarIcon: ({ color }) => (
             <Ionicons name="car-outline" size={24} color={color} />
           ),
@@ -33,7 +35,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="rentals"
         options={{
-          title: "Мои Брони",
+          title: t("tabs.rentals", "Мои Брони"), // 👈
           tabBarIcon: ({ color }) => (
             <Ionicons name="calendar-outline" size={24} color={color} />
           ),
@@ -42,17 +44,16 @@ export default function TabLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: "Профиль",
+          title: t("tabs.profile", "Профиль"), // 👈
           tabBarIcon: ({ color }) => (
             <Ionicons name="person-outline" size={24} color={color} />
           ),
         }}
       />
-      {/* Перехватываем клик и открываем дровер */}
       <Tabs.Screen
         name="_menu_dummy"
         options={{
-          title: "Меню",
+          title: t("tabs.menu", "Меню"), // 👈
           tabBarIcon: ({ color }) => (
             <Ionicons name="menu-outline" size={24} color={color} />
           ),

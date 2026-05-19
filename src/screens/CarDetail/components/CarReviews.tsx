@@ -1,10 +1,10 @@
-import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useTranslation } from "react-i18next";
+import { Skeleton } from "@/src/components/common/Skeleton"; // 👈 Твои шикарные скелетоны
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { CarReviewPreview } from "@/src/types";
-import { Skeleton } from "@/src/components/common/Skeleton"; // 👈 Твои шикарные скелетоны
+import { Ionicons } from "@expo/vector-icons";
+import React from "react";
+import { useTranslation } from "react-i18next";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 interface CarReviewsProps {
   avgRating?: number;
@@ -33,9 +33,9 @@ const renderStars = (rating: number, color: string, size = 16) => {
   return <View style={{ flexDirection: "row" }}>{stars}</View>;
 };
 
-const formatDate = (dateString: string) => {
+const formatDate = (dateString: string, locale: string = "ru") => {
   try {
-    return new Intl.DateTimeFormat("ru-RU", {
+    return new Intl.DateTimeFormat(locale, {
       day: "numeric",
       month: "long",
       year: "numeric",
@@ -44,7 +44,6 @@ const formatDate = (dateString: string) => {
     return dateString;
   }
 };
-
 export const CarReviews: React.FC<CarReviewsProps> = ({
   avgRating = 0,
   reviewsCount = 0,
@@ -54,7 +53,7 @@ export const CarReviews: React.FC<CarReviewsProps> = ({
   fetchNextPage,
 }) => {
   const colors = useAppColors();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   if (reviewsCount === 0 || reviews.length === 0) {
     return (
@@ -161,7 +160,7 @@ export const CarReviews: React.FC<CarReviewsProps> = ({
                       marginLeft: 8,
                     }}
                   >
-                    {formatDate(review.createdAt)}
+                    {formatDate(review.createdAt, i18n.language)}
                   </Text>
                 </View>
               </View>

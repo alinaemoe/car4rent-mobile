@@ -1,12 +1,14 @@
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
-import { Image } from "expo-image";
-import { Ionicons } from "@expo/vector-icons";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
+import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
+import React from "react";
+import { useTranslation } from "react-i18next";
+import { StyleSheet, Text, View } from "react-native";
 
 const blurhash = "L6PZfSi_.AyE_3t7t7R**0o#DgR4";
 
 export const CheckoutMiniCar = ({ car }: { car: any }) => {
+  const { t } = useTranslation();
   const colors = useAppColors();
 
   return (
@@ -42,7 +44,7 @@ export const CheckoutMiniCar = ({ car }: { car: any }) => {
               style={{ marginRight: 6 }}
             />
             <Text style={[styles.miniRating, { color: colors.textSecondary }]}>
-              {car.reviews_count || 0} отзывов
+              {car.reviews_count || 0} {t("checkout.reviews_count", "отзывов")}
             </Text>
           </View>
         </View>

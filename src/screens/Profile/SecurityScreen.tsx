@@ -1,21 +1,21 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  Alert,
-  Platform,
-  Modal,
-  TextInput,
-  KeyboardAvoidingView,
-} from "react-native";
-import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
+import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
-import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { Toast } from "@/src/components/Toast";
+import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 
 export default function SecurityScreen() {
   const colors = useAppColors();
@@ -55,7 +55,10 @@ export default function SecurityScreen() {
     if (!isPasswordValid) return;
     console.log("Отправка на бэк: POST /auth/change-password");
     handleClosePasswordModal();
-    Toast.success("Успешно", "Ваш пароль был изменен.");
+    Toast.success(
+      t("common.success", "Успешно"),
+      t("security.password_changed", "Ваш пароль был изменен."),
+    );
   };
 
   const handleTerminateSessions = () => {
@@ -66,12 +69,14 @@ export default function SecurityScreen() {
         "Вы выйдете из аккаунта на всех остальных устройствах, кроме этого.",
       ),
       [
-        { text: t("common.cancel", "Отмена"), style: "cancel" },
         {
           text: t("common.terminate", "Завершить"),
           style: "destructive",
           onPress: () =>
-            Toast.success("Сеансы завершены", "Вы вышли с других устройств."),
+            Toast.success(
+              t("security.sessions_terminated", "Сеансы завершены"),
+              t("security.logged_out_others", "Вы вышли с других устройств."),
+            ),
         },
       ],
     );
@@ -85,12 +90,14 @@ export default function SecurityScreen() {
         "Это действие необратимо. Ваши данные будут скрыты из системы. Продолжить?",
       ),
       [
-        { text: t("common.cancel", "Отмена"), style: "cancel" },
         {
           text: t("common.delete", "Удалить"),
           style: "destructive",
           onPress: () =>
-            Toast.error("Аккаунт удален", "Жаль с вами расставаться 😢"),
+            Toast.error(
+              t("security.account_deleted", "Аккаунт удален"),
+              t("security.miss_you", "Жаль с вами расставаться 😢"),
+            ),
         },
       ],
     );

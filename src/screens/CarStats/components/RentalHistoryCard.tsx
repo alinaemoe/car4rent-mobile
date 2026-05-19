@@ -1,10 +1,10 @@
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
-import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
+import React from "react";
+import { useTranslation } from "react-i18next";
+import { StyleSheet, Text, View } from "react-native";
 
-import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { CarRentalHistoryItem } from "@/src/api/queries/useCarRentalsHistory";
+import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 
 interface Props {
   rental: CarRentalHistoryItem;
@@ -12,10 +12,10 @@ interface Props {
 
 export const RentalHistoryCard = ({ rental }: Props) => {
   const colors = useAppColors();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const formatDate = (dateStr: string) =>
-    new Intl.DateTimeFormat("ru-RU", {
+    new Intl.DateTimeFormat(i18n.language || "ru", {
       day: "2-digit",
       month: "2-digit",
       hour: "2-digit",
@@ -64,7 +64,7 @@ export const RentalHistoryCard = ({ rental }: Props) => {
           </View>
         </View>
         <Text style={[styles.price, { color: colors.textPrimary }]}>
-          {rental.total_price} ₽
+          {rental.total_price} {t("common.currency_br", "Br")}
         </Text>
       </View>
 

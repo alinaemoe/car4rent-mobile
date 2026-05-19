@@ -1,9 +1,9 @@
-import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { Image } from "expo-image";
-import { Ionicons } from "@expo/vector-icons";
-import { useTranslation } from "react-i18next";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
+import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
+import React from "react";
+import { useTranslation } from "react-i18next";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Car } from "../types";
 
 import { useAppDispatch, useAppSelector } from "@/src/store";
@@ -199,7 +199,7 @@ export const CarCard = ({ car, onPress }: CarCardProps) => {
                 color={colors.textSecondary}
               />
               <Text style={[styles.badgeText, { color: colors.textSecondary }]}>
-                {car.horsepower} л.с.
+                {car.horsepower} {t("common.hp", "л.с.")}
               </Text>
             </View>
           )}
@@ -212,7 +212,7 @@ export const CarCard = ({ car, onPress }: CarCardProps) => {
         <View style={styles.priceFooter}>
           <View>
             <Text style={[styles.price, { color: colors.textPrimary }]}>
-              {car.price_per_day} Br
+              {car.price_per_day} {t("common.currency_br", "Br")}
               <Text style={styles.perDayText}> / {t("day", "сутки")}</Text>
             </Text>
 
@@ -224,7 +224,7 @@ export const CarCard = ({ car, onPress }: CarCardProps) => {
                 {t("total_for", "Итого за")} {daysCount}{" "}
                 {t("days_short", "сут.")}:{" "}
                 <Text style={{ fontWeight: "500", color: colors.textPrimary }}>
-                  {totalPrice} Br
+                  {totalPrice} {t("common.currency_br", "Br")}
                 </Text>
               </Text>
             )}

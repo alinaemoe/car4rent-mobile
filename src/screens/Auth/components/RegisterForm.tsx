@@ -1,18 +1,18 @@
+import { axiosInstance } from "@/src/api/axios-instance";
+import { useAppColors } from "@/src/hooks/use-color-scheme.web";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
   ActivityIndicator,
   ScrollView,
   StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-
-import { axiosInstance } from "@/src/api/axios-instance";
-import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 
 interface Props {
   onSuccess: (email: string) => void;
@@ -23,6 +23,7 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const RegisterForm = ({ onSuccess }: Props) => {
   const colors = useAppColors();
+  const { t } = useTranslation();
   const router = useRouter();
 
   const [form, setForm] = useState({
@@ -39,12 +40,19 @@ export const RegisterForm = ({ onSuccess }: Props) => {
   const [showPassword, setShowPassword] = useState(false);
 
   const validateForm = () => {
-    if (!form.first_name.trim()) return "Введите ваше имя";
-    if (!form.last_name.trim()) return "Введите вашу фамилию";
-    if (!EMAIL_REGEX.test(form.email.trim())) return "Введите корректный email";
+    if (!form.first_name.trim())
+      return t("auth.enter_first_name", "Введите ваше имя");
+    if (!form.last_name.trim())
+      return t("auth.enter_last_name", "Введите вашу фамилию");
+    if (!EMAIL_REGEX.test(form.email.trim()))
+      return t("auth.enter_valid_email", "Введите корректный email");
     if (form.password.length < 6)
-      return "Пароль должен быть не менее 6 символов";
-    if (form.password !== form.passwordConfirm) return "Пароли не совпадают";
+      return t(
+        "auth.password_min_length",
+        "Пароль должен быть не менее 6 символов",
+      );
+    if (form.password !== form.passwordConfirm)
+      return t("auth.passwords_mismatch", "Пароли не совпадают");
     return null; // Ошибок нет
   };
 
@@ -63,7 +71,10 @@ export const RegisterForm = ({ onSuccess }: Props) => {
       await axiosInstance.post("/auth/register", submitData);
       onSuccess(form.email.trim());
     } catch (error: any) {
-      setErrorText(error.response?.data?.message || "Ошибка регистрации");
+      setErrorText(
+        error.response?.data?.message ||
+          t("auth.register_error", "Ошибка регистрации"),
+      );
     } finally {
       setIsLoading(false);
     }
@@ -113,10 +124,10 @@ export const RegisterForm = ({ onSuccess }: Props) => {
     >
       <View style={styles.header}>
         <Text style={[styles.title, { color: colors.textPrimary }]}>
-          Создать аккаунт
+          {t("auth.create_account", "Создать аккаунт")}
         </Text>
         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-          Присоединяйтесь к Car4Rent
+          {t("auth.join_car4rent", "Присоединяйтесь к Car4Rent")}
         </Text>
       </View>
 
@@ -130,21 +141,28 @@ export const RegisterForm = ({ onSuccess }: Props) => {
         </View>
       ) : null}
 
-      {renderInput("Имя", "first_name")}
-      {renderInput("Фамилия", "last_name")}
-      {renderInput("Телефон", "phone", false, { keyboardType: "phone-pad" })}
-      {renderInput("Email", "email", true, {
+      {renderInput(t("auth.first_name", "Имя"), "first_name")}
+      {renderInput(t("auth.last_name", "Фамилия"), "last_name")}
+      {renderInput(t("auth.phone", "Телефон"), "phone", false, {
+        keyboardType: "phone-pad",
+      })}
+      {renderInput(t("auth.email_label", "Email"), "email", true, {
         keyboardType: "email-address",
         autoCapitalize: "none",
       })}
-      {renderInput("Пароль", "password", true, {
+      {renderInput(t("auth.password_label", "Пароль"), "password", true, {
         secureTextEntry: !showPassword,
         autoCapitalize: "none",
       })}
-      {renderInput("Повторите пароль", "passwordConfirm", true, {
-        secureTextEntry: !showPassword,
-        autoCapitalize: "none",
-      })}
+      {renderInput(
+        t("auth.repeat_password", "Повторите пароль"),
+        "passwordConfirm",
+        true,
+        {
+          secureTextEntry: !showPassword,
+          autoCapitalize: "none",
+        },
+      )}
 
       <TouchableOpacity
         style={[styles.submitBtn, { backgroundColor: colors.accent }]}
@@ -154,20 +172,22 @@ export const RegisterForm = ({ onSuccess }: Props) => {
         {isLoading ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <Text style={styles.submitBtnText}>Продолжить</Text>
+          <Text style={styles.submitBtnText}>
+            {t("auth.continue_button", "Продолжить")}
+          </Text>
         )}
       </TouchableOpacity>
 
       {/* Навигация переехала вниз, аккуратным текстом */}
       <View style={styles.footerLinkContainer}>
         <Text style={{ color: colors.textSecondary, fontSize: 15 }}>
-          Уже есть аккаунт?{" "}
+          {t("auth.already_have_account", "Уже есть аккаунт? ")}
         </Text>
         <TouchableOpacity onPress={() => router.replace("/login")}>
           <Text
             style={{ color: colors.accent, fontSize: 15, fontWeight: "bold" }}
           >
-            Войти
+            {t("auth.login_link", "Войти")}
           </Text>
         </TouchableOpacity>
       </View>

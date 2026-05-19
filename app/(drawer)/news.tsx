@@ -1,8 +1,10 @@
-import { View, Text } from "react-native";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
+import { useTranslation } from "react-i18next";
+import { Text, View } from "react-native";
 
 export default function NewsScreen() {
   const colors = useAppColors();
+  const { t } = useTranslation();
 
   return (
     <View
@@ -14,7 +16,7 @@ export default function NewsScreen() {
       }}
     >
       <Text style={{ color: colors.textPrimary, fontSize: 20 }}>
-        Новости 📰
+        {t("drawer_news", "Новости")} 📰
       </Text>
     </View>
   );

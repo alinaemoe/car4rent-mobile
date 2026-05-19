@@ -1,7 +1,8 @@
-import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
+import { Ionicons } from "@expo/vector-icons";
+import React from "react";
+import { useTranslation } from "react-i18next";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export type DocStatus =
   | "GUEST"
@@ -17,6 +18,7 @@ interface Props {
 
 export const VerificationBanner = ({ status, onPress }: Props) => {
   const colors = useAppColors();
+  const { t } = useTranslation();
 
   if (status === "GUEST") return null;
 
@@ -33,36 +35,45 @@ export const VerificationBanner = ({ status, onPress }: Props) => {
       bg = colors.errorBg;
       icon = "shield-alert-outline";
       iconColor = colors.error;
-      title = "Требуется верификация";
-      desc =
-        "Загрузите документы (Паспорт и Права), чтобы получить доступ к бронированию.";
-      btnText = "Пройти проверку";
+      title = t("verification.unverified_title", "Требуется верификация");
+      desc = t(
+        "verification.unverified_desc",
+        "Загрузите документы (Паспорт и Права), чтобы получить доступ к бронированию.",
+      );
+      btnText = t("verification.verify_btn", "Пройти проверку");
       showBtn = true;
       break;
     case "PENDING":
       bg = colors.warningBg;
       icon = "time-outline";
       iconColor = colors.warningText || colors.warning;
-      title = "Документы проверяются";
-      desc =
-        "Обычно проверка занимает до 15 минут. Мы пришлем вам уведомление.";
+      title = t("verification.pending_title", "Документы проверяются");
+      desc = t(
+        "verification.pending_desc",
+        "Обычно проверка занимает до 15 минут. Мы пришлем вам уведомление.",
+      );
       break;
     case "REJECTED":
       bg = colors.errorBg;
       icon = "close-circle-outline";
       iconColor = colors.error;
-      title = "Документы отклонены";
-      desc =
-        "Фотографии размыты или данные не читаются. Пожалуйста, сделайте новые фото.";
-      btnText = "Загрузить заново";
+      title = t("verification.rejected_title", "Документы отклонены");
+      desc = t(
+        "verification.rejected_desc",
+        "Фотографии размыты или данные не читаются. Пожалуйста, сделайте новые фото.",
+      );
+      btnText = t("verification.reupload_btn", "Загрузить заново");
       showBtn = true;
       break;
     case "VERIFIED":
       bg = colors.successBg;
       icon = "checkmark-circle-outline";
       iconColor = colors.success;
-      title = "Личность подтверждена";
-      desc = "Вы можете бронировать любые автомобили без ограничений.";
+      title = t("verification.verified_title", "Личность подтверждена");
+      desc = t(
+        "verification.verified_desc",
+        "Вы можете бронировать любые автомобили без ограничений.",
+      );
       break;
   }
 

@@ -1,23 +1,8 @@
-import React from "react";
-import { View, Text, TextInput, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useTranslation } from "react-i18next";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
-
-const MONTHS_RU = [
-  "января",
-  "февраля",
-  "марта",
-  "апреля",
-  "мая",
-  "июня",
-  "июля",
-  "августа",
-  "сентября",
-  "октября",
-  "ноября",
-  "декабря",
-];
+import { Ionicons } from "@expo/vector-icons";
+import React from "react";
+import { useTranslation } from "react-i18next";
+import { StyleSheet, Text, TextInput, View } from "react-native";
 
 interface Props {
   startDate: string | null;
@@ -33,12 +18,23 @@ export const CheckoutForm = ({
   setDestination,
 }: Props) => {
   const colors = useAppColors();
-  const { t } = useTranslation();
-
+  const { t, i18n } = useTranslation();
   const formatDate = (dateString: string | null) => {
     if (!dateString) return t("checkout.select_date", "Выберите дату");
     const d = new Date(dateString);
-    return `${d.getDate()} ${MONTHS_RU[d.getMonth()]}, ${d.getFullYear()} в 12:00`;
+
+    // Форматируем саму дату (например: "12 апреля 2026 г.")
+    const formattedDate = new Intl.DateTimeFormat(i18n.language || "ru", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }).format(d);
+
+    // Оборачиваем дату и время в t(), чтобы перевести предлог "в" (в англ. будет "at 12:00")
+    return t("checkout.date_at_time", {
+      defaultValue: "{{date}} в 12:00",
+      date: formattedDate,
+    });
   };
 
   return (

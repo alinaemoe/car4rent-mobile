@@ -1,8 +1,9 @@
-import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
+import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient"; // Убедись, что пакет установлен
+import React from "react";
+import { useTranslation } from "react-i18next";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 interface Props {
   onPress: () => void;
@@ -10,6 +11,7 @@ interface Props {
 
 export const LessorBanner = ({ onPress }: Props) => {
   const colors = useAppColors();
+  const { t } = useTranslation();
 
   return (
     <TouchableOpacity activeOpacity={0.9} onPress={onPress}>
@@ -21,9 +23,14 @@ export const LessorBanner = ({ onPress }: Props) => {
       >
         <View style={styles.content}>
           <View style={styles.textContainer}>
-            <Text style={styles.title}>Сдавайте свой авто</Text>
+            <Text style={styles.title}>
+              {t("profile.banner_title", "Сдавайте свой авто")}
+            </Text>
             <Text style={styles.subtitle}>
-              Зарабатывайте до 100 000 ₽ в месяц с Car4Rent
+              {t(
+                "profile.banner_subtitle",
+                "Зарабатывайте до 10 000 Br в месяц с Car4Rent",
+              )}
             </Text>
           </View>
 
@@ -33,7 +40,9 @@ export const LessorBanner = ({ onPress }: Props) => {
         </View>
 
         <View style={styles.button}>
-          <Text style={styles.buttonText}>Узнать больше</Text>
+          <Text style={styles.buttonText}>
+            {t("profile.banner_btn", "Узнать больше")}
+          </Text>
           <Ionicons name="arrow-forward" size={16} color="#fff" />
         </View>
       </LinearGradient>

@@ -1,29 +1,31 @@
+import { Ionicons } from "@expo/vector-icons";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useMemo } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
   ActivityIndicator,
   Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
 
-import { useAppColors } from "@/src/hooks/use-color-scheme.web";
-import { useMyRentals, useCancelRental } from "@/src/api/queries/useRentals";
+import { useCancelRental, useMyRentals } from "@/src/api/queries/useRentals";
 import { Toast } from "@/src/components/Toast";
+import { useAppColors } from "@/src/hooks/use-color-scheme.web";
+import { useTranslation } from "react-i18next";
 
-import { RentalStatusCard } from "./components/RentalDetails/RentalStatusCard";
-import { RentalReceiptCard } from "./components/RentalDetails/RentalReceiptCard";
 import { CarLocation } from "@/src/screens/CarDetail/components/CarLocation"; // 👈 Переиспользуем из деталей машины!
+import { RentalReceiptCard } from "./components/RentalDetails/RentalReceiptCard";
+import { RentalStatusCard } from "./components/RentalDetails/RentalStatusCard";
 
 export default function RentalDetailsScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const colors = useAppColors();
+  const { t } = useTranslation();
 
   // Достаем все брони и ищем нужную
   const { data: rentals, isLoading } = useMyRentals();
@@ -44,39 +46,50 @@ export default function RentalDetailsScreen() {
   if (!rental) {
     return (
       <View style={[styles.center, { backgroundColor: colors.background }]}>
-        <Text style={{ color: colors.textSecondary }}>Поездка не найдена</Text>
+        <Text style={{ color: colors.textSecondary }}>
+          {t("rental_details.not_found", "Поездка не найдена")}
+        </Text>
         <TouchableOpacity
           style={{ marginTop: 16 }}
           onPress={() => router.back()}
         >
           <Text style={{ color: colors.accent, fontWeight: "bold" }}>
-            Вернуться назад
+            {t("common.go_back", "Вернуться назад")}
           </Text>
         </TouchableOpacity>
       </View>
     );
   }
 
-  // Обработчик отмены
   const handleCancelPress = () => {
     Alert.alert(
-      "Отмена бронирования",
-      "Вы уверены, что хотите отменить эту поездку? Действие нельзя отменить.",
+      t("rental_details.cancel_title", "Отмена бронирования"),
+      t(
+        "rental_details.cancel_msg",
+        "Вы уверены, что хотите отменить эту поездку? Действие нельзя отменить.",
+      ),
       [
-        { text: "Нет, оставить", style: "cancel" },
         {
-          text: "Да, отменить",
+          text: t("rental_details.cancel_no", "Нет, оставить"),
+          style: "cancel",
+        },
+        {
+          text: t("rental_details.cancel_yes", "Да, отменить"),
           style: "destructive",
           onPress: () => {
             cancelRental(rental.id, {
               onSuccess: () => {
-                Toast.success("Готово", "Бронирование отменено");
+                Toast.success(
+                  t("common.done", "Готово"),
+                  t("rental_details.cancel_success", "Бронирование отменено"),
+                );
                 router.back(); // Возвращаем в список
               },
               onError: (err: any) => {
                 Toast.error(
-                  "Ошибка",
-                  err.response?.data?.message || "Не удалось отменить",
+                  t("common.error", "Ошибка"),
+                  err.response?.data?.message ||
+                    t("rental_details.cancel_error", "Не удалось отменить"),
                 );
               },
             });
@@ -117,7 +130,7 @@ export default function RentalDetailsScreen() {
             style={[styles.headerTitle, { color: colors.textPrimary }]}
             numberOfLines={1}
           >
-            Детали поездки
+            {t("rental_details.header_title", "Детали поездки")}
           </Text>
         </View>
       </SafeAreaView>
@@ -155,7 +168,7 @@ export default function RentalDetailsScreen() {
               <ActivityIndicator color={colors.error} />
             ) : (
               <Text style={[styles.cancelBtnText, { color: colors.error }]}>
-                Отменить бронирование
+                {t("rental_details.cancel_btn", "Отменить бронирование")}
               </Text>
             )}
           </TouchableOpacity>

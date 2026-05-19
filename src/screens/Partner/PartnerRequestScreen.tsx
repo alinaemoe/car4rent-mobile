@@ -1,30 +1,31 @@
+import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
+import * as ImagePicker from "expo-image-picker";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  TextInput,
+  ActivityIndicator,
   KeyboardAvoidingView,
+  LayoutAnimation,
   Platform,
   ScrollView,
-  LayoutAnimation,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
   UIManager,
-  ActivityIndicator,
+  View,
 } from "react-native";
-import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
-import * as ImagePicker from "expo-image-picker";
-import { Image } from "expo-image";
 
+import {
+  CreatePartnershipDto,
+  useCreatePartnershipRequest,
+} from "@/src/api/queries/usePartnership";
+import { Toast } from "@/src/components/Toast";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { useAppSelector } from "@/src/store";
-import { Toast } from "@/src/components/Toast";
-import {
-  useCreatePartnershipRequest,
-  CreatePartnershipDto,
-} from "@/src/api/queries/usePartnership";
 
 // Включаем LayoutAnimation для Android
 if (
@@ -39,6 +40,7 @@ const TOTAL_STEPS = 3;
 export default function PartnerRequestScreen() {
   const colors = useAppColors();
   const router = useRouter();
+  const { t } = useTranslation();
   const user = useAppSelector((state) => state.auth.user);
 
   const { mutate: submitRequest, isPending } = useCreatePartnershipRequest();
@@ -62,15 +64,18 @@ export default function PartnerRequestScreen() {
         !formData.car_year
       ) {
         return Toast.error(
-          "Внимание",
-          "Пожалуйста, заполните все поля об автомобиле",
+          t("common.attention", "Внимание"),
+          t(
+            "request.err_fill_car",
+            "Пожалуйста, заполните все поля об автомобиле",
+          ),
         );
       }
     } else if (step === 2) {
       if (!formData.photos || formData.photos.length === 0) {
         return Toast.error(
-          "Фотографии",
-          "Загрузите хотя бы одно фото вашего авто",
+          t("request.photos_title", "Фотографии"),
+          t("request.err_add_photo", "Загрузите хотя бы одно фото вашего авто"),
         );
       }
     }
@@ -87,18 +92,25 @@ export default function PartnerRequestScreen() {
 
   const handleSubmit = () => {
     if (!formData.owner_name.trim() || !formData.owner_phone.trim()) {
-      return Toast.error("Контакты", "Пожалуйста, укажите имя и телефон");
+      return Toast.error(
+        t("request.contacts_title", "Контакты"),
+        t("request.err_fill_contacts", "Пожалуйста, укажите имя и телефон"),
+      );
     }
 
     submitRequest(formData, {
       onSuccess: () => {
-        Toast.success("Заявка принята!", "Наш менеджер скоро свяжется с вами.");
+        Toast.success(
+          t("request.success_title", "Заявка принята!"),
+          t("request.success_desc", "Наш менеджер скоро свяжется с вами."),
+        );
         router.replace("/(drawer)/(tabs)/profile"); // Возвращаем в профиль
       },
       onError: (err: any) => {
         Toast.error(
-          "Ошибка",
-          err.response?.data?.message || "Не удалось отправить заявку",
+          t("common.error", "Ошибка"),
+          err.response?.data?.message ||
+            t("request.err_submit", "Не удалось отправить заявку"),
         );
       },
     });
@@ -132,19 +144,19 @@ export default function PartnerRequestScreen() {
   const renderStep1 = () => (
     <View style={styles.stepContainer}>
       <Text style={[styles.stepTitle, { color: colors.textPrimary }]}>
-        Об автомобиле
+        {t("request.step1_title", "Об автомобиле")}
       </Text>
       <Text style={[styles.stepSubtitle, { color: colors.textSecondary }]}>
-        Какую машину вы хотите сдавать в аренду?
+        {t("request.step1_desc", "Какую машину вы хотите сдавать в аренду?")}
       </Text>
 
       <View style={[styles.inputBox, { backgroundColor: colors.surface }]}>
         <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>
-          Марка
+          {t("request.brand_label", "Марка")}
         </Text>
         <TextInput
           style={[styles.input, { color: colors.textPrimary }]}
-          placeholder="Например, BMW"
+          placeholder={t("request.brand_placeholder", "Например, BMW")}
           placeholderTextColor={colors.border}
           value={formData.car_brand}
           onChangeText={(text) => setFormData({ ...formData, car_brand: text })}
@@ -153,11 +165,11 @@ export default function PartnerRequestScreen() {
 
       <View style={[styles.inputBox, { backgroundColor: colors.surface }]}>
         <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>
-          Модель
+          {t("request.model_label", "Модель")}
         </Text>
         <TextInput
           style={[styles.input, { color: colors.textPrimary }]}
-          placeholder="Например, X5"
+          placeholder={t("request.model_placeholder", "Например, X5")}
           placeholderTextColor={colors.border}
           value={formData.car_model}
           onChangeText={(text) => setFormData({ ...formData, car_model: text })}
@@ -166,7 +178,7 @@ export default function PartnerRequestScreen() {
 
       <View style={[styles.inputBox, { backgroundColor: colors.surface }]}>
         <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>
-          Год выпуска
+          {t("request.year_label", "Год выпуска")}
         </Text>
         <TextInput
           style={[styles.input, { color: colors.textPrimary }]}
@@ -186,10 +198,13 @@ export default function PartnerRequestScreen() {
   const renderStep2 = () => (
     <View style={styles.stepContainer}>
       <Text style={[styles.stepTitle, { color: colors.textPrimary }]}>
-        Внешний вид
+        {t("request.step2_title", "Внешний вид")}
       </Text>
       <Text style={[styles.stepSubtitle, { color: colors.textSecondary }]}>
-        Добавьте до 5 фотографий (снаружи и внутри), чтобы мы оценили состояние.
+        {t(
+          "request.step2_desc",
+          "Добавьте до 5 фотографий (снаружи и внутри), чтобы мы оценили состояние.",
+        )}
       </Text>
 
       <View style={styles.photoGrid}>
@@ -226,7 +241,7 @@ export default function PartnerRequestScreen() {
                 fontWeight: "600",
               }}
             >
-              Добавить
+              {t("common.add", "Добавить")}
             </Text>
           </TouchableOpacity>
         )}
@@ -237,15 +252,15 @@ export default function PartnerRequestScreen() {
   const renderStep3 = () => (
     <View style={styles.stepContainer}>
       <Text style={[styles.stepTitle, { color: colors.textPrimary }]}>
-        Контакты
+        {t("request.step3_title", "Контакты")}
       </Text>
       <Text style={[styles.stepSubtitle, { color: colors.textSecondary }]}>
-        Как к вам обращаться?
+        {t("request.step3_desc", "Как к вам обращаться?")}
       </Text>
 
       <View style={[styles.inputBox, { backgroundColor: colors.surface }]}>
         <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>
-          Ваше имя
+          {t("request.name_label", "Ваше имя")}
         </Text>
         <TextInput
           style={[styles.input, { color: colors.textPrimary }]}
@@ -258,7 +273,7 @@ export default function PartnerRequestScreen() {
 
       <View style={[styles.inputBox, { backgroundColor: colors.surface }]}>
         <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>
-          Телефон для связи
+          {t("request.phone_label", "Телефон для связи")}
         </Text>
         <TextInput
           style={[styles.input, { color: colors.textPrimary }]}
@@ -284,7 +299,11 @@ export default function PartnerRequestScreen() {
             <Ionicons name="arrow-back" size={28} color={colors.textPrimary} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>
-            Шаг {step} из {TOTAL_STEPS}
+            {t("request.step_counter", {
+              step,
+              total: TOTAL_STEPS,
+              defaultValue: "Шаг {{step}} из {{total}}",
+            })}
           </Text>
           <View style={{ width: 28 }} />
         </View>
@@ -333,7 +352,9 @@ export default function PartnerRequestScreen() {
             <ActivityIndicator color="#fff" />
           ) : (
             <Text style={styles.mainBtnText}>
-              {step === TOTAL_STEPS ? "Отправить заявку" : "Продолжить"}
+              {step === TOTAL_STEPS
+                ? t("request.submit_btn", "Отправить заявку")
+                : t("common.continue", "Продолжить")}
             </Text>
           )}
         </TouchableOpacity>

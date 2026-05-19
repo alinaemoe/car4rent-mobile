@@ -1,14 +1,15 @@
-import React, { useState, useRef } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import React, { useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
   Animated,
   Dimensions,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
@@ -17,45 +18,57 @@ import { Pagination } from "./components/Pagination";
 
 const { width } = Dimensions.get("window");
 
-// Данные для наших слайдов (презентация)
-const SLIDES: SlideData[] = [
-  {
-    id: "1",
-    title: "Пассивный доход",
-    description:
-      "Сдавайте свой автомобиль в аренду и зарабатывайте до 100 000 ₽ каждый месяц, пока мы ищем клиентов.",
-    icon: "wallet",
-    gradient: ["#4facfe", "#00f2fe"],
-  },
-  {
-    id: "2",
-    title: "Полная безопасность",
-    description:
-      "Каждая поездка застрахована по КАСКО. Мы тщательно проверяем каждого водителя по 20+ параметрам.",
-    icon: "shield-checkmark",
-    gradient: ["#43e97b", "#38f9d7"],
-  },
-  {
-    id: "3",
-    title: "Прозрачный контроль",
-    description:
-      "Отслеживайте статус автомобиля, историю поездок и начисления в реальном времени прямо в приложении.",
-    icon: "phone-portrait",
-    gradient: ["#fa709a", "#fee140"],
-  },
-  {
-    id: "4",
-    title: "Готовы начать?",
-    description:
-      "Оставьте заявку за 2 минуты. Загрузите фото авто, и наш менеджер свяжется с вами для оформления договора.",
-    icon: "rocket",
-    gradient: ["#a18cd1", "#fbc2eb"],
-  },
-];
-
 export default function PartnerOnboardingScreen() {
   const colors = useAppColors();
   const router = useRouter();
+  const { t } = useTranslation();
+
+  // Данные для наших слайдов (презентация) перенесены внутрь для доступа к t()
+  const SLIDES: SlideData[] = useMemo(
+    () => [
+      {
+        id: "1",
+        title: t("onboarding.slide1_title", "Пассивный доход"),
+        description: t(
+          "onboarding.slide1_desc",
+          "Сдавайте свой автомобиль в аренду и зарабатывайте до 100 000 Br каждый месяц, пока мы ищем клиентов.",
+        ),
+        icon: "wallet",
+        gradient: ["#4facfe", "#00f2fe"],
+      },
+      {
+        id: "2",
+        title: t("onboarding.slide2_title", "Полная безопасность"),
+        description: t(
+          "onboarding.slide2_desc",
+          "Каждая поездка застрахована по КАСКО. Мы тщательно проверяем каждого водителя по 20+ параметрам.",
+        ),
+        icon: "shield-checkmark",
+        gradient: ["#43e97b", "#38f9d7"],
+      },
+      {
+        id: "3",
+        title: t("onboarding.slide3_title", "Прозрачный контроль"),
+        description: t(
+          "onboarding.slide3_desc",
+          "Отслеживайте статус автомобиля, историю поездок и начисления в реальном времени прямо в приложении.",
+        ),
+        icon: "phone-portrait",
+        gradient: ["#fa709a", "#fee140"],
+      },
+      {
+        id: "4",
+        title: t("onboarding.slide4_title", "Готовы начать?"),
+        description: t(
+          "onboarding.slide4_desc",
+          "Оставьте заявку за 2 минуты. Загрузите фото авто, и наш менеджер свяжется с вами для оформления договора.",
+        ),
+        icon: "rocket",
+        gradient: ["#a18cd1", "#fbc2eb"],
+      },
+    ],
+    [t],
+  );
 
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -77,8 +90,7 @@ export default function PartnerOnboardingScreen() {
     if (currentIndex < SLIDES.length - 1) {
       slidesRef.current?.scrollToIndex({ index: currentIndex + 1 });
     } else {
-      // ПОСЛЕДНИЙ СЛАЙД -> Переходим к заполнению заявки (создадим этот роут позже)
-      console.log("Go to request form!");
+      // ПОСЛЕДНИЙ СЛАЙД -> Переходим к заполнению заявки
       router.push("/partner-request");
     }
   };
@@ -136,7 +148,9 @@ export default function PartnerOnboardingScreen() {
           activeOpacity={0.8}
         >
           <Text style={styles.mainButtonText}>
-            {currentIndex === SLIDES.length - 1 ? "Оставить заявку" : "Далее"}
+            {currentIndex === SLIDES.length - 1
+              ? t("onboarding.submit_request", "Оставить заявку")
+              : t("common.next", "Далее")}
           </Text>
         </TouchableOpacity>
       </SafeAreaView>

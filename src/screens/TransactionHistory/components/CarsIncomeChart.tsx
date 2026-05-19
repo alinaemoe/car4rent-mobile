@@ -1,9 +1,9 @@
-import React, { useMemo, useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
-import { PieChart } from "react-native-gifted-charts";
-import { useTranslation } from "react-i18next";
-import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { TransactionHistoryItem } from "@/src/api/queries/useLessorFinances";
+import { useAppColors } from "@/src/hooks/use-color-scheme.web";
+import React, { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { StyleSheet, Text, View } from "react-native";
+import { PieChart } from "react-native-gifted-charts";
 
 interface Props {
   transactions: TransactionHistoryItem[];
@@ -24,7 +24,7 @@ const PIE_COLORS = [
 
 export const CarsIncomeChart = ({ transactions, selectedDate }: Props) => {
   const colors = useAppColors();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   // Стейт для выделенной дольки
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
@@ -86,9 +86,10 @@ export const CarsIncomeChart = ({ transactions, selectedDate }: Props) => {
   }, [transactions, selectedDate, focusedIndex]);
 
   const formatMoney = (amount: number) =>
-    new Intl.NumberFormat("ru-RU", {
+    new Intl.NumberFormat(i18n.language || "ru", {
+      // 👈 Динамическая локаль
       style: "currency",
-      currency: "RUB",
+      currency: "BYN",
       maximumFractionDigits: 0,
     }).format(amount);
 
@@ -97,7 +98,7 @@ export const CarsIncomeChart = ({ transactions, selectedDate }: Props) => {
       <View style={[styles.chartWrapper, { backgroundColor: colors.surface }]}>
         <View style={styles.emptyChart}>
           <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-            Нет данных по машинам за этот месяц
+            {t("finance.no_data_cars", "Нет данных по машинам за этот месяц")}
           </Text>
         </View>
       </View>
@@ -150,7 +151,7 @@ export const CarsIncomeChart = ({ transactions, selectedDate }: Props) => {
           {formatMoney(totalIncome)}
         </Text>
         <Text style={[styles.centerLabelText, { color: colors.textSecondary }]}>
-          Итого
+          {t("finance.total", "Итого")}
         </Text>
       </View>
     );

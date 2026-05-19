@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  FlatList,
-} from "react-native";
-import { Stack, useRouter } from "expo-router";
-import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
+import { Stack, useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import {
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { useAppSelector } from "@/src/store";
@@ -41,7 +41,7 @@ export default function LanguageScreen() {
         options={{
           headerShown: true,
           title: t("settings.language", "Язык"),
-          headerBackTitle: t("back", "Назад"),
+          headerBackTitle: t("common.back", "Назад"),
           headerShadowVisible: false,
           headerStyle: { backgroundColor: colors.surface },
           headerTintColor: colors.textPrimary,

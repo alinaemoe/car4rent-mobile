@@ -1,9 +1,9 @@
-import React, { useMemo } from "react";
-import { View, Text, StyleSheet, Dimensions } from "react-native";
-import { LineChart } from "react-native-gifted-charts";
-import { useTranslation } from "react-i18next";
-import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { TransactionHistoryItem } from "@/src/api/queries/useLessorFinances";
+import { useAppColors } from "@/src/hooks/use-color-scheme.web";
+import React, { useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { Dimensions, StyleSheet, Text, View } from "react-native";
+import { LineChart } from "react-native-gifted-charts";
 
 interface Props {
   transactions: TransactionHistoryItem[];
@@ -14,6 +14,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 export const EarningsChart = ({ transactions, selectedDate }: Props) => {
   const colors = useAppColors();
+  const { t } = useTranslation();
 
   const { chartData, yAxisLabels, maxValue, totalIncome, noOfSections } =
     useMemo(() => {
@@ -98,10 +99,13 @@ export const EarningsChart = ({ transactions, selectedDate }: Props) => {
             ]}
           >
             <Text style={[styles.tooltipDate, { color: colors.textSecondary }]}>
-              {dayIndex} числа
+              {t("finance.day_of_month", {
+                count: dayIndex,
+                defaultValue: "{{count}} числа",
+              })}
             </Text>
             <Text style={[styles.tooltipValue, { color: colors.textPrimary }]}>
-              {item.value} ₽
+              {item.value} Br
             </Text>
           </View>
         );
@@ -117,7 +121,7 @@ export const EarningsChart = ({ transactions, selectedDate }: Props) => {
       {totalIncome === 0 ? (
         <View style={styles.emptyChart}>
           <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-            В этом месяце пока нет доходов
+            {t("finance.no_income_yet", "В этом месяце пока нет доходов")}
           </Text>
         </View>
       ) : (

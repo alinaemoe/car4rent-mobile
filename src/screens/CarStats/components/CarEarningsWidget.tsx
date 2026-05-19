@@ -1,10 +1,10 @@
-import React, { useMemo } from "react";
-import { View, Text, StyleSheet } from "react-native";
-import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
+import React, { useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { StyleSheet, Text, View } from "react-native";
 
-import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { CarRentalHistoryItem } from "@/src/api/queries/useCarRentalsHistory";
+import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 
 interface Props {
   rentals: CarRentalHistoryItem[];
@@ -12,7 +12,7 @@ interface Props {
 
 export const CarEarningsWidget = ({ rentals }: Props) => {
   const colors = useAppColors();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   // Считаем доходы прямо здесь
   const { totalAllTime, totalThisMonth } = useMemo(() => {
@@ -41,9 +41,9 @@ export const CarEarningsWidget = ({ rentals }: Props) => {
   }, [rentals]);
 
   const formatMoney = (amount: number) =>
-    new Intl.NumberFormat("ru-RU", {
+    new Intl.NumberFormat(i18n.language || "ru", {
       style: "currency",
-      currency: "RUB",
+      currency: "BYN",
       maximumFractionDigits: 0,
     }).format(amount);
 

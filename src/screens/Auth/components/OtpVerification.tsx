@@ -1,18 +1,17 @@
-import React, { useState, useEffect, useRef } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import React, { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
-  View,
+  ActivityIndicator,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  ActivityIndicator,
-  StyleSheet,
+  View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 
 import { axiosInstance } from "@/src/api/axios-instance";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
-import { useAppDispatch } from "@/src/store";
-import { setCredentials } from "@/src/store/slices/authSlice";
 import { storage } from "@/src/utils/storage";
 
 interface Props {
@@ -24,6 +23,7 @@ interface Props {
 
 export const OtpVerification = ({ email, onBack, onSuccess }: Props) => {
   const colors = useAppColors();
+  const { t } = useTranslation();
   const inputRef = useRef<TextInput>(null);
 
   const [otp, setOtp] = useState("");
@@ -36,7 +36,10 @@ export const OtpVerification = ({ email, onBack, onSuccess }: Props) => {
   }, []);
 
   const handleVerify = async () => {
-    if (otp.length !== 6) return setErrorText("Введите 6-значный код");
+    if (otp.length !== 6)
+      return setErrorText(
+        t("auth.enter_6_digit_code", "Введите 6-значный код"),
+      );
 
     setIsLoading(true);
     setErrorText("");
@@ -54,7 +57,9 @@ export const OtpVerification = ({ email, onBack, onSuccess }: Props) => {
       // 🔥 БОЛЬШЕ НЕТ DISPATCH ЗДЕСЬ! Передаем наверх
       onSuccess(user, access_token);
     } catch (error: any) {
-      setErrorText(error.response?.data?.message || "Неверный код");
+      setErrorText(
+        error.response?.data?.message || t("auth.invalid_code", "Неверный код"),
+      );
     } finally {
       setIsLoading(false);
     }
@@ -65,9 +70,12 @@ export const OtpVerification = ({ email, onBack, onSuccess }: Props) => {
     setErrorText("");
     try {
       await axiosInstance.post("/auth/resend-otp", { email });
-      alert("Новый код отправлен на вашу почту!");
+      alert(t("auth.new_code_sent", "Новый код отправлен на вашу почту!"));
     } catch (error: any) {
-      setErrorText(error.response?.data?.message || "Ошибка отправки кода");
+      setErrorText(
+        error.response?.data?.message ||
+          t("auth.send_code_error", "Ошибка отправки кода"),
+      );
     } finally {
       setIsResending(false);
     }
@@ -85,10 +93,10 @@ export const OtpVerification = ({ email, onBack, onSuccess }: Props) => {
 
       <View style={styles.content}>
         <Text style={[styles.title, { color: colors.textPrimary }]}>
-          Проверьте почту
+          {t("auth.check_email", "Проверьте почту")}
         </Text>
         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-          Мы отправили 6-значный код на{"\n"}
+          {t("auth.code_sent_to", "Мы отправили 6-значный код на\n")}
           <Text style={{ fontWeight: "bold", color: colors.textPrimary }}>
             {email}
           </Text>
@@ -123,7 +131,9 @@ export const OtpVerification = ({ email, onBack, onSuccess }: Props) => {
           {isLoading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.submitBtnText}>Подтвердить</Text>
+            <Text style={styles.submitBtnText}>
+              {t("auth.confirm_button", "Подтвердить")}
+            </Text>
           )}
         </TouchableOpacity>
 
@@ -136,7 +146,7 @@ export const OtpVerification = ({ email, onBack, onSuccess }: Props) => {
             <ActivityIndicator color={colors.accent} size="small" />
           ) : (
             <Text style={[styles.resendText, { color: colors.accent }]}>
-              Отправить код снова
+              {t("auth.resend_code", "Отправить код снова")}
             </Text>
           )}
         </TouchableOpacity>

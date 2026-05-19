@@ -1,7 +1,8 @@
-import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
+import { Ionicons } from "@expo/vector-icons";
+import React from "react";
+import { useTranslation } from "react-i18next";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 interface Props {
   currentDate: Date;
@@ -10,11 +11,12 @@ interface Props {
 
 export const MonthSelector = ({ currentDate, onChangeMonth }: Props) => {
   const colors = useAppColors();
+  const { t, i18n } = useTranslation();
 
   // Форматируем: "Май 2026"
-  const monthName = new Intl.DateTimeFormat("ru-RU", { month: "long" }).format(
-    currentDate,
-  );
+  const monthName = new Intl.DateTimeFormat(i18n.language || "ru", {
+    month: "long",
+  }).format(currentDate);
   const formattedDate = `${monthName.charAt(0).toUpperCase() + monthName.slice(1)} ${currentDate.getFullYear()}`;
 
   // Проверка: не даем листать в будущее (позже текущего месяца)

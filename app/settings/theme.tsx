@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { Stack } from "expo-router";
+import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
-  View,
+  Appearance,
+  StyleSheet,
   Text,
   TouchableOpacity,
-  StyleSheet,
-  Appearance,
+  View,
 } from "react-native";
-import { Stack } from "expo-router";
-import { useTranslation } from "react-i18next";
-import { Ionicons } from "@expo/vector-icons";
 
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { storage } from "@/src/utils/storage";
@@ -53,7 +53,7 @@ export default function ThemeScreen() {
         options={{
           headerShown: true,
           title: t("settings.theme", "Оформление"),
-          headerBackTitle: t("back", "Назад"),
+          headerBackTitle: t("common.back", "Назад"),
           headerShadowVisible: false,
           headerStyle: { backgroundColor: colors.surface },
           headerTintColor: colors.textPrimary,

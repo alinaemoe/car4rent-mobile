@@ -41,7 +41,7 @@ export const CarDiscounts: React.FC<CarDiscountsProps> = ({
         <Text
           style={{ color: colors.textPrimary, fontSize: 15, fontWeight: "600" }}
         >
-          {pricePerDay} ₽{" "}
+          {pricePerDay} Br{" "}
           <Text style={{ color: colors.textSecondary, fontWeight: "400" }}>
             {t("car_detail.per_day", "/ сутки")}
           </Text>
@@ -90,7 +90,7 @@ export const CarDiscounts: React.FC<CarDiscountsProps> = ({
                   fontWeight: "600",
                 }}
               >
-                {discPrice} ₽{" "}
+                {discPrice} Br{" "}
                 <Text
                   style={{ color: colors.textSecondary, fontWeight: "400" }}
                 >

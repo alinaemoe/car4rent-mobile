@@ -1,15 +1,16 @@
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
-  View,
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  ActivityIndicator,
-  StyleSheet,
-  ScrollView,
+  View,
 } from "react-native";
-import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
 
 import { axiosInstance } from "@/src/api/axios-instance";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
@@ -22,6 +23,7 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const LoginForm = () => {
   const colors = useAppColors();
+  const { t } = useTranslation();
   const router = useRouter();
   const dispatch = useAppDispatch();
 
@@ -36,13 +38,16 @@ export const LoginForm = () => {
 
     const trimmedEmail = email.trim();
     if (!trimmedEmail || !password) {
-      return setErrorText("Введите email и пароль");
+      return setErrorText(
+        t("auth.enter_email_password", "Введите email и пароль"),
+      );
     }
 
     if (!EMAIL_REGEX.test(trimmedEmail)) {
-      return setErrorText("Введите корректный email");
+      return setErrorText(
+        t("auth.enter_valid_email", "Введите корректный email"),
+      );
     }
-
     setIsLoading(true);
 
     try {
@@ -58,7 +63,10 @@ export const LoginForm = () => {
       console.log("✅ PROFILE DATA:", JSON.stringify(profileRes.data, null, 2));
       dispatch(setCredentials({ user: profileRes.data, token: access_token }));
     } catch (error: any) {
-      setErrorText(error.response?.data?.message || "Ошибка авторизации");
+      setErrorText(
+        error.response?.data?.message ||
+          t("auth.login_error", "Ошибка авторизации"),
+      );
     } finally {
       setIsLoading(false);
     }
@@ -76,9 +84,11 @@ export const LoginForm = () => {
       keyboardShouldPersistTaps="handled"
     >
       <View style={styles.header}>
-        <Text style={[styles.title, { color: colors.textPrimary }]}>Вход</Text>
+        <Text style={[styles.title, { color: colors.textPrimary }]}>
+          {t("auth.login_title", "Вход")}
+        </Text>
         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-          Рады видеть вас снова
+          {t("auth.welcome_back", "Рады видеть вас снова")}
         </Text>
       </View>
 
@@ -102,7 +112,7 @@ export const LoginForm = () => {
         />
         <TextInput
           style={[styles.input, { color: colors.textPrimary }]}
-          placeholder="Email"
+          placeholder={t("auth.email_placeholder", "Email")}
           placeholderTextColor={colors.border}
           keyboardType="email-address"
           autoCapitalize="none"
@@ -126,7 +136,7 @@ export const LoginForm = () => {
         />
         <TextInput
           style={[styles.input, { color: colors.textPrimary }]}
-          placeholder="Пароль"
+          placeholder={t("auth.password_placeholder", "Пароль")}
           placeholderTextColor={colors.border}
           secureTextEntry={!showPassword}
           autoCapitalize="none"
@@ -147,7 +157,7 @@ export const LoginForm = () => {
 
       <TouchableOpacity style={styles.forgotBtn}>
         <Text style={[styles.forgotText, { color: colors.accent }]}>
-          Забыли пароль?
+          {t("auth.forgot_password", "Забыли пароль?")}
         </Text>
       </TouchableOpacity>
 
@@ -159,7 +169,9 @@ export const LoginForm = () => {
         {isLoading ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <Text style={styles.submitBtnText}>Войти</Text>
+          <Text style={styles.submitBtnText}>
+            {t("auth.login_button", "Войти")}
+          </Text>
         )}
       </TouchableOpacity>
 
@@ -167,20 +179,20 @@ export const LoginForm = () => {
       <View style={styles.footer}>
         <View style={styles.footerLinkRow}>
           <Text style={{ color: colors.textSecondary, fontSize: 15 }}>
-            Нет аккаунта?{" "}
+            {t("auth.no_account", "Нет аккаунта? ")}
           </Text>
           <TouchableOpacity onPress={() => router.replace("/(auth)/register")}>
             <Text
               style={{ color: colors.accent, fontSize: 15, fontWeight: "bold" }}
             >
-              Зарегистрироваться
+              {t("auth.register_link", "Зарегистрироваться")}
             </Text>
           </TouchableOpacity>
         </View>
 
         <TouchableOpacity onPress={handleGuestLogin} style={styles.guestBtn}>
           <Text style={{ color: colors.textSecondary, fontSize: 14 }}>
-            Продолжить как гость
+            {t("auth.continue_as_guest", "Продолжить как гость")}
           </Text>
         </TouchableOpacity>
       </View>

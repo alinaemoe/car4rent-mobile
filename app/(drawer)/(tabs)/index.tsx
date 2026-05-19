@@ -1,35 +1,35 @@
-import React, { useRef, useState, useEffect } from "react";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
-  View,
-  FlatList,
   ActivityIndicator,
+  FlatList,
   RefreshControl,
   Text,
+  View,
 } from "react-native";
-import { useTranslation } from "react-i18next";
-import { BottomSheetModal } from "@gorhom/bottom-sheet";
-import { Ionicons } from "@expo/vector-icons";
 
 // Хуки и Стор
-import { useAppColors } from "@/src/hooks/use-color-scheme.web";
-import { useAppSelector, useAppDispatch } from "@/src/store";
-import { applyFilters } from "@/src/store/slices/filtersSlice";
-import { selectFavoriteCarIds } from "@/src/store/slices/favoritesSlice";
 import { useCarsCatalog } from "@/src/api/queries/useCars";
+import { useAppColors } from "@/src/hooks/use-color-scheme.web";
+import { useAppDispatch, useAppSelector } from "@/src/store";
+import { selectFavoriteCarIds } from "@/src/store/slices/favoritesSlice";
+import { applyFilters } from "@/src/store/slices/filtersSlice";
 
 // Компоненты UI (глобальные и локальные)
 import { CarCard } from "@/src/components/CarCard";
 import { FiltersModal } from "@/src/components/FiltersModal";
+import { CatalogMap } from "@/src/screens/CarDetail/components/CatalogMap";
 import { CatalogHeader } from "@/src/screens/Catalog/components/CatalogHeader";
 import { CatalogListHeader } from "@/src/screens/Catalog/components/CatalogListHeader";
 import { MapFab } from "@/src/screens/Catalog/components/MapFab";
-import { CatalogMap } from "@/src/screens/CarDetail/components/CatalogMap";
 
 // Модалки
 import { CalendarSheet } from "@/src/screens/Catalog/modals/CalendarSheet";
-import { SortSheet } from "@/src/screens/Catalog/modals/SortSheet";
 import { QuickFilterSheet } from "@/src/screens/Catalog/modals/QuickFilterSheet";
+import { SortSheet } from "@/src/screens/Catalog/modals/SortSheet";
 
 export default function CatalogScreen() {
   const router = useRouter();
@@ -255,7 +255,7 @@ export default function CatalogScreen() {
               textAlign: "center",
             }}
           >
-            Нет избранных машин
+            {t("catalog.empty_favorites_title", "Нет избранных машин")}
           </Text>
           <Text
             style={{
@@ -265,8 +265,10 @@ export default function CatalogScreen() {
               lineHeight: 22,
             }}
           >
-            Вы еще ничего не добавили в избранное. Нажимайте на сердечко у
-            понравившихся автомобилей.
+            {t(
+              "catalog.empty_favorites_desc",
+              "Вы еще ничего не добавили в избранное. Нажимайте на сердечко у понравившихся автомобилей.",
+            )}
           </Text>
         </View>
       );
@@ -281,7 +283,7 @@ export default function CatalogScreen() {
           fontSize: 16,
         }}
       >
-        {t("catalog_empty", "Машины не найдены")}
+        {t("catalog.empty_search", "Машины не найдены")}
       </Text>
     );
   };

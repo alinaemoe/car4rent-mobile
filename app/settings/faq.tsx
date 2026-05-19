@@ -1,8 +1,8 @@
-import React from "react";
-import { Stack } from "expo-router";
-import { useTranslation } from "react-i18next";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import FaqScreen from "@/src/screens/Profile/FaqScreen";
+import { Stack } from "expo-router";
+import React from "react";
+import { useTranslation } from "react-i18next";
 
 export default function FaqPage() {
   const colors = useAppColors();
@@ -14,7 +14,7 @@ export default function FaqPage() {
         options={{
           headerShown: true,
           title: t("faq.header", "FAQ"),
-          headerBackTitle: t("back", "Назад"),
+          headerBackTitle: t("common.back", "Назад"),
           headerShadowVisible: false,
           headerStyle: { backgroundColor: colors.background },
           headerTintColor: colors.textPrimary,

@@ -36,10 +36,15 @@ const queryClient = new QueryClient({
 function AppContent() {
   const dispatch = useAppDispatch();
   const { isAppReady, token, isGuest } = useAppSelector((state) => state.auth);
+
+  // 👇 1. ДОБАВЛЯЕМ СЕЛЕКТОР ДЛЯ ЗАЩИТЫ: следим за словарями
+  const { features } = useAppSelector((state) => state.dictionaries);
+
   const colors = useAppColors();
   const segments = useSegments();
   const router = useRouter();
 
+  // --- ЭФФЕКТ 1: ПЕРВИЧНАЯ ИНИЦИАЛИЗАЦИЯ (срабатывает 1 раз при запуске) ---
   useEffect(() => {
     const initApp = async () => {
       try {
@@ -65,19 +70,37 @@ function AppContent() {
         await storage.removeTokens();
       } finally {
         dispatch(setAppReady());
-        SplashScreen.hideAsync();
+
+        // Таймер на 3 секунды для красивого сплэша
+        setTimeout(async () => {
+          await SplashScreen.hideAsync();
+        }, 3000);
       }
     };
     initApp();
   }, [dispatch]);
 
+  // 👇 --- ЭФФЕКТ 2: ЗАЩИТА СЛОВАРЕЙ (Самовосстановление) --- 👇
+  useEffect(() => {
+    // Если приложение загрузилось, мы внутри (как юзер или гость), а словарей НЕТ:
+    if (isAppReady && (token || isGuest) && features.length === 0) {
+      console.log(
+        "🛠 Защита сработала: словари пустые после логина! Докачиваем...",
+      );
+      dispatch(fetchDictionaries());
+    }
+  }, [isAppReady, token, isGuest, features.length, dispatch]);
+
+  // --- ЭФФЕКТ 3: РОУТИНГ (переброс на нужный экран) ---
   useEffect(() => {
     if (!isAppReady) return;
     const inAuthGroup = (segments[0] as string) === "(auth)";
 
     if (!token && !isGuest && !inAuthGroup) {
+      // Нет ни токена, ни гостя -> на логин
       router.replace("/login");
     } else if ((token || isGuest) && inAuthGroup) {
+      // Есть токен или гость, но мы на экране логина -> в каталог
       router.replace("/(drawer)/(tabs)");
     }
   }, [token, isGuest, isAppReady, segments]);

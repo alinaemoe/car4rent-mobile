@@ -1,18 +1,18 @@
+import { useAppColors } from "@/src/hooks/use-color-scheme.web";
+import { useAppDispatch, useAppSelector } from "@/src/store";
+import { applyFilters, FiltersState } from "@/src/store/slices/filtersSlice"; // 👈 не забудь импорт FiltersState
+import { Ionicons } from "@expo/vector-icons";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import {
-  View,
-  Text,
-  TouchableOpacity,
+  Image,
   ScrollView,
   StyleSheet,
-  Image,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useTranslation } from "react-i18next";
-import { useAppColors } from "@/src/hooks/use-color-scheme.web";
-import { QUICK_FILTERS, CAR_CLASSES } from "../constants";
-import { useAppSelector, useAppDispatch } from "@/src/store";
-import { applyFilters, FiltersState } from "@/src/store/slices/filtersSlice"; // 👈 не забудь импорт FiltersState
+import { CAR_CLASSES, QUICK_FILTERS } from "../constants";
 
 interface Props {
   carsCount: number;
@@ -49,26 +49,37 @@ export const CatalogListHeader = ({
     ...(filters.body_types || []).map((v) => ({
       key: "body_types" as const,
       val: v,
-      label: `Кузов: ${t(`body_${v.toLowerCase()}`, v)}`,
+      label: t("filter.body_type_tag", {
+        defaultValue: `Кузов: {{val}}`,
+        val: t(`body_${v.toLowerCase()}`, v),
+      }),
     })),
     ...(filters.transmissions || []).map((v) => ({
       key: "transmissions" as const,
       val: v,
-      label: `КПП: ${t(`transmission_${v.toLowerCase()}`, v)}`,
+      label: t("filter.transmission_tag", {
+        defaultValue: `КПП: {{val}}`,
+        val: t(`transmission_${v.toLowerCase()}`, v),
+      }),
     })),
     ...(filters.fuel_types || []).map((v) => ({
       key: "fuel_types" as const,
       val: v,
-      label: `Топливо: ${t(`fuel_${v.toLowerCase()}`, v)}`,
+      label: t("filter.fuel_type_tag", {
+        defaultValue: `Топливо: {{val}}`,
+        val: t(`fuel_${v.toLowerCase()}`, v),
+      }),
     })),
     ...(filters.drive_types || []).map((v) => ({
       key: "drive_types" as const,
       val: v,
-      label: `Привод: ${v}`,
+      label: t("filter.drive_type_tag", {
+        defaultValue: `Привод: {{val}}`,
+        val: v,
+      }),
     })),
   ];
 
-  // Удаление конкретного тега
   // Удаление конкретного тега
   const handleRemoveTag = (key: keyof FiltersState, val: any) => {
     const list = (filters[key] as any[]) || [];

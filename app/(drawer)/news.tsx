@@ -1,23 +1,30 @@
-import { useAppColors } from "@/src/hooks/use-color-scheme.web";
+import React from "react";
+import { Stack } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { Text, View } from "react-native";
+import { DrawerToggleButton } from "@react-navigation/drawer";
+import { useAppColors } from "@/src/hooks/use-color-scheme.web";
+import NewsScreen from "@/src/screens/News/NewsScreen"; // Наш люксовый экран
 
-export default function NewsScreen() {
+export default function NewsPage() {
   const colors = useAppColors();
   const { t } = useTranslation();
 
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: colors.background,
-      }}
-    >
-      <Text style={{ color: colors.textPrimary, fontSize: 20 }}>
-        {t("drawer_news", "Новости")} 📰
-      </Text>
-    </View>
+    <>
+      <Stack.Screen
+        options={{
+          headerShown: true,
+          title: t("drawer_news", "Новости"),
+          headerStyle: { backgroundColor: colors.surface },
+          headerTintColor: colors.textPrimary,
+          headerShadowVisible: false,
+          // Кнопка открытия нашего кастомного Drawer (справа)
+          headerRight: () => (
+            <DrawerToggleButton tintColor={colors.textPrimary} />
+          ),
+        }}
+      />
+      <NewsScreen />
+    </>
   );
 }

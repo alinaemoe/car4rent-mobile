@@ -18,8 +18,9 @@ interface Props {
   onSuccess: (email: string) => void;
 }
 
-// Регулярка для email
+// Регулярки
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_REGEX = /^\+?[\d\s\-()]{7,15}$/;
 
 export const RegisterForm = ({ onSuccess }: Props) => {
   const colors = useAppColors();
@@ -44,6 +45,8 @@ export const RegisterForm = ({ onSuccess }: Props) => {
       return t("auth.enter_first_name", "Введите ваше имя");
     if (!form.last_name.trim())
       return t("auth.enter_last_name", "Введите вашу фамилию");
+    if (form.phone.trim() && !PHONE_REGEX.test(form.phone.trim()))
+      return t("auth.invalid_phone", "Введите корректный номер телефона");
     if (!EMAIL_REGEX.test(form.email.trim()))
       return t("auth.enter_valid_email", "Введите корректный email");
     if (form.password.length < 6)

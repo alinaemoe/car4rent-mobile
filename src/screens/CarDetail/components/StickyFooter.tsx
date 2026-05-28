@@ -56,11 +56,11 @@ export const StickyFooter = ({
     const d1 = new Date(startDate);
     const d2 = new Date(endDate);
 
-    // 🔥 Магия Intl: сам поймет, совпадают ли месяцы, и переведет на нужный язык
-    return new Intl.DateTimeFormat(i18n.language || "ru", {
+    const fmt = new Intl.DateTimeFormat(i18n.language || "ru", {
       day: "numeric",
       month: "long",
-    }).formatRange(d1, d2);
+    });
+    return `${fmt.format(d1)} – ${fmt.format(d2)}`;
   };
 
   return (

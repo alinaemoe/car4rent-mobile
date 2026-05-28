@@ -170,7 +170,7 @@ export const CarReviews: React.FC<CarReviewsProps> = ({
                       marginLeft: 8,
                     }}
                   >
-                    {formatDate(review.createdAt, i18n.language)}
+                    {formatDate(review.created_at, i18n.language)}
                   </Text>
                 </View>
               </View>

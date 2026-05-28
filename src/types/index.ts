@@ -64,7 +64,7 @@ export interface CarReviewPreview {
   id: number;
   rating: number;
   comment: string;
-  createdAt: string;
+  created_at: string;
   userFirstName: string;
   userLastName: string;
   userAvatarUrl?: string;

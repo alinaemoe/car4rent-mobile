@@ -47,7 +47,7 @@ export default function CarDetailScreen() {
   const { startDate, endDate } = useAppSelector((state) => state.filters);
   const isGuest = useAppSelector((state) => state.auth?.isGuest ?? false);
   const isVerified = useAppSelector(
-    (state) => state.auth?.user?.status === "ACTIVE",
+    (state) => state.auth?.user?.is_documents_verified ?? false,
   );
 
   const { data: car, isLoading } = useCarDetail(Number(id));

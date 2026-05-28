@@ -41,11 +41,11 @@ export const CatalogHeader = ({
     if (startDate && endDate) {
       const endD = new Date(endDate);
 
-      // Магия Intl: сам соберет диапазон "30 апр. – 9 мая"
-      const rangeStr = new Intl.DateTimeFormat(i18n.language || "ru", {
+      const fmt = new Intl.DateTimeFormat(i18n.language || "ru", {
         month: "short",
         day: "numeric",
-      }).formatRange(startD, endD);
+      });
+      const rangeStr = `${fmt.format(startD)} – ${fmt.format(endD)}`;
 
       const diffTime = Math.abs(endD.getTime() - startD.getTime());
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));

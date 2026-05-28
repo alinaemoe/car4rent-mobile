@@ -9,15 +9,15 @@ export interface LessorStats {
 export interface TransactionHistoryItem {
   id: number;
   type: string;
-  amount: number;
+  total_amount: number;
   lessor_income: number;
-  payout_status: "PAID" | "PENDING";
+  payout_status: "NOT_APPLICABLE" | "PENDING" | "PAID";
   created_at: string;
   car?: { brand: string; model: string; license_plate: string };
   rental?: {
     start_date: string;
     end_date: string;
-    penalty_price?: number; // 👈 Добавляем это поле!
+    penalty_price?: number;
   };
 }
 

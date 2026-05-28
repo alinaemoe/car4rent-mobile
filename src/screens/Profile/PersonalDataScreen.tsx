@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
+import * as ImagePicker from "expo-image-picker";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -14,43 +15,95 @@ import {
 } from "react-native";
 
 import { Toast } from "@/src/components/Toast";
+import { axiosInstance } from "@/src/api/axios-instance";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
-import { useAppSelector } from "@/src/store";
+import { useAppDispatch, useAppSelector } from "@/src/store";
+import { updateUser } from "@/src/store/slices/authSlice";
 
 export default function PersonalDataScreen() {
   const colors = useAppColors();
   const { t } = useTranslation();
 
+  const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.auth.user);
 
-  // Локальные стейты
   const [firstName, setFirstName] = useState(user?.first_name || "");
   const [lastName, setLastName] = useState(user?.last_name || "");
+  const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
-  // 🔥 ВЫЧИСЛЯЕМ, ЕСТЬ ЛИ ИЗМЕНЕНИЯ (для блокировки кнопки)
   const hasChanges =
     firstName.trim() !== (user?.first_name || "") ||
     lastName.trim() !== (user?.last_name || "");
 
-  const handleAvatarChange = () => {
-    console.log("Открываем ImagePicker...");
-    Toast.info(
-      t("profile.photo_change_title", "Смена фото"),
-      t("profile.photo_change_msg", "Загрузка фото скоро появится!"),
-    );
+  const handleAvatarChange = async () => {
+    if (isUploadingAvatar) return;
+
+    const permission =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) return;
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.8,
+      allowsEditing: true,
+      aspect: [1, 1],
+    });
+
+    if (result.canceled || !result.assets[0]) return;
+
+    setIsUploadingAvatar(true);
+    try {
+      const asset = result.assets[0];
+      const formData = new FormData();
+      formData.append("file", {
+        uri: asset.uri,
+        name: "avatar.jpg",
+        type: "image/jpeg",
+      } as any);
+
+      const res = await axiosInstance.post("/users/profile/avatar", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      dispatch(updateUser(res.data));
+      Toast.success(
+        t("common.success", "Успешно"),
+        t("profile.avatar_updated", "Фото профиля обновлено."),
+      );
+    } catch (error: any) {
+      Toast.error(
+        t("common.error", "Ошибка"),
+        error.response?.data?.message ||
+          t("profile.avatar_upload_error", "Не удалось загрузить фото."),
+      );
+    } finally {
+      setIsUploadingAvatar(false);
+    }
   };
 
-  const handleSave = () => {
-    if (!hasChanges) return;
+  const handleSave = async () => {
+    if (!hasChanges || isSaving) return;
 
-    console.log("Отправка на бэк: PATCH /users/profile", {
-      first_name: firstName.trim(),
-      last_name: lastName.trim(),
-    });
-    Toast.success(
-      t("common.success", "Успешно"),
-      t("profile.update_success", "Ваши данные обновлены."),
-    );
+    setIsSaving(true);
+    try {
+      const res = await axiosInstance.patch("/users/profile", {
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
+      });
+      dispatch(updateUser(res.data));
+      Toast.success(
+        t("common.success", "Успешно"),
+        t("profile.update_success", "Ваши данные обновлены."),
+      );
+    } catch (error: any) {
+      Toast.error(
+        t("common.error", "Ошибка"),
+        error.response?.data?.message ||
+          t("profile.update_error", "Не удалось обновить данные."),
+      );
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const initial = user?.first_name
@@ -69,9 +122,16 @@ export default function PersonalDataScreen() {
       >
         {/* === 1. РОСКОШНЫЙ БЛОК АВАТАРА === */}
         <View style={styles.avatarSection}>
-          <TouchableOpacity onPress={handleAvatarChange} activeOpacity={0.8}>
+          <TouchableOpacity
+            onPress={handleAvatarChange}
+            activeOpacity={0.8}
+            disabled={isUploadingAvatar}
+          >
             <View
-              style={[styles.avatarCircle, { backgroundColor: colors.accent }]}
+              style={[
+                styles.avatarCircle,
+                { backgroundColor: colors.accent, opacity: isUploadingAvatar ? 0.6 : 1 },
+              ]}
             >
               {user?.avatar_url ? (
                 <Image
@@ -252,15 +312,17 @@ export default function PersonalDataScreen() {
             styles.saveButton,
             {
               backgroundColor: colors.accent,
-              opacity: hasChanges ? 1 : 0.4, // 🔥 Делаем кнопку бледной, если нет изменений
+              opacity: hasChanges && !isSaving ? 1 : 0.4,
             },
           ]}
           onPress={handleSave}
           activeOpacity={0.8}
-          disabled={!hasChanges} // 🔥 Физически отключаем клик
+          disabled={!hasChanges || isSaving}
         >
           <Text style={styles.saveButtonText}>
-            {t("common.save", "Сохранить изменения")}
+            {isSaving
+              ? t("common.saving", "Сохранение...")
+              : t("common.save", "Сохранить изменения")}
           </Text>
         </TouchableOpacity>
       </View>

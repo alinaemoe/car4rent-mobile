@@ -67,6 +67,7 @@ export interface CarReviewPreview {
   createdAt: string;
   userFirstName: string;
   userLastName: string;
+  userAvatarUrl?: string;
 }
 
 export interface LocationInfo {

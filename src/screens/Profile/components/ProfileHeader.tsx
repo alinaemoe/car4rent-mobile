@@ -1,5 +1,6 @@
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View } from "react-native";
@@ -15,7 +16,6 @@ export const ProfileHeader = ({ user, isGuest }: Props) => {
   const colors = useAppColors();
   const { t } = useTranslation();
 
-  // Достаем первые буквы имени и фамилии для аватара
   const initials =
     !isGuest && user
       ? `${user.first_name?.[0] || ""}${user.last_name?.[0] || ""}`.toUpperCase()
@@ -26,6 +26,13 @@ export const ProfileHeader = ({ user, isGuest }: Props) => {
       <View style={[styles.avatar, { backgroundColor: colors.surface }]}>
         {isGuest ? (
           <Ionicons name="person" size={40} color={colors.textSecondary} />
+        ) : user?.avatar_url ? (
+          <Image
+            source={{ uri: user.avatar_url }}
+            style={styles.avatarImage}
+            contentFit="cover"
+            transition={200}
+          />
         ) : (
           <Text style={[styles.avatarText, { color: colors.accent }]}>
             {initials}
@@ -61,6 +68,11 @@ const styles = StyleSheet.create({
     borderRadius: 36,
     justifyContent: "center",
     alignItems: "center",
+  },
+  avatarImage: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
   },
   avatarText: {
     fontSize: 28,

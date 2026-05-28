@@ -1,7 +1,8 @@
-import { Skeleton } from "@/src/components/common/Skeleton"; // 👈 Твои шикарные скелетоны
+import { Skeleton } from "@/src/components/common/Skeleton";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { CarReviewPreview } from "@/src/types";
 import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -129,11 +130,20 @@ export const CarReviews: React.FC<CarReviewsProps> = ({
               }}
             >
               <View style={[styles.avatar, { backgroundColor: colors.accent }]}>
-                <Text
-                  style={{ color: "#fff", fontWeight: "bold", fontSize: 18 }}
-                >
-                  {initial}
-                </Text>
+                {review.userAvatarUrl ? (
+                  <Image
+                    source={{ uri: review.userAvatarUrl }}
+                    style={styles.avatarImage}
+                    contentFit="cover"
+                    transition={200}
+                  />
+                ) : (
+                  <Text
+                    style={{ color: "#fff", fontWeight: "bold", fontSize: 18 }}
+                  >
+                    {initial}
+                  </Text>
+                )}
               </View>
               <View style={{ flex: 1 }}>
                 <Text
@@ -235,5 +245,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
+  },
+  avatarImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
   },
 });

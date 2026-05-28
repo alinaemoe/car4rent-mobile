@@ -15,11 +15,19 @@ import {
 } from "react-native";
 
 import { Toast } from "@/src/components/Toast";
+import { axiosInstance } from "@/src/api/axios-instance";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
+import { useAppDispatch } from "@/src/store";
+import { logout } from "@/src/store/slices/authSlice";
+import { storage } from "@/src/utils/storage";
 
 export default function SecurityScreen() {
   const colors = useAppColors();
   const { t } = useTranslation();
+  const dispatch = useAppDispatch();
+
+  const [isTerminating, setIsTerminating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Стейт для полноэкранной модалки
   const [isPasswordModalVisible, setPasswordModalVisible] = useState(false);
@@ -69,14 +77,36 @@ export default function SecurityScreen() {
         "Вы выйдете из аккаунта на всех остальных устройствах, кроме этого.",
       ),
       [
+        { text: t("common.cancel", "Отмена"), style: "cancel" },
         {
           text: t("common.terminate", "Завершить"),
           style: "destructive",
-          onPress: () =>
-            Toast.success(
-              t("security.sessions_terminated", "Сеансы завершены"),
-              t("security.logged_out_others", "Вы вышли с других устройств."),
-            ),
+          onPress: async () => {
+            if (isTerminating) return;
+            setIsTerminating(true);
+            try {
+              const res = await axiosInstance.post("/auth/terminate-sessions");
+              await storage.setTokens(
+                res.data.access_token,
+                res.data.refresh_token,
+              );
+              Toast.success(
+                t("security.sessions_terminated", "Сеансы завершены"),
+                t(
+                  "security.logged_out_others",
+                  "Вы вышли с других устройств.",
+                ),
+              );
+            } catch (error: any) {
+              Toast.error(
+                t("common.error", "Ошибка"),
+                error.response?.data?.message ||
+                  t("security.terminate_error", "Не удалось завершить сеансы."),
+              );
+            } finally {
+              setIsTerminating(false);
+            }
+          },
         },
       ],
     );
@@ -90,14 +120,31 @@ export default function SecurityScreen() {
         "Это действие необратимо. Ваши данные будут скрыты из системы. Продолжить?",
       ),
       [
+        { text: t("common.cancel", "Отмена"), style: "cancel" },
         {
           text: t("common.delete", "Удалить"),
           style: "destructive",
-          onPress: () =>
-            Toast.error(
-              t("security.account_deleted", "Аккаунт удален"),
-              t("security.miss_you", "Жаль с вами расставаться 😢"),
-            ),
+          onPress: async () => {
+            if (isDeleting) return;
+            setIsDeleting(true);
+            try {
+              await axiosInstance.post("/auth/deactivate-account");
+              await storage.removeTokens();
+              dispatch(logout());
+              Toast.error(
+                t("security.account_deleted", "Аккаунт удален"),
+                t("security.miss_you", "Жаль с вами расставаться 😢"),
+              );
+            } catch (error: any) {
+              Toast.error(
+                t("common.error", "Ошибка"),
+                error.response?.data?.message ||
+                  t("security.delete_error", "Не удалось удалить аккаунт."),
+              );
+            } finally {
+              setIsDeleting(false);
+            }
+          },
         },
       ],
     );

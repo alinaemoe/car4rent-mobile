@@ -16,6 +16,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 
 import { axiosInstance } from "@/src/api/axios-instance";
+import { Toast } from "@/src/components/Toast";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { UserDocument, DocType } from "@/src/types";
 
@@ -71,8 +72,13 @@ export default function UploadDocsScreen() {
       });
 
       await fetchMyDocs();
+
+      Toast.success(
+        t("docs.upload_success", "Документ загружен"),
+        t("docs.upload_success_msg", "Ожидайте проверки менеджером"),
+      );
     } catch (error: any) {
-      Alert.alert(
+      Toast.error(
         t("common.error", "Ошибка"),
         error.response?.data?.message ||
           t("docs.upload_error", "Не удалось отправить документ на сервер."),

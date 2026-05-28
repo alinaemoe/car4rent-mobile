@@ -229,7 +229,7 @@ export default function SecurityScreen() {
                   style={[styles.actionTitle, { color: colors.textPrimary }]}
                   numberOfLines={1}
                 >
-                  iPhone 14 Pro
+                  {t("security.this_device", "Это устройство")}
                 </Text>
                 <View style={styles.sessionStatus}>
                   <View
@@ -242,10 +242,7 @@ export default function SecurityScreen() {
                     style={[styles.actionSubtitle, { color: colors.success }]}
                     numberOfLines={1}
                   >
-                    {t(
-                      "security.current_session",
-                      "Текущее устройство · Москва",
-                    )}
+                    {t("security.current_session", "Текущее устройство")}
                   </Text>
                 </View>
               </View>
@@ -268,7 +265,7 @@ export default function SecurityScreen() {
                   style={[styles.actionTitle, { color: colors.textPrimary }]}
                   numberOfLines={1}
                 >
-                  MacBook Air (Web)
+                  {t("security.other_device", "Другое устройство")}
                 </Text>
                 <Text
                   style={[
@@ -277,7 +274,7 @@ export default function SecurityScreen() {
                   ]}
                   numberOfLines={1}
                 >
-                  {t("security.last_active", "12 мая · Санкт-Петербург")}
+                  {t("security.inactive_label", "Неактивно")}
                 </Text>
               </View>
             </View>

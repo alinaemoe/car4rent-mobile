@@ -63,7 +63,33 @@ export default function CheckoutScreen() {
       return;
     }
 
-    // 2. Отправляем запрос
+    // 2. Валидация дат на клиенте
+    if (!startDate || !endDate) {
+      Toast.error(
+        t("checkout.no_dates", "Даты не выбраны"),
+        t("checkout.no_dates_msg", "Пожалуйста, выберите даты аренды"),
+      );
+      return;
+    }
+    if (new Date(startDate) <= new Date(new Date().toDateString())) {
+      Toast.error(
+        t("checkout.past_date", "Дата в прошлом"),
+        t("checkout.past_date_msg", "Дата начала должна быть в будущем"),
+      );
+      return;
+    }
+    if (new Date(endDate) <= new Date(startDate)) {
+      Toast.error(
+        t("checkout.bad_range", "Некорректный диапазон"),
+        t(
+          "checkout.bad_range_msg",
+          "Дата окончания должна быть позже даты начала",
+        ),
+      );
+      return;
+    }
+
+    // 3. Отправляем запрос
     setIsSubmitting(true);
     try {
       await axiosInstance.post("/rentals", {
@@ -73,7 +99,7 @@ export default function CheckoutScreen() {
         // Бэкенд пока не принимает destination, но мы можем добавить его позже в DTO
       });
 
-      // 3. Успех! Очищаем выбранные даты, чтобы каталог был чистым
+      // 4. Успех! Очищаем выбранные даты, чтобы каталог был чистым
       dispatch(applyFilters({ startDate: null, endDate: null }));
 
       Toast.success(
@@ -81,10 +107,10 @@ export default function CheckoutScreen() {
         t("checkout.toast_success_msg", "Ваш запрос отправлен владельцу."),
       );
 
-      // 4. Редирект на экран успеха
+      // 6. Редирект на экран успеха
       router.replace("/checkout/success");
     } catch (error: any) {
-      // 5. Обработка ошибки (помимо глобального интерсептора)
+      // Обработка ошибки (помимо глобального интерсептора)
       Toast.error(
         t("checkout.toast_error_title", "Не удалось забронировать"),
         error.response?.data?.message || "Пожалуйста, попробуйте еще раз.",

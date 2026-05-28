@@ -31,6 +31,7 @@ import {
   PartnershipRequest,
 } from "@/src/api/queries/usePartnershipRequests";
 import { useLessorStats } from "@/src/api/queries/useLessorFinances";
+import { Toast } from "@/src/components/Toast";
 
 // Компоненты
 import { FinancialWidget } from "./components/FinancialWidget";
@@ -84,7 +85,22 @@ export default function MyFleetScreen() {
 
   const handleToggleCar = (carId: number, isVisible: boolean) =>
     toggleVisibility({ carId, isVisible });
-  const handleDeleteRequest = (requestId: number) => deleteRequest(requestId);
+  const handleDeleteRequest = (requestId: number) =>
+    deleteRequest(requestId, {
+      onSuccess: () =>
+        Toast.success(
+          t("fleet.request_deleted", "Заявка удалена"),
+          t(
+            "fleet.request_deleted_msg",
+            "Вы можете подать новую заявку в любой момент",
+          ),
+        ),
+      onError: (error: any) =>
+        Toast.error(
+          t("common.error", "Ошибка"),
+          error.response?.data?.message,
+        ),
+    });
   const handleFabPress = () => router.push("/partner-request");
 
   // 👇 Хендлеры для Свайпов и Табов

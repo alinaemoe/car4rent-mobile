@@ -97,8 +97,8 @@ export interface Car {
   drive_type: DriveType;
 
   // 👇 НОВЫЕ ХАРАКТЕРИСТИКИ С БЭКЕНДА
-  horsepower: number;
-  fuel_consumption: number;
+  horsepower: number | null;
+  fuel_consumption: number | null;
   reviews_count?: number; // Количество отзывов (считается на лету)
   avg_rating?: number; // Средний рейтинг (добавим позже)
   booked_dates?: { startDate: string; endDate: string }[];

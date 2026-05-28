@@ -19,7 +19,11 @@ export const CarSpecs: React.FC<CarSpecsProps> = ({ car }) => {
       </Text>
       <CarSpecRow
         label={t("car_detail.engine", "Двигатель")}
-        value={`${car.fuel_type}, ${car.horsepower} ${t("car_detail.hp", "л.с.")}`}
+        value={
+          car.horsepower != null
+            ? `${car.fuel_type}, ${car.horsepower} ${t("car_detail.hp", "л.с.")}`
+            : car.fuel_type
+        }
       />
       <CarSpecRow
         label={t("car_detail.drive_type", "Привод")}

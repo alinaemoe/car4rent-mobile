@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
   Dimensions,
   ScrollView,
+  Platform,
+  useColorScheme,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -25,6 +27,8 @@ export default function NewsDetailScreen() {
   const insets = useSafeAreaInsets();
   const { t, i18n } = useTranslation();
   const currentLang = i18n.language as "ru" | "en";
+  const theme = useColorScheme();
+  const isDark = theme === "dark";
 
   const { data: newsList } = useNews();
 
@@ -115,9 +119,11 @@ export default function NewsDetailScreen() {
         style={[
           styles.bottomNavContainer,
           {
-            backgroundColor: colors.surface,
-            borderTopColor: colors.border,
-            paddingBottom: Math.max(insets.bottom, 16),
+            backgroundColor: colors.background,
+            shadowColor: isDark ? "#979797" : "#000000",
+            shadowOpacity: isDark ? 0.01 : 0.08,
+            borderTopColor: "transparent",
+            paddingBottom: Platform.OS === "ios" ? 32 : 18,
           },
         ]}
       >
@@ -239,25 +245,24 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 16,
-    paddingTop: 16,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    // Тень, чтобы бар не сливался с текстом при скролле
-    shadowColor: "#000",
+    paddingTop: 14,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    elevation: 15,
     shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 10,
+    shadowRadius: 12,
   },
   navButton: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    minWidth: 100, // Чтобы кнопки были примерно одного размера
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    minWidth: 100,
   },
   navButtonText: {
     fontSize: 16,
     fontWeight: "600",
-    marginHorizontal: 4,
+    marginHorizontal: 6,
   },
 });

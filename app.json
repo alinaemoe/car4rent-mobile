@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "car4rent-mobile",
-    "slug": "car4rent-mobile",
+    "name": "car4rent",
+    "slug": "car4rent",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -14,9 +14,7 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "foregroundImage": "./assets/images/adaptive-icon.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
@@ -32,12 +30,12 @@
         "expo-splash-screen",
         {
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 250,
+          "backgroundColor": "#0d1b2a",
+          "imageWidth": 120,
           "resizeMode": "contain",
-          "backgroundColor": "#121212",
           "dark": {
             "image": "./assets/images/splash-icon.png",
-            "backgroundColor": "#000000"
+            "backgroundColor": "#0d1b2a"
           }
         }
       ],

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useCallback, useState, useRef } from "react";
 import {
   View,
   ScrollView,
@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter, Href } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
@@ -14,6 +15,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { useAppSelector, useAppDispatch } from "@/src/store";
 import { applyFilters } from "@/src/store/slices/filtersSlice";
+import { updateUser } from "@/src/store/slices/authSlice";
 import { useCarDetail } from "@/src/api/queries/useCars";
 import { usePriceCalculator } from "@/src/hooks/usePriceCalculator";
 import { axiosInstance } from "@/src/api/axios-instance";
@@ -45,6 +47,24 @@ export default function CheckoutScreen() {
 
   // Реф для шторки верификации
   const verificationSheetRef = useRef<BottomSheetModal>(null);
+
+  // Авто-обновление статуса верификации при возврате с экрана загрузки доков
+  useFocusEffect(
+    useCallback(() => {
+      if (!isDocumentsVerified) {
+        axiosInstance
+          .get("/users/profile")
+          .then((res) => {
+            dispatch(updateUser(res.data));
+            // Если документы уже верифицированы — закрываем шторку
+            if (res.data.is_documents_verified) {
+              verificationSheetRef.current?.dismiss();
+            }
+          })
+          .catch(() => {});
+      }
+    }, [isDocumentsVerified, dispatch]),
+  );
 
   const {
     days,

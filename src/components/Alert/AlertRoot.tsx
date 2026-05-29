@@ -21,6 +21,7 @@ export const AlertRoot = () => {
   const [alert, setAlert] = useState<AlertOptions | null>(null);
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
+  const isHidingRef = useRef(false);
 
   useEffect(() => {
     AlertDialog.setListener(showAlert);
@@ -31,6 +32,7 @@ export const AlertRoot = () => {
   }, []);
 
   const showAlert = (options: AlertOptions) => {
+    isHidingRef.current = false;
     setAlert(options);
     scaleAnim.setValue(0.8);
     opacityAnim.setValue(0);
@@ -51,6 +53,7 @@ export const AlertRoot = () => {
   };
 
   const hideAlert = () => {
+    isHidingRef.current = true;
     Animated.parallel([
       Animated.timing(scaleAnim, {
         toValue: 0.8,
@@ -63,7 +66,9 @@ export const AlertRoot = () => {
         useNativeDriver: true,
       }),
     ]).start(() => {
-      setAlert(null);
+      if (isHidingRef.current) {
+        setAlert(null);
+      }
     });
   };
 

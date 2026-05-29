@@ -6,7 +6,6 @@ import {
   StyleSheet,
   ScrollView,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -17,6 +16,7 @@ import { useTranslation } from "react-i18next";
 
 import { axiosInstance } from "@/src/api/axios-instance";
 import { Toast } from "@/src/components/Toast";
+import { AlertDialog } from "@/src/components/Alert";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { UserDocument, DocType } from "@/src/types";
 
@@ -91,7 +91,7 @@ export default function UploadDocsScreen() {
   const openCamera = async (type: DocType) => {
     const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
     if (!permissionResult.granted) {
-      return Alert.alert(
+      return AlertDialog.alert(
         t("common.error", "Ошибка"),
         t("docs.camera_permission", "Необходим доступ к камере."),
       );
@@ -107,7 +107,7 @@ export default function UploadDocsScreen() {
     const permissionResult =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permissionResult.granted) {
-      return Alert.alert(
+      return AlertDialog.alert(
         t("common.error", "Ошибка"),
         t("docs.gallery_permission", "Необходим доступ к галерее."),
       );
@@ -120,7 +120,7 @@ export default function UploadDocsScreen() {
   };
 
   const handleUploadSelection = (type: DocType) => {
-    Alert.alert(
+    AlertDialog.alert(
       t("docs.select_source_title", "Загрузить фото"),
       t("docs.select_source_msg", "Выберите источник фотографии"),
       [
@@ -137,7 +137,7 @@ export default function UploadDocsScreen() {
 
   // 🔥 ТОТ САМЫЙ ALERT ПЕРЕД ОБНОВЛЕНИЕМ ВЕРИФИЦИРОВАННОГО ДОКУМЕНТА
   const handleUpdateVerifiedDoc = (type: DocType) => {
-    Alert.alert(
+    AlertDialog.alert(
       t("docs.warning_title", "Внимание!"),
       t(
         "docs.warning_msg",

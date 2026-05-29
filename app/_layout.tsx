@@ -26,6 +26,7 @@ import { fetchAndCacheTranslations } from "@/src/api/translations";
 import { axiosInstance } from "../src/api/axios-instance";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { ToastRoot } from "@/src/components/Toast";
+import { AlertRoot } from "@/src/components/Alert";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -150,6 +151,7 @@ export default function RootLayout() {
             <QueryClientProvider client={queryClient}>
               <AppContent />
               <ToastRoot />
+              <AlertRoot />
             </QueryClientProvider>
           </Provider>
         </BottomSheetModalProvider>

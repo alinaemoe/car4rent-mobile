@@ -4,7 +4,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  Alert,
   TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -36,6 +35,7 @@ import { CarHowItWorks } from "./components/CarHowItWorks";
 import { CarFaq } from "./components/CarFaq";
 
 import { Toast } from "@/src/components/Toast";
+import { AlertDialog } from "@/src/components/Alert";
 
 export default function CarDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -246,7 +246,7 @@ export default function CarDetailScreen() {
       return;
     }
     if (isGuest) {
-      Alert.alert(
+      AlertDialog.alert(
         t("car_detail.login_alert_title", "Войдите в аккаунт"),
         t(
           "car_detail.login_alert_msg",
@@ -263,7 +263,7 @@ export default function CarDetailScreen() {
       return;
     }
     if (!isVerified) {
-      Alert.alert(
+      AlertDialog.alert(
         t("car_detail.docs_alert_title", "Загрузите документы"),
         t(
           "car_detail.docs_alert_msg",

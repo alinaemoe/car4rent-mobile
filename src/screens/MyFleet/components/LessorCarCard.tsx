@@ -3,7 +3,6 @@ import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import {
-  Alert,
   Platform,
   StyleSheet,
   Switch,
@@ -12,6 +11,7 @@ import {
   View,
 } from "react-native";
 
+import { AlertDialog } from "@/src/components/Alert";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 
 // Типизация машины (расширенная для партнера)
@@ -89,7 +89,7 @@ export const LessorCarCard = ({ car, onPress, onToggleVisibility }: Props) => {
 
     if (!newValue) {
       // Если ПРЯЧЕМ машину -> показываем Alert
-      Alert.alert(
+      AlertDialog.alert(
         t("fleet.alert.hide_title", "Снять авто с публикации?"),
         t(
           "fleet.alert.hide_message",

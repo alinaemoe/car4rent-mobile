@@ -15,7 +15,7 @@ import { logout } from "../store/slices/authSlice";
 // const BACKEND_URL = "http://10.0.2.2:3000";
 
 // ВАРИАНТ 3: Для РЕАЛЬНОГО телефона по Wi-Fi (Expo Go)
-const BACKEND_URL = "http://192.168.100.38:3000";
+const BACKEND_URL = "http://192.168.0.132:3000";
 
 // =========================================================================
 

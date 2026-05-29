@@ -5,10 +5,10 @@ import {
   StyleSheet,
   TouchableOpacity,
   Linking,
-  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
+import { AlertDialog } from "@/src/components/Alert";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { Rental } from "@/src/api/queries/useRentals";
 
@@ -37,7 +37,7 @@ export const RentalCardActions = ({
     if (supported) {
       await Linking.openURL(url);
     } else {
-      Alert.alert(
+      AlertDialog.alert(
         t("common.error", "Ошибка"),
         t("rental_actions.call_error", {
           phone: SUPPORT_PHONE,

@@ -2,7 +2,6 @@ import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  Alert,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -15,6 +14,7 @@ import {
 } from "react-native";
 
 import { Toast } from "@/src/components/Toast";
+import { AlertDialog } from "@/src/components/Alert";
 import { axiosInstance } from "@/src/api/axios-instance";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { useAppDispatch } from "@/src/store";
@@ -70,7 +70,7 @@ export default function SecurityScreen() {
   };
 
   const handleTerminateSessions = () => {
-    Alert.alert(
+    AlertDialog.alert(
       t("security.terminate_title", "Завершить другие сеансы?"),
       t(
         "security.terminate_msg",
@@ -113,7 +113,7 @@ export default function SecurityScreen() {
   };
 
   const handleDeleteAccount = () => {
-    Alert.alert(
+    AlertDialog.alert(
       t("security.delete_title", "Удаление аккаунта"),
       t(
         "security.delete_msg",

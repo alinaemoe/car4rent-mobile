@@ -155,7 +155,10 @@ export const LoginForm = () => {
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.forgotBtn}>
+      <TouchableOpacity
+        style={styles.forgotBtn}
+        onPress={() => router.push("/(auth)/forgot-password")}
+      >
         <Text style={[styles.forgotText, { color: colors.accent }]}>
           {t("auth.forgot_password", "Забыли пароль?")}
         </Text>

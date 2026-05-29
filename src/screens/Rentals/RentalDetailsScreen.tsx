@@ -3,7 +3,6 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useMemo } from "react";
 import {
   ActivityIndicator,
-  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,6 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useCancelRental, useMyRentals } from "@/src/api/queries/useRentals";
 import { Toast } from "@/src/components/Toast";
+import { AlertDialog } from "@/src/components/Alert";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { useTranslation } from "react-i18next";
 
@@ -62,7 +62,7 @@ export default function RentalDetailsScreen() {
   }
 
   const handleCancelPress = () => {
-    Alert.alert(
+    AlertDialog.alert(
       t("rental_details.cancel_title", "Отмена бронирования"),
       t(
         "rental_details.cancel_msg",

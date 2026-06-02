@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   ScrollView,
   Image,
   StyleSheet,
+  Dimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
@@ -99,6 +100,22 @@ export const CatalogListHeader = ({
     );
   };
 
+  const categoryScrollRef = useRef<ScrollView>(null);
+  const selectedIdx = CAR_CLASSES.findIndex(
+    (item) => item.minPrice === min_price && item.maxPrice === max_price,
+  );
+
+  useEffect(() => {
+    if (selectedIdx < 0 || !categoryScrollRef.current) return;
+    const cardW = 145;
+    const gap = 14;
+    const padding = 16;
+    const screenW = Dimensions.get("window").width;
+    const offset =
+      padding + selectedIdx * (cardW + gap) - (screenW - cardW) / 2;
+    categoryScrollRef.current.scrollTo({ x: Math.max(0, offset), animated: true });
+  }, [selectedIdx]);
+
   const handleClassSelect = (min: number, max?: number) => {
     if (min_price === min && max_price === max) {
       dispatch(applyFilters({ min_price: undefined, max_price: undefined }));
@@ -106,8 +123,6 @@ export const CatalogListHeader = ({
       dispatch(applyFilters({ min_price: min, max_price: max }));
     }
   };
-
-  // 🔥 ХЕЛПЕР ДЛЯ БЕЗОПАСНОЙ ГЕНЕРАЦИИ ТЕКСТА ЦЕНЫ НА ЛЕТУ
   const renderPriceText = (item: (typeof CAR_CLASSES)[number]) => {
     const currency = t("common.currency_br", "Br");
 
@@ -244,6 +259,7 @@ export const CatalogListHeader = ({
       {/* TABS КЛАССОВ С ЭФФЕКТНЫМ ВЫЛЕТОМ */}
       <View style={{ height: 170, marginTop: 10, marginBottom: 5 }}>
         <ScrollView
+          ref={categoryScrollRef}
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{

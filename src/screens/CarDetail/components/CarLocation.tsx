@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Dimensions,
+  Linking,
   Modal,
   Platform,
   StyleSheet,
@@ -43,6 +44,18 @@ export const CarLocation: React.FC<Props> = ({ location }) => {
   const displayAddress =
     location?.address ||
     t("car_detail.location_stub", "Россия, Москва, Район выдачи авто");
+
+  const openInMapsApp = () => {
+    if (!lat || !lng) return;
+    const label = encodeURIComponent(displayName || "Car4Rent");
+    const url = Platform.select({
+      ios: `maps://app?daddr=${lat},${lng}&q=${label}`,
+      android: `geo:0,0?q=${lat},${lng}(${label})`,
+    });
+    if (url) Linking.openURL(url).catch(() => {
+      Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`);
+    });
+  };
 
   return (
     <>
@@ -155,7 +168,8 @@ export const CarLocation: React.FC<Props> = ({ location }) => {
             style={styles.fsMap}
             initialRegion={region}
             provider={PROVIDER_GOOGLE}
-            showsUserLocation={false}
+            showsUserLocation
+            followsUserLocation={false}
           >
             <Marker
               coordinate={{ latitude: region.latitude, longitude: region.longitude }}
@@ -221,6 +235,20 @@ export const CarLocation: React.FC<Props> = ({ location }) => {
                 </Text>
               </View>
             </View>
+
+            <View style={styles.fsDivider} />
+
+            <TouchableOpacity
+              style={[styles.fsNavBtn, { backgroundColor: colors.accentBg }]}
+              activeOpacity={0.7}
+              onPress={openInMapsApp}
+            >
+              <Ionicons name="navigate-outline" size={18} color={colors.accent} />
+              <Text style={[styles.fsNavBtnText, { color: colors.accent }]}>
+                {t("car_detail.navigate", "Построить маршрут")}
+              </Text>
+              <Ionicons name="chevron-forward" size={16} color={colors.accent} />
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -375,5 +403,22 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
     marginTop: 2,
+  },
+  fsDivider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: "rgba(128,128,128,0.25)",
+    marginVertical: 12,
+  },
+  fsNavBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    borderRadius: 14,
+    gap: 8,
+  },
+  fsNavBtnText: {
+    fontSize: 15,
+    fontWeight: "700",
   },
 });

@@ -383,7 +383,7 @@ export default function CarDetailScreen() {
           descriptionEn={car?.description?.en}
         />
         <CarSpecs car={car} />
-        <CarLocation />
+        <CarLocation location={car.location} />
         <CarRules car={car} />
         <CarReviews
           avgRating={car.avg_rating}

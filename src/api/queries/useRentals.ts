@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "../axios-instance";
+import { LocationInfo } from "@/src/types";
 
 export type RentalStatus =
   | "CREATED"
@@ -27,6 +28,7 @@ export interface Rental {
     year: number;
     license_plate: string;
     images: { url: string; is_main: boolean }[];
+    location?: LocationInfo | null;
   };
 }
 

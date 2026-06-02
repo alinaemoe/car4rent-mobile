@@ -145,8 +145,7 @@ export default function RentalDetailsScreen() {
       >
         <RentalStatusCard rental={rental} />
 
-        {/* Переиспользуем твой готовый блок Карты из CarDetails */}
-        <CarLocation />
+        <CarLocation location={rental.car.location} />
 
         <RentalReceiptCard rental={rental} />
       </ScrollView>

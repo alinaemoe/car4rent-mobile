@@ -60,8 +60,11 @@ export const TransactionCard = ({ transaction }: Props) => {
           >
             <Ionicons name="car-outline" size={18} color={colors.textPrimary} />
           </View>
-          <View>
-            <Text style={[styles.carName, { color: colors.textPrimary }]}>
+          <View style={styles.carTextWrap}>
+            <Text
+              style={[styles.carName, { color: colors.textPrimary }]}
+              numberOfLines={1}
+            >
               {transaction.car
                 ? `${transaction.car.brand} ${transaction.car.model}`
                 : t("finance.unknown_car", "Автомобиль")}
@@ -72,7 +75,10 @@ export const TransactionCard = ({ transaction }: Props) => {
           </View>
         </View>
 
-        <Text style={[styles.totalAmount, { color: colors.textPrimary }]}>
+        <Text
+          style={[styles.totalAmount, { color: colors.textPrimary }]}
+          numberOfLines={1}
+        >
           +{formatMoney(transaction.lessor_income)}
         </Text>
       </View>
@@ -153,10 +159,17 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 12,
+    gap: 12,
   },
   carInfo: {
     flexDirection: "row",
     alignItems: "center",
+    flex: 1,
+    minWidth: 0,
+  },
+  carTextWrap: {
+    flex: 1,
+    minWidth: 0,
   },
   iconBox: {
     width: 36,

@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { ActivityIndicator, ScrollView, StyleSheet, View } from "react-native";
 
 import { axiosInstance } from "@/src/api/axios-instance";
+import { AlertDialog } from "@/src/components/Alert";
 import { Toast } from "@/src/components/Toast";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { useAppDispatch, useAppSelector } from "@/src/store";
@@ -61,20 +62,40 @@ export default function ProfileScreen() {
         await axiosInstance.post("/auth/logout");
       }
     } catch (error: any) {
-      // 3. Игнорируем 401, чтобы не пугать юзера, если токен и так протух
       if (error.response?.status !== 401) {
         console.warn("Logout backend error:", error.message);
       }
     } finally {
-      // 4. Очищаем всё: токены, флаг гостя, а главное — КЭШ React Query
       await storage.removeTokens();
       await storage.setGuestMode(false);
 
-      queryClient.clear(); // 👈 ЭТО САМОЕ ВАЖНОЕ (очистит "Мои машины", "Заявки" и т.д.)
+      queryClient.clear();
 
       dispatch(logout());
       setIsLoggingOut(false);
     }
+  };
+
+  const handleLogoutPress = () => {
+    if (isGuest) {
+      handleLogout();
+      return;
+    }
+    AlertDialog.alert(
+      t("profile.logout_title", "Выход из аккаунта"),
+      t("profile.logout_msg", "Вы уверены, что хотите выйти? Все активные сеансы будут завершены."),
+      [
+        {
+          text: t("profile.logout_cancel", "Отмена"),
+          style: "cancel",
+        },
+        {
+          text: t("profile.logout_confirm", "Выйти"),
+          style: "destructive",
+          onPress: handleLogout,
+        },
+      ],
+    );
   };
 
   const handletoast = async () => {
@@ -216,7 +237,7 @@ export default function ProfileScreen() {
               : t("profile.menu_logout", "Выйти из аккаунта"),
             iconColor: isGuest ? colors.accent : colors.error,
             titleColor: isGuest ? colors.accent : colors.error,
-            onPress: handleLogout,
+            onPress: handleLogoutPress,
             rightComponent: isLoggingOut ? (
               <ActivityIndicator color={colors.error} />
             ) : undefined,

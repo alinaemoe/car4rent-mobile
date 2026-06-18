@@ -11,6 +11,7 @@ import { useLocalSearchParams, useRouter, Href } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { Ionicons } from "@expo/vector-icons";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { useAppSelector, useAppDispatch } from "@/src/store";
@@ -34,6 +35,7 @@ export default function CheckoutScreen() {
   const colors = useAppColors();
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
+  const queryClient = useQueryClient();
 
   // Достаем даты и статус документов из Redux
   const { startDate, endDate } = useAppSelector((state) => state.filters);
@@ -121,6 +123,11 @@ export default function CheckoutScreen() {
 
       // 4. Успех! Очищаем выбранные даты, чтобы каталог был чистым
       dispatch(applyFilters({ startDate: null, endDate: null }));
+
+      // Invalidate car detail so booked dates reflect the new reservation,
+      // and refresh my-rentals so the new booking appears immediately.
+      queryClient.invalidateQueries({ queryKey: ["car", "detail", Number(id)] });
+      queryClient.invalidateQueries({ queryKey: ["my-rentals"] });
 
       Toast.success(
         t("checkout.toast_success_title", "Отлично!"),

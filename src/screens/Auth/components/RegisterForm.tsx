@@ -97,7 +97,7 @@ export const RegisterForm = ({ onSuccess }: Props) => {
       <View style={[styles.inputWrapper, { backgroundColor: colors.surface }]}>
         <TextInput
           style={[styles.input, { color: colors.textPrimary }]}
-          placeholderTextColor={colors.border}
+          placeholderTextColor={colors.placeholder}
           value={form[field]}
           onChangeText={(text) => setForm({ ...form, [field]: text })}
           {...props}

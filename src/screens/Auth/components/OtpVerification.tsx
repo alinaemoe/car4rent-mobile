@@ -115,7 +115,7 @@ export const OtpVerification = ({ email, onBack, onSuccess }: Props) => {
             ref={inputRef}
             style={[styles.otpInput, { color: colors.textPrimary }]}
             placeholder="000000"
-            placeholderTextColor={colors.border}
+            placeholderTextColor={colors.placeholder}
             keyboardType="number-pad"
             maxLength={6}
             value={otp}

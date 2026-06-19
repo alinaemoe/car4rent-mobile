@@ -113,7 +113,7 @@ export const LoginForm = () => {
         <TextInput
           style={[styles.input, { color: colors.textPrimary }]}
           placeholder={t("auth.email_placeholder", "Email")}
-          placeholderTextColor={colors.border}
+          placeholderTextColor={colors.placeholder}
           keyboardType="email-address"
           autoCapitalize="none"
           value={email}
@@ -137,7 +137,7 @@ export const LoginForm = () => {
         <TextInput
           style={[styles.input, { color: colors.textPrimary }]}
           placeholder={t("auth.password_placeholder", "Пароль")}
-          placeholderTextColor={colors.border}
+          placeholderTextColor={colors.placeholder}
           secureTextEntry={!showPassword}
           autoCapitalize="none"
           value={password}

@@ -177,7 +177,7 @@ export default function ForgotPasswordScreen() {
                 <TextInput
                   style={[styles.input, { color: colors.textPrimary }]}
                   placeholder={t("auth.email_placeholder", "Email")}
-                  placeholderTextColor={colors.border}
+                  placeholderTextColor={colors.placeholder}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   value={email}
@@ -227,7 +227,7 @@ export default function ForgotPasswordScreen() {
                   ref={otpRef}
                   style={[styles.otpInput, { color: colors.textPrimary }]}
                   placeholder="000000"
-                  placeholderTextColor={colors.border}
+                  placeholderTextColor={colors.placeholder}
                   keyboardType="number-pad"
                   maxLength={6}
                   value={otp}
@@ -247,7 +247,7 @@ export default function ForgotPasswordScreen() {
                 <TextInput
                   style={[styles.input, { color: colors.textPrimary }]}
                   placeholder={t("auth.new_password", "Новый пароль")}
-                  placeholderTextColor={colors.border}
+                  placeholderTextColor={colors.placeholder}
                   secureTextEntry={!showPassword}
                   autoCapitalize="none"
                   value={newPassword}

@@ -157,7 +157,7 @@ export default function PartnerRequestScreen() {
         <TextInput
           style={[styles.input, { color: colors.textPrimary }]}
           placeholder={t("request.brand_placeholder", "Например, BMW")}
-          placeholderTextColor={colors.border}
+          placeholderTextColor={colors.placeholder}
           value={formData.car_brand}
           onChangeText={(text) => setFormData({ ...formData, car_brand: text })}
         />
@@ -170,7 +170,7 @@ export default function PartnerRequestScreen() {
         <TextInput
           style={[styles.input, { color: colors.textPrimary }]}
           placeholder={t("request.model_placeholder", "Например, X5")}
-          placeholderTextColor={colors.border}
+          placeholderTextColor={colors.placeholder}
           value={formData.car_model}
           onChangeText={(text) => setFormData({ ...formData, car_model: text })}
         />
@@ -183,7 +183,7 @@ export default function PartnerRequestScreen() {
         <TextInput
           style={[styles.input, { color: colors.textPrimary }]}
           placeholder={t("request.year_placeholder", "Например, 2022")}
-          placeholderTextColor={colors.border}
+          placeholderTextColor={colors.placeholder}
           keyboardType="number-pad"
           maxLength={4}
           value={formData.car_year ? formData.car_year.toString() : ""}
@@ -265,7 +265,7 @@ export default function PartnerRequestScreen() {
         <TextInput
           style={[styles.input, { color: colors.textPrimary }]}
           placeholder={t("request.name_placeholder", "Введите ваше имя")}
-          placeholderTextColor={colors.border}
+          placeholderTextColor={colors.placeholder}
           value={formData.owner_name}
           onChangeText={(text) =>
             setFormData({ ...formData, owner_name: text })
@@ -280,7 +280,7 @@ export default function PartnerRequestScreen() {
         <TextInput
           style={[styles.input, { color: colors.textPrimary }]}
           placeholder={t("request.phone_placeholder", "+7 (***) ***-**-**")}
-          placeholderTextColor={colors.border}
+          placeholderTextColor={colors.placeholder}
           keyboardType="phone-pad"
           value={formData.owner_phone}
           onChangeText={(text) =>

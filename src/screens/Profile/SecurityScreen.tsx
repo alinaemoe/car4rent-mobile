@@ -414,7 +414,7 @@ export default function SecurityScreen() {
                 <TextInput
                   style={[styles.modalInput, { color: colors.textPrimary }]}
                   placeholder={t("security.old_password", "Старый пароль")}
-                  placeholderTextColor={colors.border}
+                  placeholderTextColor={colors.placeholder}
                   secureTextEntry={!showOld}
                   value={oldPassword}
                   onChangeText={setOldPassword}
@@ -454,7 +454,7 @@ export default function SecurityScreen() {
                 <TextInput
                   style={[styles.modalInput, { color: colors.textPrimary }]}
                   placeholder={t("security.new_password", "Новый пароль")} // 🔥 Короткий плейсхолдер
-                  placeholderTextColor={colors.border}
+                  placeholderTextColor={colors.placeholder}
                   secureTextEntry={!showNew}
                   value={newPassword}
                   onChangeText={setNewPassword}
@@ -479,7 +479,7 @@ export default function SecurityScreen() {
                     "security.confirm_password",
                     "Повторите пароль",
                   )}
-                  placeholderTextColor={colors.border}
+                  placeholderTextColor={colors.placeholder}
                   secureTextEntry={!showConfirm}
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}

@@ -23,6 +23,7 @@ export const Colors = {
     accentBg: "rgba(33, 150, 243, 0.1)",
     gradientEnd: "#c3e0fd",
     surfaceTransparent: "rgba(245, 245, 245, 0.8)",
+    placeholder: "#a0a8b0",
 
     // For curtains, drapes, and valances
     overlay: "rgba(0, 0, 0, 0.5)", // Dimming the background behind the modal
@@ -65,6 +66,7 @@ export const Colors = {
     accentBg: "rgba(64, 169, 255, 0.15)",
     gradientEnd: "#162736",
     surfaceTransparent: "rgba(28, 28, 30, 0.8)",
+    placeholder: "#6e7680",
 
     overlay: "rgba(0, 0, 0, 0.7)",
     skeleton: "#2c2c2e",

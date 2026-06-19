@@ -181,7 +181,7 @@ export default function PersonalDataScreen() {
               style={[styles.stackedInput, { color: colors.textPrimary }]}
               value={firstName}
               onChangeText={setFirstName}
-              placeholderTextColor={colors.border}
+              placeholderTextColor={colors.placeholder}
               placeholder={t(
                 "profile.first_name_placeholder",
                 "Введите ваше имя",
@@ -200,7 +200,7 @@ export default function PersonalDataScreen() {
               style={[styles.stackedInput, { color: colors.textPrimary }]}
               value={lastName}
               onChangeText={setLastName}
-              placeholderTextColor={colors.border}
+              placeholderTextColor={colors.placeholder}
               placeholder={t(
                 "profile.last_name_placeholder",
                 "Введите вашу фамилию",

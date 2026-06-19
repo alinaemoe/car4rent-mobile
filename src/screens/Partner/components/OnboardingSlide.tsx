@@ -1,10 +1,8 @@
 import React from "react";
-import { View, Text, StyleSheet, Dimensions } from "react-native";
+import { View, Text, StyleSheet, useWindowDimensions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
-
-const { width, height } = Dimensions.get("window");
 
 export interface SlideData {
   id: string;
@@ -20,6 +18,8 @@ interface Props {
 
 export const OnboardingSlide = ({ item }: Props) => {
   const colors = useAppColors();
+  const { width } = useWindowDimensions();
+  const circleSize = width * 0.7;
 
   return (
     <View
@@ -29,7 +29,7 @@ export const OnboardingSlide = ({ item }: Props) => {
         {/* Анимированный градиентный круг как "иллюстрация" */}
         <LinearGradient
           colors={item.gradient}
-          style={styles.circle}
+          style={[styles.circle, { width: circleSize, height: circleSize, borderRadius: circleSize / 2 }]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
         >
@@ -62,9 +62,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   circle: {
-    width: width * 0.7,
-    height: width * 0.7,
-    borderRadius: (width * 0.7) / 2,
     justifyContent: "center",
     alignItems: "center",
     shadowColor: "#000",

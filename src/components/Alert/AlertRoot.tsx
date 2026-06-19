@@ -7,17 +7,16 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   Animated,
-  Dimensions,
+  useWindowDimensions,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { AlertDialog, AlertOptions, AlertButton } from "./AlertService";
 
-const { width } = Dimensions.get("window");
-
 export const AlertRoot = () => {
   const colors = useAppColors();
+  const { width } = useWindowDimensions();
   const [alert, setAlert] = useState<AlertOptions | null>(null);
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
@@ -121,6 +120,7 @@ export const AlertRoot = () => {
               style={[
                 styles.dialog,
                 {
+                  width: Math.min(width - 48, 340),
                   backgroundColor: colors.background,
                   transform: [{ scale: scaleAnim }],
                   opacity: opacityAnim,
@@ -238,7 +238,6 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   dialog: {
-    width: Math.min(width - 48, 340), // Ограничиваем максимальную ширину для планшетов
     borderRadius: 20,
     paddingTop: 28,
     backgroundColor: "#FFFFFF",

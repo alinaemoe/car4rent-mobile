@@ -4,7 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  Dimensions,
   Modal,
   ScrollView,
   StyleSheet,
@@ -12,6 +11,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  useWindowDimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -23,8 +23,6 @@ import { MAX_SLIDER_PRICE } from "../screens/Catalog/constants";
 // 👇 ИМПОРТИРУЕМ НОВЫЕ ТИПЫ ДЛЯ СЛОВАРЕЙ
 import { DictColorOption, DictOption } from "@/src/types";
 
-const { width } = Dimensions.get("window");
-
 interface FiltersModalProps {
   visible: boolean;
   onClose: () => void;
@@ -33,6 +31,7 @@ interface FiltersModalProps {
 export const FiltersModal = ({ visible, onClose }: FiltersModalProps) => {
   const colors = useAppColors();
   const { i18n, t } = useTranslation();
+  const { width } = useWindowDimensions();
   const dispatch = useAppDispatch();
   const currentLang = i18n.language || "ru";
 

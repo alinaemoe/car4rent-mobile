@@ -42,6 +42,7 @@ export default function CheckoutScreen() {
   const isDocumentsVerified = useAppSelector(
     (state) => state.auth.user?.is_documents_verified ?? false,
   );
+  const isGuest = useAppSelector((state) => state.auth?.isGuest ?? false);
 
   const { data: car, isLoading: isCarLoading } = useCarDetail(Number(id));
   const [destination, setDestination] = useState("");
@@ -53,7 +54,7 @@ export default function CheckoutScreen() {
   // Авто-обновление статуса верификации при возврате с экрана загрузки доков
   useFocusEffect(
     useCallback(() => {
-      if (!isDocumentsVerified) {
+      if (!isGuest && !isDocumentsVerified) {
         axiosInstance
           .get("/users/profile")
           .then((res) => {
@@ -65,7 +66,7 @@ export default function CheckoutScreen() {
           })
           .catch(() => {});
       }
-    }, [isDocumentsVerified, dispatch]),
+    }, [isGuest, isDocumentsVerified, dispatch]),
   );
 
   const {

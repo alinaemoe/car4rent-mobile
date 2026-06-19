@@ -166,6 +166,8 @@ export default function PartnerRequestScreen() {
           style={[styles.input, { color: colors.textPrimary }]}
           placeholder={t("request.brand_placeholder", "Например, BMW")}
           placeholderTextColor={colors.placeholder}
+          autoCapitalize="words"
+          autoCorrect={false}
           value={formData.car_brand}
           onChangeText={(text) => setFormData({ ...formData, car_brand: text })}
         />
@@ -179,6 +181,8 @@ export default function PartnerRequestScreen() {
           style={[styles.input, { color: colors.textPrimary }]}
           placeholder={t("request.model_placeholder", "Например, X5")}
           placeholderTextColor={colors.placeholder}
+          autoCapitalize="characters"
+          autoCorrect={false}
           value={formData.car_model}
           onChangeText={(text) => setFormData({ ...formData, car_model: text })}
         />
@@ -274,6 +278,8 @@ export default function PartnerRequestScreen() {
           style={[styles.input, { color: colors.textPrimary }]}
           placeholder={t("request.name_placeholder", "Введите ваше имя")}
           placeholderTextColor={colors.placeholder}
+          autoCapitalize="words"
+          autoCorrect={false}
           value={formData.owner_name}
           onChangeText={(text) =>
             setFormData({ ...formData, owner_name: text })

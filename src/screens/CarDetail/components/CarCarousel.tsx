@@ -1,8 +1,7 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, FlatList, Dimensions } from "react-native";
+import { View, Text, StyleSheet, FlatList, useWindowDimensions } from "react-native";
 import { Image } from "expo-image";
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const blurhash = "L6PZfSi_.AyE_3t7t7R**0o#DgR4";
 
 interface CarCarouselProps {
@@ -10,6 +9,7 @@ interface CarCarouselProps {
 }
 
 export const CarCarousel: React.FC<CarCarouselProps> = ({ images }) => {
+  const { width: SCREEN_WIDTH } = useWindowDimensions();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const displayImages =

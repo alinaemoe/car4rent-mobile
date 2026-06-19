@@ -15,6 +15,8 @@ import { useCancelRental, useMyRentals } from "@/src/api/queries/useRentals";
 import { Toast } from "@/src/components/Toast";
 import { AlertDialog } from "@/src/components/Alert";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
+import { useAppSelector } from "@/src/store";
+import { selectIsGuest } from "@/src/store/slices/authSlice";
 import { useTranslation } from "react-i18next";
 
 import { CarLocation } from "@/src/screens/CarDetail/components/CarLocation"; // 👈 Переиспользуем из деталей машины!
@@ -26,9 +28,10 @@ export default function RentalDetailsScreen() {
   const router = useRouter();
   const colors = useAppColors();
   const { t } = useTranslation();
+  const isGuest = useAppSelector(selectIsGuest);
 
   // Достаем все брони и ищем нужную
-  const { data: rentals, isLoading } = useMyRentals();
+  const { data: rentals, isLoading } = useMyRentals({ enabled: !isGuest });
   const { mutate: cancelRental, isPending: isCanceling } = useCancelRental();
 
   const rental = useMemo(() => {

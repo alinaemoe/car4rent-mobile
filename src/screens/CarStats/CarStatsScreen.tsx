@@ -10,6 +10,8 @@ import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
+import { useAppSelector } from "@/src/store";
+import { selectIsLessor, selectIsGuest } from "@/src/store/slices/authSlice";
 import { useMyCars } from "@/src/api/queries/useLessorCars";
 import { useCarRentalsHistory } from "@/src/api/queries/useCarRentalsHistory";
 
@@ -26,14 +28,27 @@ export default function CarStatsScreen({ carId }: Props) {
   const colors = useAppColors();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
+  const isLessor = useAppSelector(selectIsLessor);
+  const isGuest = useAppSelector(selectIsGuest);
+  const canAccess = isLessor && !isGuest;
 
   // 1. Ищем машину в уже закэшированном списке "Мои машины"
-  const { data: cars = [] } = useMyCars();
+  const { data: cars = [] } = useMyCars({ enabled: canAccess });
   const car = useMemo(() => cars.find((c) => c.id === carId), [cars, carId]);
 
   // 2. Тянем историю аренд с бэкенда
   const { data: rentals = [], isLoading: rentalsLoading } =
     useCarRentalsHistory(carId);
+
+  if (!canAccess) {
+    return (
+      <View style={[styles.center, { backgroundColor: colors.background }]}>
+        <Text style={{ color: colors.textSecondary, textAlign: "center" }}>
+          {t("stats.no_access", "Доступ запрещён")}
+        </Text>
+      </View>
+    );
+  }
 
   if (!car) {
     return (

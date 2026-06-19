@@ -30,9 +30,7 @@ import { AlertRoot } from "@/src/components/Alert";
 
 SplashScreen.preventAutoHideAsync();
 
-const queryClient = new QueryClient({
-  defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } },
-});
+import { queryClient } from "../src/queryClient";
 
 function AppContent() {
   const dispatch = useAppDispatch();

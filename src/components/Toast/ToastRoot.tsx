@@ -5,8 +5,8 @@ import {
   StyleSheet,
   Animated,
   TouchableOpacity,
-  Dimensions,
   Platform,
+  useWindowDimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -15,11 +15,10 @@ import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { Toast, ToastOptions } from "./ToastService";
 import { useColorScheme } from "@/src/hooks/use-color-scheme";
 
-const { width } = Dimensions.get("window");
-
 export const ToastRoot = () => {
   const colors = useAppColors();
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
 
   const [toast, setToast] = useState<ToastOptions | null>(null);
   const translateY = useRef(new Animated.Value(-150)).current; // Начальная позиция (за экраном)
@@ -150,6 +149,7 @@ export const ToastRoot = () => {
         style={[
           styles.toastCard,
           {
+            width: width - 32,
             backgroundColor: colors.surface,
             borderLeftColor: accentColor,
             ...shadowStyle,
@@ -198,7 +198,6 @@ const styles = StyleSheet.create({
   toastCard: {
     flexDirection: "row",
     alignItems: "center",
-    width: width - 32, // Отступы по краям экрана
     borderRadius: 16,
     padding: 16,
     borderLeftWidth: 6, // Тот самый красивый цветной индикатор

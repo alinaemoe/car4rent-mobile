@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useMemo } from "react";
+import React, { useRef, useState, useEffect, useMemo, useCallback } from "react";
 import {
   View,
   ScrollView,
@@ -64,6 +64,13 @@ export default function CarDetailScreen() {
   const allReviews = reviewsData?.pages.flatMap((page) => page.data) || [];
 
   const calendarSheetRef = useRef<any>(null);
+  const dismissTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current);
+    };
+  }, []);
 
   const [markedDates, setMarkedDates] = useState<any>({});
   const [tempStart, setTempStart] = useState<string | null>(startDate || null);
@@ -138,13 +145,13 @@ export default function CarDetailScreen() {
         ...newMarked[startDate], // На всякий случай, если он почему-то был заблокирован
         startingDay: true,
         color: colors.accent,
-        textColor: "white",
+        textColor: "#ffffff",
       };
       newMarked[endDate] = {
         ...newMarked[endDate],
         endingDay: true,
         color: colors.accent,
-        textColor: "white",
+        textColor: "#ffffff",
       };
 
       let curr = new Date(startDate);
@@ -169,7 +176,7 @@ export default function CarDetailScreen() {
         startingDay: true,
         endingDay: true, // Когда выбран 1 день, он должен быть круглым
         color: colors.accent,
-        textColor: "white",
+        textColor: "#ffffff",
       };
       setMarkedDates(newMarked);
       setTempStart(startDate);
@@ -224,7 +231,8 @@ export default function CarDetailScreen() {
 
       // Все ок, применяем фильтр
       dispatch(applyFilters({ endDate: dateString }));
-      setTimeout(() => calendarSheetRef.current?.dismiss(), 500);
+      if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current);
+      dismissTimerRef.current = setTimeout(() => calendarSheetRef.current?.dismiss(), 500);
     }
   };
 

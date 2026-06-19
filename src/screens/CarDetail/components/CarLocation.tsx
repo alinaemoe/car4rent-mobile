@@ -3,7 +3,6 @@ import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  Dimensions,
   Linking,
   Modal,
   PermissionsAndroid,
@@ -18,7 +17,6 @@ import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { LocationInfo } from "@/src/types";
 
-const { width: SCREEN_W } = Dimensions.get("window");
 const MAP_H = 220;
 
 interface Props {

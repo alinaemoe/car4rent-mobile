@@ -77,7 +77,9 @@ axiosInstance.interceptors.response.use(
         const storeModule = await import("../store");
         const authSliceModule = await import("../store/slices/authSlice");
 
-        // Если у тебя есть глобальный queryClient, импортируй его и сделай queryClient.clear() здесь.
+        // Очищаем react-query кеш, чтобы данные предыдущего пользователя не утекли следующему
+        const { queryClient } = await import("../queryClient");
+        queryClient.clear();
 
         storeModule.store.dispatch(authSliceModule.logout());
 

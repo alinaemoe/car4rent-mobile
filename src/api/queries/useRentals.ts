@@ -32,13 +32,14 @@ export interface Rental {
   };
 }
 
-export const useMyRentals = () => {
+export const useMyRentals = (options?: { enabled?: boolean }) => {
   return useQuery<Rental[]>({
     queryKey: ["my-rentals"],
     queryFn: async () => {
       const response = await axiosInstance.get("/rentals/my");
       return response.data;
     },
+    enabled: options?.enabled !== false,
   });
 };
 export const useCancelRental = () => {

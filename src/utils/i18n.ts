@@ -32,6 +32,10 @@ const defaultResources = {
       // Плюрализация дней
       days_count_one: "{{count}} day",
       days_count_other: "{{count}} days",
+      // Rentals — guest placeholder
+      "rentals.guest_title": "Sign in to your account",
+      "rentals.guest_subtitle": "Sign in or register to view your bookings and manage trips",
+      "rentals.guest_login_btn": "Sign in",
     },
   },
   ru: {
@@ -47,6 +51,10 @@ const defaultResources = {
       "drawer.my_fleet": "Мой автопарк",
       drawer_logout: "Выйти",
       "drawer.become_partner_banner": "Сдать свой автомобиль",
+      // Rentals — гостевой плейсхолдер
+      "rentals.guest_title": "Войдите в аккаунт",
+      "rentals.guest_subtitle": "Войдите или зарегистрируйтесь, чтобы просматривать свои бронирования и управлять поездками",
+      "rentals.guest_login_btn": "Войти",
       // Склоняем месяцы так, чтобы звучало естественно: "30 Апр", "9 Мая"
       months_short_0: "Янв",
       months_short_1: "Фев",

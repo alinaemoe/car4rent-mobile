@@ -6,6 +6,7 @@ import {
   Dimensions,
   Linking,
   Modal,
+  PermissionsAndroid,
   Platform,
   StyleSheet,
   Text,
@@ -28,6 +29,24 @@ export const CarLocation: React.FC<Props> = ({ location }) => {
   const colors = useAppColors();
   const { t } = useTranslation();
   const [fullscreen, setFullscreen] = useState(false);
+  const [locationGranted, setLocationGranted] = useState(false);
+
+  const openFullscreen = async () => {
+    if (!hasCoords) return;
+    if (Platform.OS === "android") {
+      try {
+        const result = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        );
+        setLocationGranted(result === PermissionsAndroid.RESULTS.GRANTED);
+      } catch {
+        setLocationGranted(false);
+      }
+    } else {
+      setLocationGranted(true);
+    }
+    setFullscreen(true);
+  };
 
   const lat = location?.latitude ? Number(location.latitude) : null;
   const lng = location?.longitude ? Number(location.longitude) : null;
@@ -61,7 +80,7 @@ export const CarLocation: React.FC<Props> = ({ location }) => {
     <>
       <TouchableOpacity
         activeOpacity={0.94}
-        onPress={() => hasCoords && setFullscreen(true)}
+        onPress={openFullscreen}
         style={[
           styles.card,
           {
@@ -168,7 +187,7 @@ export const CarLocation: React.FC<Props> = ({ location }) => {
             style={styles.fsMap}
             initialRegion={region}
             provider={PROVIDER_GOOGLE}
-            showsUserLocation
+            showsUserLocation={locationGranted}
             followsUserLocation={false}
           >
             <Marker

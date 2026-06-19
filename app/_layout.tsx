@@ -47,6 +47,17 @@ function AppContent() {
 
   // --- ЭФФЕКТ 1: ПЕРВИЧНАЯ ИНИЦИАЛИЗАЦИЯ (срабатывает 1 раз при запуске) ---
   useEffect(() => {
+    let splashHidden = false;
+    const hideSplash = () => {
+      if (splashHidden) return;
+      splashHidden = true;
+      SplashScreen.hideAsync();
+    };
+
+    // Гарантируем закрытие сплэша максимум через 6 секунд —
+    // иначе при недоступном бэкенде (10s axios timeout × 2 вызова) экран зависает на ~23s
+    const maxSplashTimer = setTimeout(hideSplash, 6000);
+
     const initApp = async () => {
       try {
         await initI18n();
@@ -71,11 +82,10 @@ function AppContent() {
         await storage.removeTokens();
       } finally {
         dispatch(setAppReady());
+        clearTimeout(maxSplashTimer);
 
-        // Таймер на 3 секунды для красивого сплэша
-        setTimeout(async () => {
-          await SplashScreen.hideAsync();
-        }, 3000);
+        // Показываем сплэш минимум 3 секунды от момента завершения init
+        setTimeout(hideSplash, 3000);
       }
     };
     initApp();

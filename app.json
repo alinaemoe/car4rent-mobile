@@ -18,7 +18,12 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.sohalina.car4rentmobile"
+      "package": "com.sohalina.car4rentmobile",
+      "usesCleartextTraffic": true,
+      "permissions": [
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION"
+      ]
     },
     "web": {
       "output": "static",
@@ -26,6 +31,7 @@
     },
     "plugins": [
       "expo-router",
+      "./plugins/withCleartextTraffic",
       [
         "expo-splash-screen",
         {
@@ -40,11 +46,23 @@
         }
       ],
       "expo-secure-store",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Доступ к галерее для загрузки фото"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "1152db46-267c-49fb-b88f-85198dc0f835"
+      }
     }
   }
 }

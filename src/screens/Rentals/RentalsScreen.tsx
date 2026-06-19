@@ -12,8 +12,11 @@ import {
 import { useTranslation } from "react-i18next";
 import { useRouter } from "expo-router";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
+import { Ionicons } from "@expo/vector-icons";
 
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
+import { useAppSelector } from "@/src/store";
+import { selectIsGuest } from "@/src/store/slices/authSlice";
 import { useMyRentals, Rental } from "@/src/api/queries/useRentals";
 import { RentalCard } from "./components/RentalCard/RentalCard";
 import { ReviewBottomSheet } from "./components/ReviewBottomSheet";
@@ -24,6 +27,7 @@ export default function RentalsScreen() {
   const colors = useAppColors();
   const { t } = useTranslation();
   const router = useRouter();
+  const isGuest = useAppSelector(selectIsGuest);
 
   const [activeTab, setActiveTab] = useState<TabType>("UPCOMING");
 
@@ -31,9 +35,11 @@ export default function RentalsScreen() {
   const [selectedRentalForReview, setSelectedRentalForReview] =
     useState<Rental | null>(null);
 
-  const { data: rentals, isLoading, isRefetching, refetch } = useMyRentals();
+  const { data: rentals, isLoading, isRefetching, refetch } = useMyRentals({
+    enabled: !isGuest,
+  });
 
-  // Фильтрация "на лету"
+  // Все хуки — до любого early return (Rules of Hooks)
   const filteredRentals = useMemo(() => {
     if (!rentals) return [];
     switch (activeTab) {
@@ -55,6 +61,32 @@ export default function RentalsScreen() {
         return [];
     }
   }, [rentals, activeTab]);
+
+  if (isGuest) {
+    return (
+      <View style={[styles.container, styles.guestContainer, { backgroundColor: colors.background }]}>
+        <View style={[styles.guestIconCircle, { backgroundColor: colors.surface }]}>
+          <Ionicons name="car-outline" size={52} color={colors.accent} />
+        </View>
+        <Text style={[styles.guestTitle, { color: colors.textPrimary }]}>
+          {t("rentals.guest_title", "Войдите в аккаунт")}
+        </Text>
+        <Text style={[styles.guestSubtitle, { color: colors.textSecondary }]}>
+          {t("rentals.guest_subtitle", "Войдите или зарегистрируйтесь, чтобы просматривать свои бронирования и управлять поездками")}
+        </Text>
+        <TouchableOpacity
+          style={[styles.guestBtn, { backgroundColor: colors.accent }]}
+          activeOpacity={0.85}
+          onPress={() => router.push("/login")}
+        >
+          <Ionicons name="log-in-outline" size={20} color="#fff" style={{ marginRight: 8 }} />
+          <Text style={styles.guestBtnText}>
+            {t("rentals.guest_login_btn", "Войти")}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   // Заглушка для пустого списка
   const renderEmptyComponent = () => {
@@ -182,6 +214,43 @@ export default function RentalsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  guestContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 32,
+  },
+  guestIconCircle: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  guestTitle: {
+    fontSize: 22,
+    fontWeight: "800",
+    textAlign: "center",
+    marginBottom: 10,
+  },
+  guestSubtitle: {
+    fontSize: 15,
+    textAlign: "center",
+    lineHeight: 22,
+    marginBottom: 28,
+  },
+  guestBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 32,
+    paddingVertical: 14,
+    borderRadius: 28,
+  },
+  guestBtnText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
   tabsContainer: {
     paddingTop: 12, // 👈 Чуть отодвигаем табы от нижнего края хедера
     marginBottom: 16,

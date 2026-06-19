@@ -18,12 +18,15 @@ import { axiosInstance } from "@/src/api/axios-instance";
 import { Toast } from "@/src/components/Toast";
 import { AlertDialog } from "@/src/components/Alert";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
+import { useAppSelector } from "@/src/store";
+import { selectIsGuest } from "@/src/store/slices/authSlice";
 import { UserDocument, DocType } from "@/src/types";
 
 export default function UploadDocsScreen() {
   const colors = useAppColors();
   const router = useRouter();
   const { t } = useTranslation();
+  const isGuest = useAppSelector(selectIsGuest);
 
   // Ловим параметр (если from === "registration", показываем футер)
   const { from } = useLocalSearchParams<{ from: string }>();
@@ -46,8 +49,9 @@ export default function UploadDocsScreen() {
 
   useFocusEffect(
     useCallback(() => {
+      if (isGuest) return;
       fetchMyDocs();
-    }, []),
+    }, [isGuest]),
   );
 
   const processImageUpload = async (

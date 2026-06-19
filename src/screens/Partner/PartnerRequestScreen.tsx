@@ -117,6 +117,14 @@ export default function PartnerRequestScreen() {
   };
 
   const pickImage = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      return Toast.error(
+        t("common.error", "Ошибка"),
+        t("docs.gallery_permission", "Необходим доступ к галерее."),
+      );
+    }
+
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsMultipleSelection: true,

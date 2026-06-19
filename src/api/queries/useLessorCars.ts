@@ -13,13 +13,14 @@ export interface MyCar {
 }
 
 // 1. Получить МОИ одобренные машины
-export const useMyCars = () => {
+export const useMyCars = (options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: ["cars", "my"],
     queryFn: async (): Promise<MyCar[]> => {
       const response = await axiosInstance.get("/cars/my");
       return response.data;
     },
+    enabled: options?.enabled !== false,
   });
 };
 

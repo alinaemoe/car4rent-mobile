@@ -22,7 +22,7 @@ export interface TransactionHistoryItem {
 }
 
 // 1. Статистика (Виджет)
-export const useLessorStats = (month?: number, year?: number) => {
+export const useLessorStats = (month?: number, year?: number, options?: { enabled?: boolean }) => {
   return useQuery({
     // Ключ кэша зависит от месяца и года! Меняем месяц -> делается новый запрос
     queryKey: ["transactions", "lessor", "stats", month, year],
@@ -36,6 +36,7 @@ export const useLessorStats = (month?: number, year?: number) => {
       );
       return response.data;
     },
+    enabled: options?.enabled !== false,
   });
 };
 

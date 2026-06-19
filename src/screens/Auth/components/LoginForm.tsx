@@ -60,7 +60,6 @@ export const LoginForm = () => {
       await storage.setTokens(access_token, refresh_token);
 
       const profileRes = await axiosInstance.get("/users/profile");
-      console.log("✅ PROFILE DATA:", JSON.stringify(profileRes.data, null, 2));
       dispatch(setCredentials({ user: profileRes.data, token: access_token }));
     } catch (error: any) {
       setErrorText(

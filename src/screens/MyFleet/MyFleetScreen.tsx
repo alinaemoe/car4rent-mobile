@@ -20,6 +20,8 @@ import {
 
 // Хуки
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
+import { useAppSelector } from "@/src/store";
+import { selectIsLessor } from "@/src/store/slices/authSlice";
 import {
   useMyCars,
   useToggleCarVisibility,
@@ -43,6 +45,7 @@ export default function MyFleetScreen() {
   const colors = useAppColors();
   const router = useRouter();
   const { t } = useTranslation();
+  const isLessor = useAppSelector(selectIsLessor);
 
   // insets нужен только для нижнего отступа (FAB и подбородок iPhone)
   const insets = useSafeAreaInsets();
@@ -53,28 +56,54 @@ export default function MyFleetScreen() {
   const [activeTab, setActiveTab] = useState<0 | 1>(0);
   const [refreshing, setRefreshing] = useState(false);
 
-  // === FETCH DATA ===
+  // === FETCH DATA (только для лесоров) ===
   const {
     data: cars = [],
     isLoading: carsLoading,
     refetch: refetchCars,
-  } = useMyCars();
+  } = useMyCars({ enabled: isLessor });
   const {
     data: requests = [],
     isLoading: requestsLoading,
     refetch: refetchReqs,
-  } = useMyRequests();
+  } = useMyRequests({ enabled: isLessor });
   const {
     data: stats,
     isLoading: statsLoading,
     refetch: refetchStats,
-  } = useLessorStats();
+  } = useLessorStats(undefined, undefined, { enabled: isLessor });
 
   const { mutate: toggleVisibility } = useToggleCarVisibility();
   const { mutate: deleteRequest } = useDeleteRequest();
 
   const isLoading = carsLoading || requestsLoading || statsLoading;
   const hasCars = cars.length > 0;
+
+  // Доступ только для лесоров — guard после всех хуков
+  if (!isLessor) {
+    return (
+      <SafeAreaView edges={["top"]} style={[styles.container, styles.accessDeniedContainer, { backgroundColor: colors.background }]}>
+        <View style={[styles.accessDeniedIcon, { backgroundColor: colors.surface }]}>
+          <Ionicons name="lock-closed-outline" size={36} color={colors.textSecondary} />
+        </View>
+        <Text style={[styles.accessDeniedTitle, { color: colors.textPrimary }]}>
+          {t("fleet.access_denied_title", "Только для партнёров")}
+        </Text>
+        <Text style={[styles.accessDeniedSubtitle, { color: colors.textSecondary }]}>
+          {t("fleet.access_denied_subtitle", "Этот раздел доступен только арендодателям. Подайте заявку на партнёрство, чтобы начать зарабатывать.")}
+        </Text>
+        <TouchableOpacity
+          style={[styles.accessDeniedBtn, { backgroundColor: colors.accent }]}
+          onPress={() => router.push("/partner-request")}
+        >
+          <Ionicons name="rocket-outline" size={20} color="#fff" style={{ marginRight: 8 }} />
+          <Text style={styles.accessDeniedBtnText}>
+            {t("fleet.become_partner_btn", "Стать партнёром")}
+          </Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+    );
+  }
 
   // === HANDLERS ===
   const onRefresh = useCallback(async () => {
@@ -449,5 +478,43 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     marginRight: 14,
+  },
+  // --- ACCESS DENIED ---
+  accessDeniedContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 32,
+  },
+  accessDeniedIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  accessDeniedTitle: {
+    fontSize: 20,
+    fontWeight: "800",
+    textAlign: "center",
+    marginBottom: 10,
+  },
+  accessDeniedSubtitle: {
+    fontSize: 15,
+    textAlign: "center",
+    lineHeight: 22,
+    marginBottom: 28,
+  },
+  accessDeniedBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 28,
+    paddingVertical: 14,
+    borderRadius: 28,
+  },
+  accessDeniedBtnText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 15,
   },
 });

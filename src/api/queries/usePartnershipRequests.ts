@@ -13,13 +13,14 @@ export interface PartnershipRequest {
 }
 
 // 1. Получить МОИ заявки
-export const useMyRequests = () => {
+export const useMyRequests = (options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: ["partnership-requests", "my"],
     queryFn: async (): Promise<PartnershipRequest[]> => {
       const response = await axiosInstance.get("/partnership-requests/my");
       return response.data;
     },
+    enabled: options?.enabled !== false,
   });
 };
 

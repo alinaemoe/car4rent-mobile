@@ -48,6 +48,9 @@ export const useCreatePartnershipRequest = () => {
           headers: {
             "Content-Type": "multipart/form-data",
           },
+          // Фото с камеры весят несколько МБ, а здесь их до 5 штук. По мобильной
+          // сети дефолтных 10с не хватает — поднимаем до 60с, иначе аплоад рвётся.
+          timeout: 60000,
         },
       );
       return response.data;

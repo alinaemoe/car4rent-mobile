@@ -73,6 +73,7 @@ export default function UploadDocsScreen() {
 
       await axiosInstance.post("/documents/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
+        timeout: 60000, // скан документа тяжёлый — дефолтных 10с мало для мобильной сети
       });
 
       await fetchMyDocs();

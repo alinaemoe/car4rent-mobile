@@ -64,6 +64,7 @@ export default function PersonalDataScreen() {
 
       const res = await axiosInstance.post("/users/profile/avatar", formData, {
         headers: { "Content-Type": "multipart/form-data" },
+        timeout: 60000, // фото с камеры тяжёлое — дефолтных 10с мало для мобильной сети
       });
       dispatch(updateUser(res.data));
       Toast.success(

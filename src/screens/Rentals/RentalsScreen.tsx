@@ -15,6 +15,8 @@ import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { Ionicons } from "@expo/vector-icons";
 
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
+import { useRefetchOnFocus } from "@/src/hooks/useRefetchOnFocus";
+import { useExitGuestToLogin } from "@/src/hooks/useExitGuestToLogin";
 import { useAppSelector } from "@/src/store";
 import { selectIsGuest } from "@/src/store/slices/authSlice";
 import { useMyRentals, Rental } from "@/src/api/queries/useRentals";
@@ -28,6 +30,7 @@ export default function RentalsScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const isGuest = useAppSelector(selectIsGuest);
+  const exitGuestToLogin = useExitGuestToLogin();
 
   const [activeTab, setActiveTab] = useState<TabType>("UPCOMING");
 
@@ -37,6 +40,11 @@ export default function RentalsScreen() {
 
   const { data: rentals, isLoading, isRefetching, refetch } = useMyRentals({
     enabled: !isGuest,
+  });
+
+  // Свежий список поездок при каждом заходе на экран (не для гостя)
+  useRefetchOnFocus(() => {
+    if (!isGuest) refetch();
   });
 
   // Все хуки — до любого early return (Rules of Hooks)
@@ -77,7 +85,7 @@ export default function RentalsScreen() {
         <TouchableOpacity
           style={[styles.guestBtn, { backgroundColor: colors.accent }]}
           activeOpacity={0.85}
-          onPress={() => router.push("/login")}
+          onPress={exitGuestToLogin}
         >
           <Ionicons name="log-in-outline" size={20} color="#fff" style={{ marginRight: 8 }} />
           <Text style={styles.guestBtnText}>

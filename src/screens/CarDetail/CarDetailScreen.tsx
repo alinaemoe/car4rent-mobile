@@ -18,6 +18,7 @@ import { usePriceCalculator } from "@/src/hooks/usePriceCalculator";
 import { useCarReviews } from "@/src/api/queries/useCarReviews";
 import { selectIsCarFavorite } from "@/src/store/slices/favoritesSlice"; //todo
 import { applyFilters } from "@/src/store/slices/filtersSlice";
+import { useExitGuestToLogin } from "@/src/hooks/useExitGuestToLogin";
 
 import { CalendarSheet } from "@/src/screens/Catalog/modals/CalendarSheet";
 import { StickyFooter } from "@/src/screens/CarDetail/components/StickyFooter";
@@ -43,6 +44,7 @@ export default function CarDetailScreen() {
   const colors = useAppColors();
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
+  const exitGuestToLogin = useExitGuestToLogin();
 
   const { startDate, endDate } = useAppSelector((state) => state.filters);
   const isGuest = useAppSelector((state) => state.auth?.isGuest ?? false);
@@ -264,7 +266,7 @@ export default function CarDetailScreen() {
           { text: t("common.cancel", "Отмена"), style: "cancel" },
           {
             text: t("common.login", "Войти"),
-            onPress: () => router.push("/login" as Href),
+            onPress: exitGuestToLogin,
           },
         ],
       );

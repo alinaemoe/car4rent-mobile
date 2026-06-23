@@ -20,6 +20,7 @@ import {
 
 // Хуки
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
+import { useRefetchOnFocus } from "@/src/hooks/useRefetchOnFocus";
 import { useAppSelector } from "@/src/store";
 import { selectIsLessor } from "@/src/store/slices/authSlice";
 import {
@@ -75,6 +76,18 @@ export default function MyFleetScreen() {
 
   const { mutate: toggleVisibility } = useToggleCarVisibility();
   const { mutate: deleteRequest } = useDeleteRequest();
+
+  // Свежие данные при каждом заходе на экран (фокус): и машины, и заявки,
+  // и финансы. Иначе только что одобренная заявка/созданная машина висят
+  // со старым статусом до ручного pull-to-refresh.
+  const refetchAll = useCallback(() => {
+    if (!isLessor) return;
+    refetchCars();
+    refetchReqs();
+    refetchStats();
+  }, [isLessor, refetchCars, refetchReqs, refetchStats]);
+
+  useRefetchOnFocus(refetchAll);
 
   const isLoading = carsLoading || requestsLoading || statsLoading;
   const hasCars = cars.length > 0;
@@ -132,11 +145,23 @@ export default function MyFleetScreen() {
     });
   const handleFabPress = () => router.push("/partner-request");
 
+  // Перезапрос данных под выбранную вкладку (0 — авто, 1 — заявки)
+  const refetchForTab = useCallback(
+    (index: 0 | 1) => {
+      if (!isLessor) return;
+      if (index === 0) refetchCars();
+      else refetchReqs();
+      refetchStats();
+    },
+    [isLessor, refetchCars, refetchReqs, refetchStats],
+  );
+
   // 👇 Хендлеры для Свайпов и Табов
   const handleTabPress = (index: 0 | 1) => {
     setActiveTab(index);
     // Прокручиваем ScrollView до нужной страницы
     scrollViewRef.current?.scrollTo({ x: index * layoutWidth, animated: true });
+    refetchForTab(index); // свежие данные при тапе по табу
   };
 
   const handleMomentumScrollEnd = (e: any) => {
@@ -145,6 +170,7 @@ export default function MyFleetScreen() {
     const newIndex = Math.round(offsetX / layoutWidth) as 0 | 1;
     if (activeTab !== newIndex) {
       setActiveTab(newIndex);
+      refetchForTab(newIndex); // свежие данные при свайпе на таб
     }
   };
 

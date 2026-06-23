@@ -15,6 +15,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 
 import { axiosInstance } from "@/src/api/axios-instance";
+import { compressImage } from "@/src/utils/compressImage";
 import { Toast } from "@/src/components/Toast";
 import { AlertDialog } from "@/src/components/Alert";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
@@ -63,10 +64,12 @@ export default function UploadDocsScreen() {
     setUploadingType(type);
     try {
       const asset = result.assets[0];
+      // Сжимаем скан документа перед отправкой: меньше вес — быстрее аплоад
+      const compressedUri = await compressImage(asset.uri);
       const formData = new FormData();
       formData.append("type", type);
       formData.append("file", {
-        uri: asset.uri,
+        uri: compressedUri,
         name: `doc_${type}.jpg`,
         type: "image/jpeg",
       } as any);

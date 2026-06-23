@@ -1,5 +1,6 @@
 import { useFaqs } from "@/src/api/queries/useFaqs";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
+import { useRefetchOnFocus } from "@/src/hooks/useRefetchOnFocus";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -27,7 +28,10 @@ export default function FaqScreen() {
   const colors = useAppColors();
 
   // 🔥 Подключаем наш умный хук
-  const { data: faqs, isLoading } = useFaqs();
+  const { data: faqs, isLoading, refetch } = useFaqs();
+
+  // Свежий FAQ при каждом заходе на экран
+  useRefetchOnFocus(refetch);
 
   const [expandedId, setExpandedId] = useState<number | null>(null);
 

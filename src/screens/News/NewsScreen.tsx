@@ -13,6 +13,7 @@ import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
+import { useRefetchOnFocus } from "@/src/hooks/useRefetchOnFocus";
 import { useNews, NewsItem } from "@/src/api/queries/useNews";
 
 export default function NewsScreen() {
@@ -22,6 +23,9 @@ export default function NewsScreen() {
   const currentLang = i18n.language as "ru" | "en";
 
   const { data: newsList, isLoading, refetch, isRefetching } = useNews();
+
+  // Свежие новости при каждом заходе на экран
+  useRefetchOnFocus(refetch);
 
   const getLocalizedText = (obj: { ru: string; en: string }) => {
     return obj?.[currentLang] || obj?.ru || "";

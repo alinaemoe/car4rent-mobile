@@ -23,7 +23,7 @@ import { fetchDictionaries } from "@/src/store/slices/dictionariesSlice";
 import { storage } from "../src/utils/storage";
 import { initI18n } from "@/src/utils/i18n";
 import { fetchAndCacheTranslations } from "@/src/api/translations";
-import { axiosInstance } from "../src/api/axios-instance";
+import { axiosInstance, API_URL } from "../src/api/axios-instance";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { ToastRoot } from "@/src/components/Toast";
 import { AlertRoot } from "@/src/components/Alert";
@@ -63,12 +63,36 @@ function AppContent() {
         await dispatch(loadFavorites());
         await dispatch(fetchDictionaries());
 
-        const accessToken = await storage.getAccessToken();
+        let activeToken = await storage.getAccessToken();
         const isGuestSaved = await storage.getGuestMode();
 
-        if (accessToken) {
+        if (activeToken) {
+          // 🔄 Проактивный рефреш токена на старте. Роли внутри JWT не меняются
+          // до перелогина, поэтому свежевыданный LESSOR (после одобрения заявки
+          // и создания машины в админке) иначе получал бы 403 на своих эндпоинтах
+          // ("Мой автопарк", видимость, редактирование) до истечения access-токена.
+          // Рефреш перевыпускает токен с актуальными ролями из БД — доступ сразу.
+          try {
+            const refreshToken = await storage.getRefreshToken();
+            if (refreshToken) {
+              const res = await fetch(`${API_URL}/auth/refresh`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ refresh_token: refreshToken }),
+              });
+              if (res.ok) {
+                const data = await res.json();
+                await storage.setTokens(data.access_token, data.refresh_token);
+                activeToken = data.access_token;
+              }
+            }
+          } catch {
+            // Рефреш на старте не критичен — продолжаем со старым токеном,
+            // interceptor обновит его при первом 401.
+          }
+
           const { data: user } = await axiosInstance.get("/users/profile");
-          dispatch(setCredentials({ user, token: accessToken }));
+          dispatch(setCredentials({ user, token: activeToken! }));
         } else if (isGuestSaved) {
           dispatch(setGuestMode());
         } else {

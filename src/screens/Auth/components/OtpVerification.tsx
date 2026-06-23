@@ -102,14 +102,15 @@ export const OtpVerification = ({ email, onBack, onSuccess }: Props) => {
           </Text>
         </Text>
 
-        {errorText ? (
-          <Text style={[styles.errorText, { color: colors.error }]}>
-            {errorText}
-          </Text>
-        ) : null}
-
         <View
-          style={[styles.inputWrapper, { backgroundColor: colors.surface }]}
+          style={[
+            styles.inputWrapper,
+            {
+              backgroundColor: colors.surface,
+              borderWidth: 1.5,
+              borderColor: errorText ? colors.error : "transparent",
+            },
+          ]}
         >
           <TextInput
             ref={inputRef}
@@ -119,9 +120,19 @@ export const OtpVerification = ({ email, onBack, onSuccess }: Props) => {
             keyboardType="number-pad"
             maxLength={6}
             value={otp}
-            onChangeText={setOtp}
+            onChangeText={(text) => {
+              setOtp(text);
+              if (errorText) setErrorText("");
+            }}
           />
         </View>
+
+        {/* Ошибка — текстом над кнопкой, без плашки */}
+        {errorText ? (
+          <Text style={[styles.errorText, { color: colors.error }]}>
+            {errorText}
+          </Text>
+        ) : null}
 
         <TouchableOpacity
           style={[styles.submitBtn, { backgroundColor: colors.accent }]}

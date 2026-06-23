@@ -31,23 +31,35 @@ export const LoginForm = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [errorText, setErrorText] = useState("");
+
+  // Ошибки конкретных полей (подсветка границы + текст под инпутом)
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  // Общая ошибка (неверный логин/пароль, сбой сервера) — текстом над кнопкой
+  const [generalError, setGeneralError] = useState("");
 
   const handleLogin = async () => {
-    setErrorText("");
+    setEmailError("");
+    setPasswordError("");
+    setGeneralError("");
 
     const trimmedEmail = email.trim();
-    if (!trimmedEmail || !password) {
-      return setErrorText(
-        t("auth.enter_email_password", "Введите email и пароль"),
-      );
+    let hasError = false;
+
+    if (!trimmedEmail) {
+      setEmailError(t("auth.enter_email", "Введите email"));
+      hasError = true;
+    } else if (!EMAIL_REGEX.test(trimmedEmail)) {
+      setEmailError(t("auth.enter_valid_email", "Введите корректный email"));
+      hasError = true;
     }
 
-    if (!EMAIL_REGEX.test(trimmedEmail)) {
-      return setErrorText(
-        t("auth.enter_valid_email", "Введите корректный email"),
-      );
+    if (!password) {
+      setPasswordError(t("auth.enter_password", "Введите пароль"));
+      hasError = true;
     }
+
+    if (hasError) return;
     setIsLoading(true);
 
     try {
@@ -62,7 +74,8 @@ export const LoginForm = () => {
       const profileRes = await axiosInstance.get("/users/profile");
       dispatch(setCredentials({ user: profileRes.data, token: access_token }));
     } catch (error: any) {
-      setErrorText(
+      // Серверная ошибка (неверный email/пароль и т.п.) — это общая ошибка формы
+      setGeneralError(
         error.response?.data?.message ||
           t("auth.login_error", "Ошибка авторизации"),
       );
@@ -91,67 +104,90 @@ export const LoginForm = () => {
         </Text>
       </View>
 
-      {errorText ? (
-        <View
-          style={[styles.errorBox, { backgroundColor: `${colors.error}15` }]}
-        >
-          <Text style={{ color: colors.error, fontWeight: "500" }}>
-            {errorText}
-          </Text>
-        </View>
-      ) : null}
-
       {/* Поле EMAIL */}
-      <View style={[styles.inputWrapper, { backgroundColor: colors.surface }]}>
-        <Ionicons
-          name="mail-outline"
-          size={20}
-          color={colors.textSecondary}
-          style={styles.inputIcon}
-        />
-        <TextInput
-          style={[styles.input, { color: colors.textPrimary }]}
-          placeholder={t("auth.email_placeholder", "Email")}
-          placeholderTextColor={colors.placeholder}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          value={email}
-          onChangeText={setEmail}
-        />
+      <View style={styles.fieldGroup}>
+        <View
+          style={[
+            styles.inputWrapper,
+            {
+              backgroundColor: colors.surface,
+              borderWidth: 1.5,
+              borderColor: emailError ? colors.error : "transparent",
+            },
+          ]}
+        >
+          <Ionicons
+            name="mail-outline"
+            size={20}
+            color={colors.textSecondary}
+            style={styles.inputIcon}
+          />
+          <TextInput
+            style={[styles.input, { color: colors.textPrimary }]}
+            placeholder={t("auth.email_placeholder", "Email")}
+            placeholderTextColor={colors.placeholder}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            value={email}
+            onChangeText={(text) => {
+              setEmail(text);
+              if (emailError) setEmailError("");
+            }}
+          />
+        </View>
+        {emailError ? (
+          <Text style={[styles.fieldError, { color: colors.error }]}>
+            {emailError}
+          </Text>
+        ) : null}
       </View>
 
       {/* Поле ПАРОЛЬ */}
-      <View
-        style={[
-          styles.inputWrapper,
-          { backgroundColor: colors.surface, marginBottom: 12 },
-        ]}
-      >
-        <Ionicons
-          name="lock-closed-outline"
-          size={20}
-          color={colors.textSecondary}
-          style={styles.inputIcon}
-        />
-        <TextInput
-          style={[styles.input, { color: colors.textPrimary }]}
-          placeholder={t("auth.password_placeholder", "Пароль")}
-          placeholderTextColor={colors.placeholder}
-          secureTextEntry={!showPassword}
-          autoCapitalize="none"
-          value={password}
-          onChangeText={setPassword}
-        />
-        <TouchableOpacity
-          onPress={() => setShowPassword(!showPassword)}
-          style={styles.eyeIcon}
+      <View style={styles.fieldGroup}>
+        <View
+          style={[
+            styles.inputWrapper,
+            {
+              backgroundColor: colors.surface,
+              borderWidth: 1.5,
+              borderColor: passwordError ? colors.error : "transparent",
+            },
+          ]}
         >
           <Ionicons
-            name={showPassword ? "eye-off-outline" : "eye-outline"}
+            name="lock-closed-outline"
             size={20}
             color={colors.textSecondary}
+            style={styles.inputIcon}
           />
-        </TouchableOpacity>
+          <TextInput
+            style={[styles.input, { color: colors.textPrimary }]}
+            placeholder={t("auth.password_placeholder", "Пароль")}
+            placeholderTextColor={colors.placeholder}
+            secureTextEntry={!showPassword}
+            autoCapitalize="none"
+            value={password}
+            onChangeText={(text) => {
+              setPassword(text);
+              if (passwordError) setPasswordError("");
+            }}
+          />
+          <TouchableOpacity
+            onPress={() => setShowPassword(!showPassword)}
+            style={styles.eyeIcon}
+          >
+            <Ionicons
+              name={showPassword ? "eye-off-outline" : "eye-outline"}
+              size={20}
+              color={colors.textSecondary}
+            />
+          </TouchableOpacity>
+        </View>
+        {passwordError ? (
+          <Text style={[styles.fieldError, { color: colors.error }]}>
+            {passwordError}
+          </Text>
+        ) : null}
       </View>
 
       <TouchableOpacity
@@ -162,6 +198,13 @@ export const LoginForm = () => {
           {t("auth.forgot_password", "Забыли пароль?")}
         </Text>
       </TouchableOpacity>
+
+      {/* Общая ошибка — текстом над кнопкой, по центру, без плашки */}
+      {generalError ? (
+        <Text style={[styles.generalError, { color: colors.error }]}>
+          {generalError}
+        </Text>
+      ) : null}
 
       <TouchableOpacity
         style={[styles.submitBtn, { backgroundColor: colors.accent }]}
@@ -220,10 +263,20 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
   },
-  errorBox: {
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 20,
+  fieldGroup: {
+    marginBottom: 16,
+  },
+  fieldError: {
+    fontSize: 13,
+    fontWeight: "500",
+    marginTop: 6,
+    marginLeft: 4,
+  },
+  generalError: {
+    fontSize: 14,
+    fontWeight: "500",
+    textAlign: "center",
+    marginBottom: 16,
   },
   inputWrapper: {
     flexDirection: "row",
@@ -231,7 +284,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingHorizontal: 16,
     height: 56,
-    marginBottom: 16,
   },
   inputIcon: {
     marginRight: 12,

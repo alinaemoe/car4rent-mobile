@@ -37,36 +37,41 @@ export const RegisterForm = ({ onSuccess }: Props) => {
   });
 
   const [isLoading, setIsLoading] = useState(false);
-  const [errorText, setErrorText] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const validateForm = () => {
+  // Ошибки конкретных полей (подсветка границы + текст под инпутом)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  // Общая ошибка (сбой сервера, email занят и т.п.) — текстом над кнопкой
+  const [generalError, setGeneralError] = useState("");
+
+  // Возвращает карту ошибок по полям (пусто = всё валидно)
+  const validateForm = (): Record<string, string> => {
+    const errors: Record<string, string> = {};
     if (!form.first_name.trim())
-      return t("auth.enter_first_name", "Введите ваше имя");
+      errors.first_name = t("auth.enter_first_name", "Введите ваше имя");
     if (!form.last_name.trim())
-      return t("auth.enter_last_name", "Введите вашу фамилию");
+      errors.last_name = t("auth.enter_last_name", "Введите вашу фамилию");
     if (form.phone.trim() && !PHONE_REGEX.test(form.phone.trim()))
-      return t("auth.invalid_phone", "Введите корректный номер телефона");
+      errors.phone = t("auth.invalid_phone", "Введите корректный номер телефона");
     if (!EMAIL_REGEX.test(form.email.trim()))
-      return t("auth.enter_valid_email", "Введите корректный email");
+      errors.email = t("auth.enter_valid_email", "Введите корректный email");
     if (form.password.length < 6)
-      return t(
+      errors.password = t(
         "auth.password_min_length",
         "Пароль должен быть не менее 6 символов",
       );
     if (form.password !== form.passwordConfirm)
-      return t("auth.passwords_mismatch", "Пароли не совпадают");
-    return null; // Ошибок нет
+      errors.passwordConfirm = t("auth.passwords_mismatch", "Пароли не совпадают");
+    return errors;
   };
 
   const handleRegister = async () => {
-    const validationError = validateForm();
-    if (validationError) {
-      return setErrorText(validationError);
-    }
+    const errors = validateForm();
+    setFieldErrors(errors);
+    setGeneralError("");
+    if (Object.keys(errors).length > 0) return;
 
     setIsLoading(true);
-    setErrorText("");
 
     try {
       // Отправляем без поля passwordConfirm
@@ -74,7 +79,7 @@ export const RegisterForm = ({ onSuccess }: Props) => {
       await axiosInstance.post("/auth/register", submitData);
       onSuccess(form.email.trim());
     } catch (error: any) {
-      setErrorText(
+      setGeneralError(
         error.response?.data?.message ||
           t("auth.register_error", "Ошибка регистрации"),
       );
@@ -89,35 +94,57 @@ export const RegisterForm = ({ onSuccess }: Props) => {
     field: keyof typeof form,
     isRequired = true,
     props: any = {},
-  ) => (
-    <View style={styles.inputContainer}>
-      <Text style={[styles.label, { color: colors.textSecondary }]}>
-        {label} {isRequired && <Text style={{ color: colors.error }}>*</Text>}
-      </Text>
-      <View style={[styles.inputWrapper, { backgroundColor: colors.surface }]}>
-        <TextInput
-          style={[styles.input, { color: colors.textPrimary }]}
-          placeholderTextColor={colors.placeholder}
-          value={form[field]}
-          onChangeText={(text) => setForm({ ...form, [field]: text })}
-          {...props}
-        />
-        {/* Глазик для паролей */}
-        {(field === "password" || field === "passwordConfirm") && (
-          <TouchableOpacity
-            onPress={() => setShowPassword(!showPassword)}
-            style={styles.eyeIcon}
-          >
-            <Ionicons
-              name={showPassword ? "eye-off-outline" : "eye-outline"}
-              size={22}
-              color={colors.textSecondary}
-            />
-          </TouchableOpacity>
-        )}
+  ) => {
+    const error = fieldErrors[field];
+    return (
+      <View style={styles.inputContainer}>
+        <Text style={[styles.label, { color: colors.textSecondary }]}>
+          {label} {isRequired && <Text style={{ color: colors.error }}>*</Text>}
+        </Text>
+        <View
+          style={[
+            styles.inputWrapper,
+            {
+              backgroundColor: colors.surface,
+              borderWidth: 1.5,
+              borderColor: error ? colors.error : "transparent",
+            },
+          ]}
+        >
+          <TextInput
+            style={[styles.input, { color: colors.textPrimary }]}
+            placeholderTextColor={colors.placeholder}
+            value={form[field]}
+            onChangeText={(text) => {
+              setForm({ ...form, [field]: text });
+              if (fieldErrors[field]) {
+                setFieldErrors((prev) => ({ ...prev, [field]: "" }));
+              }
+            }}
+            {...props}
+          />
+          {/* Глазик для паролей */}
+          {(field === "password" || field === "passwordConfirm") && (
+            <TouchableOpacity
+              onPress={() => setShowPassword(!showPassword)}
+              style={styles.eyeIcon}
+            >
+              <Ionicons
+                name={showPassword ? "eye-off-outline" : "eye-outline"}
+                size={22}
+                color={colors.textSecondary}
+              />
+            </TouchableOpacity>
+          )}
+        </View>
+        {error ? (
+          <Text style={[styles.fieldError, { color: colors.error }]}>
+            {error}
+          </Text>
+        ) : null}
       </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <ScrollView
@@ -133,16 +160,6 @@ export const RegisterForm = ({ onSuccess }: Props) => {
           {t("auth.join_car4rent", "Присоединяйтесь к Car4Rent")}
         </Text>
       </View>
-
-      {errorText ? (
-        <View
-          style={[styles.errorBox, { backgroundColor: `${colors.error}15` }]}
-        >
-          <Text style={{ color: colors.error, fontWeight: "500" }}>
-            {errorText}
-          </Text>
-        </View>
-      ) : null}
 
       {renderInput(t("auth.first_name", "Имя"), "first_name")}
       {renderInput(t("auth.last_name", "Фамилия"), "last_name")}
@@ -166,6 +183,13 @@ export const RegisterForm = ({ onSuccess }: Props) => {
           autoCapitalize: "none",
         },
       )}
+
+      {/* Общая ошибка — текстом над кнопкой, по центру, без плашки */}
+      {generalError ? (
+        <Text style={[styles.generalError, { color: colors.error }]}>
+          {generalError}
+        </Text>
+      ) : null}
 
       <TouchableOpacity
         style={[styles.submitBtn, { backgroundColor: colors.accent }]}
@@ -215,10 +239,17 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
   },
-  errorBox: {
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 20,
+  fieldError: {
+    fontSize: 13,
+    fontWeight: "500",
+    marginTop: 6,
+    marginLeft: 4,
+  },
+  generalError: {
+    fontSize: 14,
+    fontWeight: "500",
+    textAlign: "center",
+    marginTop: 8,
   },
   inputContainer: {
     marginBottom: 20,

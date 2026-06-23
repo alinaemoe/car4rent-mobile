@@ -16,6 +16,7 @@ import {
 
 import { Toast } from "@/src/components/Toast";
 import { axiosInstance } from "@/src/api/axios-instance";
+import { compressImage } from "@/src/utils/compressImage";
 import { useAppColors } from "@/src/hooks/use-color-scheme.web";
 import { useAppDispatch, useAppSelector } from "@/src/store";
 import { updateUser } from "@/src/store/slices/authSlice";
@@ -55,9 +56,11 @@ export default function PersonalDataScreen() {
     setIsUploadingAvatar(true);
     try {
       const asset = result.assets[0];
+      // Аватар не нужен в полном разрешении — сжимаем перед отправкой
+      const compressedUri = await compressImage(asset.uri, { maxWidth: 800 });
       const formData = new FormData();
       formData.append("file", {
-        uri: asset.uri,
+        uri: compressedUri,
         name: "avatar.jpg",
         type: "image/jpeg",
       } as any);

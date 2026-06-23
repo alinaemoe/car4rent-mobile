@@ -1,5 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { axiosInstance } from "../axios-instance";
+import { compressImage } from "../../utils/compressImage";
 
 export interface CreatePartnershipDto {
   car_brand: string;
@@ -23,21 +24,17 @@ export const useCreatePartnershipRequest = () => {
       formData.append("owner_name", data.owner_name);
       formData.append("owner_phone", data.owner_phone);
 
-      // 3. Правильно упаковываем фотографии
+      // 3. Сжимаем и упаковываем фотографии (до 5 штук с камеры — тяжёлые)
       if (data.photos && data.photos.length > 0) {
-        data.photos.forEach((uri, index) => {
-          // Вытаскиваем имя файла и расширение из URI
-          const filename = uri.split("/").pop() || `photo_${index}.jpg`;
-          const match = /\.(\w+)$/.exec(filename);
-          const type = match ? `image/${match[1]}` : `image/jpeg`;
-
-          // В React Native append для файлов принимает объект { uri, name, type }
+        for (let index = 0; index < data.photos.length; index++) {
+          const compressedUri = await compressImage(data.photos[index]);
+          // После сжатия отдаём всегда JPEG
           formData.append("photos", {
-            uri,
-            name: filename,
-            type,
+            uri: compressedUri,
+            name: `photo_${index}.jpg`,
+            type: "image/jpeg",
           } as any); // as any нужен, чтобы TypeScript не ругался на формат RN
-        });
+        }
       }
 
       // 4. Отправляем на бэк с правильным заголовком

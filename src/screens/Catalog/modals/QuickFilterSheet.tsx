@@ -38,8 +38,10 @@ export const QuickFilterSheet = forwardRef<BottomSheetModal, Props>(
     const BODY_TYPES: DictOption[] = settings.DICT_BODY_TYPES || [];
     const TRANSMISSIONS: DictOption[] = settings.DICT_TRANSMISSIONS || [];
 
-    const title =
-      QUICK_FILTERS.find((f) => f.id === activeFilterId)?.label || "Фильтр";
+    const activeFilter = QUICK_FILTERS.find((f) => f.id === activeFilterId);
+    const title = activeFilter
+      ? t(activeFilter.labelKey, activeFilter.defaultLabel)
+      : t("filter.title", "Фильтр");
 
     type ArrayKeys = keyof Pick<
       FiltersState,

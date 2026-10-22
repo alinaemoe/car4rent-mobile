@@ -20,11 +20,6 @@
       "predictiveBackGestureEnabled": false,
       "package": "com.sohalina.car4rentmobile",
       "usesCleartextTraffic": true,
-      "config": {
-        "googleMaps": {
-          "apiKey": "REMOVED"
-        }
-      },
       "permissions": [
         "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.ACCESS_COARSE_LOCATION"

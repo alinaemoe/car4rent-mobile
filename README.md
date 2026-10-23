@@ -1,50 +1,46 @@
-# Welcome to your Expo app 👋
+# Car4Rent Mobile
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+**The customer and car-owner app: find a car on a map, book it, track the trip - or list your own car and watch your income.**
 
-## Get started
+## The Car4Rent system
 
-1. Install dependencies
+| Repo | Role | Stack |
+|---|---|---|
+| **car4rent-backend** | REST API, auth, bookings, payments ledger, media | NestJS 11, TypeORM, PostgreSQL |
+| **car4rent-mobile** | Customer and car-owner app (Android / iOS) | Expo / React Native, Redux Toolkit, TanStack Query |
+| **car4rent-admin** | Back-office for managers | Refine 5, MUI 6, React Three Fiber |
+| **car4rent-landing** | Public marketing site and lead capture | React 19, Vite, i18next, Framer Motion |
 
-   ```bash
-   npm install
-   ```
+Car4Rent is a peer-to-peer and fleet **car rental platform** built as a diploma project: clients search
+and book cars, owners publish and manage theirs, and managers run the whole thing from the admin panel.
 
-2. Start the app
+## Features
 
-   ```bash
-   npx expo start
-   ```
+- **Catalogue** with infinite scroll, a rich filter system (brand, body type, transmission, fuel,
+  price range, features, dates) and a **map view** (`react-native-maps`).
+- **Booking flow:** calendar -> car detail (gallery, specs, reviews, location) -> checkout -> success.
+- **My rentals** with status tracking and cancellation, transaction history, favorites that persist
+  offline.
+- **Owner mode:** *My fleet* (show/hide cars), per-car stats and monthly income, partnership
+  application with photos.
+- **Account:** email OTP registration (3-step flow), login with silent token refresh, guest mode,
+  password reset, passport / driver-licence upload for verification.
+- **Car condition photos** before and after the rental.
+- **Multilingual**, light/dark theme, right-side drawer + bottom tabs (22 screens).
 
-In the output, you'll find options to open the app in a
+## Stack
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Expo SDK 54, React Native 0.81, Expo Router (file-based navigation), Redux Toolkit (auth, filters,
+favorites, dictionaries), TanStack Query (data fetching and caching), React Hook Form + Zod, Axios with
+a refresh-token interceptor, i18next.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Run
 
 ```bash
-npm run reset-project
+cp .env.example .env     # GOOGLE_MAPS_API_KEY (Android map) and EXPO_PUBLIC_API_URL (backend)
+npm install
+npx expo start           # or: npx expo run:android
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Point `EXPO_PUBLIC_API_URL` at your Car4Rent API (the Android-emulator default is `http://10.0.2.2:3000`).
+Restrict the Maps key by package name and SHA-1 in Google Cloud Console.

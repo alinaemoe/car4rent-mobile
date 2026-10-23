@@ -3,25 +3,12 @@ import { storage } from "../utils/storage";
 import { store } from "../store"; // 👈 Импортируем store для логаута
 import { logout } from "../store/slices/authSlice";
 
-// =========================================================================
-// 🌐 НАСТРОЙКА ПОДКЛЮЧЕНИЯ К БЭКЕНДУ
-// Раскомментируй ТОЛЬКО ОДИН вариант, который тебе сейчас нужен
-// =========================================================================
-
-// ВАРИАНТ 1: Для браузера (Web) и iOS Симулятора
-// const BACKEND_URL = "http://localhost:3000";
-
-// ВАРИАНТ 2: Для эмулятора Android (Android Studio)
-// const BACKEND_URL = "http://10.0.2.2:3000";
-
-// ВАРИАНТ 3: Для РЕАЛЬНОГО телефона по Wi-Fi (Expo Go)
-// const BACKEND_URL = "http://192.168.100.63:3000";
-
-// ВАРИАНТ 4: Продакшн-сервер (APK-сборка через EAS)
-const BACKEND_URL = "http://203.0.113.10:3000";
-
-// =========================================================================
-
+// Backend base URL comes from the environment (see .env.example):
+//   web / iOS simulator   http://localhost:3000
+//   Android emulator      http://10.0.2.2:3000   (default)
+//   real phone on Wi-Fi   http://<your-computer-LAN-ip>:3000
+//   production build      your deployed API URL, set as an EAS environment variable
+const BACKEND_URL = process.env.EXPO_PUBLIC_API_URL ?? "http://10.0.2.2:3000";
 export const API_URL = BACKEND_URL;
 
 export const axiosInstance = axios.create({

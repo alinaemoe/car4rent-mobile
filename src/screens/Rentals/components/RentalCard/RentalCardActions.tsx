@@ -19,7 +19,7 @@ interface Props {
   onFindOtherPress?: () => void;
 }
 
-const SUPPORT_PHONE = "+10000000000";
+const SUPPORT_PHONE = process.env.EXPO_PUBLIC_SUPPORT_PHONE ?? "+10000000000";
 
 export const RentalCardActions = ({
   rental,
